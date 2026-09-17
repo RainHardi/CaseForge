@@ -216,3 +216,15 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+# Environment variables & secrets
+.env 
+*.env 
+.env.local 
+# Generated outputs
+output/
+*.pdf 
+!examples/*.pdf 
+# Data (raw project inputs stay out of the public repo)
+data/raw/ 
+data/*.json 
+!data/schema-example.json
