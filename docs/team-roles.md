@@ -26,9 +26,7 @@
 - Coordinating weekly project activities
 - Making sure the team completes the Baseline requirements before moving to Target features
 - Managing communication between team members
-- Managing GitHub repository rules
 - Checking that team members make regular contributions
-- Making sure API keys and other secrets are not uploaded to GitHub
 - Managing the project question log
 - Checking that project data follows the course privacy and data rules
 - Coordinating the Mid-Course Review and other important project activities
@@ -56,6 +54,8 @@
 - Developing the content-generation workflow
 - Developing the claim-verification system
 - Working on hallucination guardrails
+- Managing GitHub repository rules
+- Making sure API keys and other secrets are not uploaded to GitHub
 - Making sure the system does not create unsupported facts or metrics
 - Working on the PDF generation functionality
 - Preparing the C4 Level 1 and C4 Level 2 architecture diagrams
@@ -63,6 +63,8 @@
 - Explaining the technical workflow to the rest of the team
 
 **Work for the Next Submission:**
+- Creating and Organizing GitHub repository
+- Add links to project documents
 - Prepare the first C4 Level 1 diagram
 - Prepare the first C4 Level 2 diagram
 - Identify the main technical components
@@ -146,7 +148,6 @@
 - Prepare the README structure
 - Add project information to the README
 - Add team information
-- Add links to project documents
 - Organize the documentation structure
 - Prepare the basic structure for the future demo and presentation
 
