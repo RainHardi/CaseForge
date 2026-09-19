@@ -5,7 +5,7 @@
 
 ## Team
 
-5 members — Full role assignments in [Team Roles](./docs/team-roles.md).
+Team 5 — Mukhammadkodir (PM), Abdulaziz (AI/Engineering), Dilshodjon (Problem & Business), Odina (Data & Research), Anvarbek (Demo & Presentation). Full role assignments in [Team Roles](./docs/team-roles.md).
 
 ## The Problem
 
@@ -69,4 +69,4 @@ pip install -r requirements.txt
 
 ## Status
 
-Initial draft stage. Details marked TBD in the linked docs are still being resolved with the team  — see the [Question Log](./docs/question-log.md) for what's currently open.
+Initial draft stage. Details marked TBD in the linked docs are still being resolved with the team and course instructors — see the [Question Log](./docs/question-log.md) for what's currently open.
