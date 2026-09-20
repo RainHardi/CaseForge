@@ -2,6 +2,7 @@
 
 **Category:** Software / AI Workflow
 **One-liner:** Companies do excellent work and then fail to sell it, because writing it up is nobody's job.
+**Project tab:** [HBAI Capstone Project Pool](./docs/HBAI_Capstone_project_pools.pdf) — S1: Case Study & Portfolio Generator
 
 ## Team
 
