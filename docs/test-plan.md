@@ -5,7 +5,6 @@
 | **Project** | S1 - Case Study & Portfolio Generator |
 | **Repository** | CaseForge |
 | **Team** | Team 5 |
-| **Document Owner** | Odina (Data & Research) |
 | **Reviewer** | Abdulaziz (AI / Engineering) |
 | **Status** | Initial Draft |
 | **Last Updated** | September 2026 |
