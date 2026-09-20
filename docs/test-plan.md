@@ -23,7 +23,7 @@ Because of that, most of this plan is about **faithfulness testing**, and we sta
 
 ## 2. Test Inputs
 
-We test with the project inputs described in [DATA_SOURCES.md](DATA_SOURCES.md). The test set will include:
+We test with the project inputs described in [data-sources.md](data-sources.md). The test set will include:
 
 | Input Type | Example | Why |
 |---|---|---|
