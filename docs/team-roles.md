@@ -71,6 +71,7 @@
 
 - Build and maintain the technical part of the project.
 - Set up and maintain the development environment.
+- Managing GitHub repository rules
 - Develop the AI workflow.
 - Implement the project information input process.
 - Develop the extraction step that identifies stated facts.
@@ -87,6 +88,8 @@
 ### Current Tasks
 
 - Prepare the technical architecture.
+- Creating and organizing GitHub repository
+- Add links to project documents
 - Prepare C4 Level 1.
 - Prepare C4 Level 2.
 - Define the initial technical workflow.
@@ -287,7 +290,7 @@ Team members should report problems as soon as possible if they are blocked or m
 |---|---|---|---|
 | Team R&R | Mukhammadkodir | Team | Initial Draft |
 | Project Overview | Dilshodjon | Mukhammadkodir / Team | Initial Draft |
-| GitHub Repository | Mukhammadkodir / Abdulaziz | Team | Created |
+| GitHub Repository | Abdulaziz | Team | Created |
 | README | Anvarbek | Mukhammadkodir / Team | Initial Draft |
 | Team Ground Rules | Team | Mukhammadkodir | Initial Draft |
 | Question Log | Mukhammadkodir / Team | Team | In Progress |
