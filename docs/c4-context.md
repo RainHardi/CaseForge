@@ -24,4 +24,4 @@ flowchart TB
     class LLM,Storage external
 ```
 
-**Legend:** Blue = the system we're building. Gray = external systems outside our control. Person icon = the human user.
+**Legend:** Blue = the system we're building. Gray = external systems outside our control. 
