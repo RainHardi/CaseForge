@@ -7,8 +7,9 @@
 | **Category** | Software / AI Workflow |
 | **Team** | Team 5 |
 | **Members** | 5 |
-| **Status** | Initial Draft Stage |
+| **Status** | Midterm draft — design complete, implementation not yet started |
 | **Development Period** | Fall 2026 Semester |
+| **Last Updated** | 23 October 2026 |
 
 ---
 
@@ -56,14 +57,13 @@
 - Make sure project materials follow the course requirements.
 - Report important blockers or delays to the team.
 
-### Current Tasks
+### Current Tasks (October 2026)
 
-- Coordinate the Team R&R document.
-- Coordinate the Project Overview.
-- Coordinate the GitHub repository.
-- Track the README and other project documents.
-- Track open questions and decisions.
-- Coordinate the team's development schedule.
+- Agree target dates for the remaining Baseline tasks BT-1 to BT-8, which are currently TBD.
+- Coordinate the midterm Business Plan draft and its submission.
+- Keep the Question Log up to date as decisions are made.
+- Track progress against the Baseline and report blockers early.
+- Make sure every member has a visible record of contribution in the repository.
 
 ## 3. Abdulaziz - AI / Engineering
 
@@ -85,17 +85,22 @@
 - Test the technical implementation.
 - Work with Data & Research on testing methods and evaluation.
 
-### Current Tasks
+### Completed
 
-- Prepare the technical architecture.
-- Creating and organizing GitHub repository
-- Add links to project documents
-- Prepare C4 Level 1.
-- Prepare C4 Level 2.
-- Define the initial technical workflow.
-- Test Google Gemini through the planned free tier.
-- Investigate PDF generation using Python.
-- Investigate the best method for claim verification.
+- Created and organized the GitHub repository and added links to the project documents.
+- Prepared the C4 Level 1 System Context and Level 2 Container diagrams (first versions).
+- Defined the initial technical workflow.
+
+### Current Tasks (October 2026)
+
+- Revise the C4 diagrams: add the faithfulness-check container, align the storage boundary between Level 1 and Level 2, and add the Draft Store to PDF Renderer link.
+- **BT-1** — set up the code structure and `requirements.txt`, and get a working Gemini API call.
+- **BT-3** — build the fact extraction step.
+- **BT-4** — build the automated faithfulness check.
+- **BT-5** — build the human review and approval step.
+- **BT-6** — build PDF and one-page summary generation.
+- Confirm the Google Gemini free-tier rate limits and the starter template choice.
+- Decide between ReportLab and WeasyPrint for PDF generation.
 
 ### Important Technical Focus
 
@@ -140,14 +145,15 @@ The secondary users are:
 
 These users can provide fast and realistic feedback because they also complete projects that can be turned into portfolio materials.
 
-### Current Tasks
+### Completed
 
-- Finalize the problem definition.
-- Define the primary and secondary users.
-- Define the buyer.
-- Explain the current manual process.
-- Define the business value.
+- Problem definition, primary and secondary users, buyer, current manual process and business value, recorded in the [Project Overview](project-overview.md) and the weekly business worksheets.
+
+### Current Tasks (October 2026)
+
+- Write Sections 1 to 3 of the midterm Business Plan (Company Overview, Problem & Solution, Target Market) from the weekly worksheets.
 - Prepare questions for user feedback.
+- Confirm the pricing and business model assumptions used in the TAM analysis.
 
 ## 5. Odina - Data & Research
 
@@ -190,14 +196,19 @@ The team will deliberately collect poor and messy project inputs early in develo
 
 This is important because the main problem is not only creating a case study from clean information. The system should also be able to handle the type of messy information that users actually provide.
 
-### Current Tasks
+### Completed
 
-- Prepare the Data Sources document.
-- Confirm permissions and usage conditions.
-- Prepare initial test data.
-- Define testing criteria.
-- Prepare the Test Plan.
-- Define how claim accuracy will be measured.
+- [Data Sources](data-sources.md) and [Test Plan](test-plan.md) written and committed.
+
+### Current Tasks (October 2026)
+
+- **BT-2** — prepare three real project inputs with hand-written fact lists and commit them.
+- **BT-8** — run the manual claim check on every test case once generation works.
+- Request permission from HumbleBeeAI for project information cleared for external sharing (**Q-D01**).
+- Confirm whether Google's free-tier terms allow sending real project information (**Q-D02**).
+- Add collection dates and versions to the Data Sources document.
+- Decide the target catch rate for the automated faithfulness check (**Q-T01**).
+- Write Sections 7 and 9 of the midterm Business Plan.
 
 ## 6. Anvarbek - Demo & Presentation
 
@@ -215,12 +226,16 @@ This is important because the main problem is not only creating a case study fro
 - Explain the system clearly to non-technical users.
 - Prepare the final project demonstration.
 
-### Current Tasks
+### Completed
 
-- Add project document links.
-- Prepare the future demo flow.
-- Prepare the presentation structure.
-- Coordinate information from each team member for the final presentation.
+- README and project documentation structure.
+
+### Current Tasks (October 2026)
+
+- Write the Definition of Done, Demo Script and Question Log documents.
+- Write Sections 4, 5, 8 and 10 of the midterm Business Plan.
+- Run the comparison test: the same messy project notes through a general AI tool and through our planned workflow, recording every claim that was not in the input.
+- Prepare the demo flow and the presentation structure.
 
 ## 7. Team Responsibilities
 
@@ -244,62 +259,50 @@ Each feature owner will work with the Data & Research member to agree on how the
 
 ## 8. Team Ground Rules
 
-### Meetings
+Our working agreements — meetings, task handling, GitHub and code review, API keys and secrets, data permissions, AI tool use, communication, and honesty about what has actually been tested — are kept in a single document so that they cannot drift apart from this one:
 
-- The team will have regular meetings.
-- Team members should inform others in advance if they cannot attend.
-- Important decisions will be recorded after meetings.
+**[Team Ground Rules](team-ground-rules.md)**
 
-### Tasks
-
-For each task, the team will define:
-
-- Task owner
-- Expected result
-- Target date
-- Reviewer when necessary
-- Current status
-
-Team members should report problems as soon as possible if they are blocked or may miss a deadline.
-
-### Development
-
-- Important code changes should be reviewed by another team member when appropriate.
-- Documentation should be updated when major features change.
-- Tests should be updated when necessary.
-- The team will use GitHub to track development work.
-
-### Data
-
-- Only permitted and safe data will be used.
-- No confidential client information will be used.
-- No protected internal company information will be used.
-- Classmate project information will only be used with permission.
-- Data sources and usage conditions will be documented.
-
-### AI Tools
-
-- AI tools may be used during development.
-- The team will record important uses of AI tools.
-- AI-generated code and documents will be reviewed by team members.
-- The team will not claim that a feature or test works until it has actually been tested.
+Every member is expected to have read them.
 
 ## 9. Task Ownership
 
 | Task | Owner | Reviewer / Support | Status |
 |---|---|---|---|
-| Team R&R | Mukhammadkodir | Team | Initial Draft |
-| Project Overview | Dilshodjon | Mukhammadkodir / Team | Initial Draft |
-| GitHub Repository | Abdulaziz | Team | Created |
-| README | Anvarbek | Mukhammadkodir / Team | Initial Draft |
-| Team Ground Rules | Team | Mukhammadkodir | Initial Draft |
-| Question Log | Mukhammadkodir / Team | Team | In Progress |
-| C4 Level 1 | Abdulaziz | Team | Planned |
-| C4 Level 2 | Abdulaziz | Team | Planned |
-| Data Sources | Odina | Abdulaziz | Planned |
-| Test Plan | Odina | Abdulaziz | Planned |
-| Definition of Done | Team | Team | Planned |
-| Demo Script | Anvarbek | Team | Planned |
+| GitHub repository | Abdulaziz | Team | Created |
+| Team R&R (this document) | Mukhammadkodir | Team | Complete, updated 23 Oct |
+| Project Overview | Dilshodjon | Mukhammadkodir / Team | Complete, updated 23 Oct |
+| README | Anvarbek | Mukhammadkodir / Team | Complete, updated 23 Oct |
+| Team Ground Rules | Team | Mukhammadkodir | Draft — needs updating |
+| Data Sources | Odina | Abdulaziz | Complete — collection dates still to add |
+| Test Plan | Odina | Abdulaziz | Complete |
+| C4 Level 1 | Abdulaziz | Team | Complete — revision needed |
+| C4 Level 2 | Abdulaziz | Team | Complete — revision needed |
+| Definition of Done | Anvarbek | Team | **Not started** |
+| Demo Script | Anvarbek | Team | **Not started** |
+| Question Log | Mukhammadkodir / Team | Team | **Not started** |
+| Midterm Business Plan | Team | Mukhammadkodir | In progress — due 24 Oct |
+| Baseline implementation (BT-1 to BT-8) | See below | Team | **Not started** |
+
+### Baseline implementation ownership
+
+No code has been written yet. The remaining Baseline tasks, with completion criteria, are listed in the [Project Overview](project-overview.md#21-current-status-and-next-steps). Ownership:
+
+| Member | Baseline tasks |
+|---|---|
+| Abdulaziz | BT-1 setup and Gemini call, BT-3 fact extraction, BT-4 faithfulness check, BT-5 review and approval, BT-6 PDF and one-page summary |
+| Odina | BT-2 three test inputs with fact lists, BT-8 manual claim check on every test case |
+| Team | BT-7 end-to-end run on three real inputs |
+| Mukhammadkodir | Agreeing target dates, tracking progress, reporting blockers |
+| Dilshodjon | User feedback and business validation once a draft output exists |
+| Anvarbek | Demo scenario, documentation, recording what breaks during testing |
+
+Target dates are **TBD** until the team agrees a schedule.
+
+### Contribution records
+
+Individual contributions are visible in the repository's commit history:
+[github.com/RainHardi/CaseForge/graphs/contributors](https://github.com/RainHardi/CaseForge/graphs/contributors)
 
 ## 10. Development Responsibilities During the Semester
 
