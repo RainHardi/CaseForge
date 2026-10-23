@@ -232,7 +232,6 @@ This is important because the main problem is not only creating a case study fro
 
 ### Current Tasks (October 2026)
 
-- Write the Definition of Done, Demo Script and Question Log documents.
 - Write Sections 4, 5, 8 and 10 of the midterm Business Plan.
 - Run the comparison test: the same messy project notes through a general AI tool and through our planned workflow, recording every claim that was not in the input.
 - Prepare the demo flow and the presentation structure.
@@ -273,14 +272,14 @@ Every member is expected to have read them.
 | Team R&R (this document) | Mukhammadkodir | Team | Complete, updated 23 Oct |
 | Project Overview | Dilshodjon | Mukhammadkodir / Team | Complete, updated 23 Oct |
 | README | Anvarbek | Mukhammadkodir / Team | Complete, updated 23 Oct |
-| Team Ground Rules | Team | Mukhammadkodir | Draft — needs updating |
-| Data Sources | Odina | Abdulaziz | Complete — collection dates still to add |
+| Team Ground Rules | Team | Mukhammadkodir | Complete, updated 23 Oct |
+| Data Sources | Odina | Abdulaziz | Complete, updated 23 Oct |
 | Test Plan | Odina | Abdulaziz | Complete |
 | C4 Level 1 | Abdulaziz | Team | Complete — revision needed |
 | C4 Level 2 | Abdulaziz | Team | Complete — revision needed |
-| Definition of Done | Anvarbek | Team | **Not started** |
-| Demo Script | Anvarbek | Team | **Not started** |
-| Question Log | Mukhammadkodir / Team | Team | **Not started** |
+| Definition of Done | Anvarbek | Team | Complete, 23 Oct |
+| Demo Script | Anvarbek | Team | Complete, 23 Oct |
+| Question Log | Mukhammadkodir / Team | Team | Complete, 23 Oct — 17 questions open |
 | Midterm Business Plan | Team | Mukhammadkodir | In progress — due 24 Oct |
 | Baseline implementation (BT-1 to BT-8) | See below | Team | **Not started** |
 
