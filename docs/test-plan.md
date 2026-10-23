@@ -6,13 +6,13 @@
 | **Repository** | CaseForge |
 | **Team** | Team 5 |
 | **Reviewer** | Abdulaziz (AI / Engineering) |
-| **Status** | Midterm draft — no tests run yet |
-| **Last Updated** | 23 October 2026 |
+| **Status** | Midterm draft — no system tests run; one baseline evaluation completed |
+| **Last Updated** | 24 October 2026 |
 
 This document explains what we plan to test, how we'll test it, and what counts as success. It follows our project's [Definition of Done](definition-of-done.md) (Baseline, Target, Stretch). Details we haven't decided yet are marked **TBD**.
 
 > [!IMPORTANT]
-> **Test status: not yet tested.** Implementation has not started, so no test in this plan has been run. Every test below is planned. Current status and the first tests we will run are in [Section 12](#12-test-status-and-next-steps).
+> **Test status: no system tests run.** Implementation has not started, so no test T-01 to T-19 below has been run. One evaluation has been completed — the baseline measurement in Section 3, Step 4, carried out on 24 October 2026. Current status and the next tests are in [Section 12](#12-test-status-and-next-steps).
 
 ---
 
@@ -87,11 +87,27 @@ Our Core is faithfulness verification, so we test that claim directly rather tha
 - Two people independently label every factual claim in both outputs as supported, reworded, unsupported or contradicted, using the hand-written fact list for that input.
 - We record the number of unsupported and contradicted claims produced by each, and whether each tool flagged anything as missing.
 
-| Input | Unsupported claims — general AI tool | Unsupported claims — CaseForge | Gaps flagged — general tool | Gaps flagged — CaseForge |
-|---|---|---|---|---|
-| *(to be filled once implementation starts)* | | | | |
+#### Baseline measurement — completed 24 October 2026
 
-This is reported honestly, including cases where the general tool performs well. The claim we are testing is not that a general tool always invents facts, but that CaseForge catches what it produces and refuses to export unchecked.
+Because implementation has not started, we could not compare the two systems. We instead measured the general AI tool on its own, which establishes the figure our Baseline requirement B5 will be measured against.
+
+**Method.** One team-constructed input (rough notes plus a pasted chat fragment, with no measurable result, no client name and no exact dates). Its stated facts were listed by hand before anything was generated. The input was then given to ChatGPT in a fresh conversation under two conditions, three runs each.
+
+| Condition | Runs | Invented metrics | Unsupported inferences | Flagged missing information |
+|---|---|---|---|---|
+| A — natural request for a case study | 3 | 0 | 4 to 6 per run | 3 of 3 |
+| B — same request, told not to invent detail | 3 | 0 | 0 to 1 per run | 3 of 3 |
+| CaseForge | — | *not yet testable — no implementation* | | |
+
+**Findings.** The result did not match our expectation, and we report it as observed. ChatGPT invented no performance metrics, no client name and no false dates in any run, and in every run it appended a list of details the user should verify before publishing.
+
+What it did produce consistently were unsupported inferences. In all three runs of condition A it stated that Python was used for the backend and React for the frontend; our notes say only "python + react." Other examples: describing the dashboard as supporting "day-to-day decision-making" and providing "centralized data access," neither of which appears in the input. These are plausible, probably true, and for that reason harder to catch than an invented percentage.
+
+Condition B produced faithful text that was unusable. The output stated within itself that the client's name and results "were not provided in the available notes" — accurate, and impossible to send to a prospective client.
+
+**What this changes.** We no longer claim that general AI tools invent facts; our own measurement does not support that. The defensible claim is that they advise without enforcing — nothing recorded the advice, nothing prevented publication without acting on it, the faithful version was unusable, and three runs are not a guarantee about the fourth.
+
+**Limitations.** One tool, one input, six runs, and labelling by a single team member rather than the two our method requires. Read as an initial measurement, not a general finding about AI writing tools. Gemini was not tested, and the checker-preview test was not run.
 
 ### Step 3: Missing information
 
@@ -217,7 +233,9 @@ We'll update this plan as these are answered and as testing shows us what we mis
 
 ### Tests performed so far
 
-**None.** Implementation has not started, so there is nothing to report and no results log yet. Every test in this plan is planned, not completed.
+**No system test has been run**, because no code exists. Every test T-01 to T-19 is planned, not completed, and the results log at `tests/results.md` will be created with the first run.
+
+**One evaluation has been completed:** the baseline measurement of the problem, carried out on 24 October 2026 and recorded in Section 3, Step 4. Its supporting evidence is the set of six generated outputs, retained by the team. Its headline finding is that the general AI tool we tested invented no metrics but produced four to six unsupported inferences per run in normal use, and advised without enforcing — which revised the claim we make about our own differentiation.
 
 ### Issues still to resolve before testing can begin
 
@@ -233,10 +251,11 @@ We'll update this plan as these are answered and as testing shows us what we mis
 
 In this order, as soon as the smallest end-to-end path exists:
 
-1. **T-02 — fact extraction.** The first thing worth knowing is whether the model reports only what is in the input. This can be tested with one input and one fact list, before any interface or PDF work exists.
-2. **T-04 — manual claim check.** Two people label every claim in the first generated draft. This gives us our first real measurement of the problem the project exists to solve.
-3. **Step 4 — comparison against a general AI tool.** Run the same input through ChatGPT or Gemini and record what each produces that was not in the input.
-4. **T-05 — planted-claim test.** Once a checker exists, measure whether it catches claims we know are false.
+1. **Repeat the baseline measurement on Gemini**, so the finding does not rest on one tool.
+2. **Run the checker-preview test**: give a generated draft and the original notes to a separate model call and ask it to label every claim. If it catches the backend/frontend inference that generation produced in three runs out of three, that is our first direct evidence that a separate checking pass works.
+3. **T-02 — fact extraction.** The first thing worth knowing is whether the model reports only what is in the input. This can be tested with one input and one fact list, before any interface or PDF work exists.
+4. **T-04 — manual claim check.** Two people label every claim in the first generated draft. This gives us our first real measurement of the problem the project exists to solve.
+5. **T-05 — planted-claim test.** Once a checker exists, measure whether it catches claims we know are false.
 
 T-01, T-03 and T-06 to T-10 follow as the corresponding features are built.
 
