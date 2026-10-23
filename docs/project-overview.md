@@ -5,10 +5,12 @@
 | | |
 |---|---|
 | **Category** | Software / AI Workflow |
-| **Repository** | CaseForge |
+| **Project Tab** | [HBAI Capstone Project Pool](HBAI_Capstone_project_pools.pdf) — S1: Case Study & Portfolio Generator |
+| **Repository** | [CaseForge](https://github.com/RainHardi/CaseForge) |
 | **Team** | Team 5 |
 | **Development Period** | Fall 2026 Semester |
-| **Status** | Initial Project Plan |
+| **Status** | Midterm draft — design complete, implementation not yet started |
+| **Last Updated** | 23 October 2026 |
 
 ---
 
@@ -20,22 +22,23 @@
 4. [How Users Currently Solve the Problem](#4-how-users-currently-solve-the-problem)
 5. [Proposed Solution](#5-proposed-solution)
 6. [Why AI](#6-why-ai)
-7. [Inputs and Outputs](#7-inputs-and-outputs)
-8. [Planned Core Features](#8-planned-core-features)
-9. [Development Plan](#9-development-plan)
-10. [Baseline](#10-baseline)
-11. [Target](#11-target)
-12. [Stretch](#12-stretch)
-13. [Data Sources](#13-data-sources)
-14. [Tools and Models](#14-tools-and-models)
-15. [Main Technical Challenges](#15-main-technical-challenges)
-16. [Testing and Evaluation](#16-testing-and-evaluation)
-17. [Expected Final Result](#17-expected-final-result)
-18. [Expected Value](#18-expected-value)
-19. [Semester Goal](#19-semester-goal)
-20. [Current Status](#20-current-status)
-21. [Project Documentation](#21-project-documentation)
-22. [Final Project Goal](#22-final-project-goal)
+7. [Why Not Just Use a General AI Tool](#7-why-not-just-use-a-general-ai-tool)
+8. [Inputs and Outputs](#8-inputs-and-outputs)
+9. [Planned Core Features](#9-planned-core-features)
+10. [Development Plan](#10-development-plan)
+11. [Baseline](#11-baseline)
+12. [Target](#12-target)
+13. [Stretch](#13-stretch)
+14. [What We Will Leave Out](#14-what-we-will-leave-out)
+15. [Data Sources](#15-data-sources)
+16. [Tools, Models, and Hardware](#16-tools-models-and-hardware)
+17. [Technical Difficulties to Investigate First](#17-technical-difficulties-to-investigate-first)
+18. [Testing and Evaluation](#18-testing-and-evaluation)
+19. [Expected Final Result](#19-expected-final-result)
+20. [Expected Value](#20-expected-value)
+21. [Current Status and Next Steps](#21-current-status-and-next-steps)
+22. [Project Documentation](#22-project-documentation)
+23. [References](#23-references)
 
 ---
 
@@ -65,23 +68,23 @@ The initial business context for this project is **HumbleBeeAI**, which works in
 
 ### Primary Users
 
-The primary users are service companies that sell their work based on previous projects and results.
+The primary users are service companies that sell their work based on previous projects and results, such as agencies, consultancies, development shops, and research firms.
 
-The main user inside the company can be a person responsible for business development or marketing.
+Our beachhead market is small and mid-sized IT service and software development companies in the Seoul–Gyeonggi area, roughly 10–200 employees, that win client work by showing past projects.
 
-They need to turn completed project information into professional materials that can be used to present the company's previous work.
+The **end user** is the developer or project lead who is asked to write up a finished project. The **buyer** is the business development lead or manager who approves the purchase. They need to turn completed project information into professional materials that present the company's previous work.
 
 ### Secondary Users
 
-A faster validation group will be the project team and classmates.
+A faster validation group will be our own team and our classmates.
 
-Students often complete projects but do not have a polished case study or portfolio artifact that can be used for job applications or presentations.
+Students often complete projects but do not have a polished case study or portfolio artifact that can be used for job applications. Because we can run our own and our classmates' projects through CaseForge during the semester, this group gives us the fastest real user feedback.
 
 ## 4. How Users Currently Solve the Problem
 
-Currently, users may collect information manually from different sources and then write the case study themselves.
+Currently, users collect information manually from different sources and write the case study themselves.
 
-A typical process can include:
+A typical process includes:
 
 1. Finding project information.
 2. Collecting notes, messages, screenshots, and other materials.
@@ -90,6 +93,8 @@ A typical process can include:
 5. Checking the information.
 6. Formatting the document.
 7. Creating a final PDF or presentation.
+
+Because this takes hours and is not billable work, it is often skipped. When a prospective client asks about similar past work, someone puts something together in a hurry, or nothing is sent at all.
 
 ## 5. Proposed Solution
 
@@ -103,76 +108,86 @@ The planned workflow is:
 Messy project input → Fact extraction → Case study writing → Faithfulness check → Human review → Final output
 ```
 
-The system will first identify information that is actually stated in the source material. It will then use these verified facts to create a professional case study.
+The system will first identify information that is actually stated in the source material. It will then use these facts to create a professional case study, and check every claim in the draft against the original input.
 
 > [!IMPORTANT]
-> A key requirement is that the system **must not invent information**. For example, if the source material does not contain a specific performance improvement, the system should not create a statement such as: *"The system reduced processing time by 40%."* Instead, missing information should be identified or flagged for human review. A human must review and approve the generated content before it is finalized or published.
+> A key requirement is that the system **must not invent information**. For example, if the source material does not contain a specific performance improvement, the system should not create a statement such as: *"The system reduced processing time by 40%."* Instead, missing information should be flagged for human review. A human must review and approve the generated content before it is finalized or published.
 
 ## 6. Why AI
 
-AI can help reduce the manual work required to organize and write project information.
+A fixed template alone cannot solve this problem, because the input never arrives in template shape. It comes as rough notes, chat threads, screenshots, or whatever the engineer remembers.
 
-The system can use an LLM to:
+AI can help by:
 
-- Understand unstructured project information
-- Extract important facts
-- Organize information into a fixed structure
-- Generate professional written content
-- Check generated claims against the original information
-- Identify information that is missing or unsupported
+- Understanding unstructured project information
+- Extracting important facts
+- Organizing information into a fixed structure
+- Generating professional written content
+- Checking generated claims against the original information
+- Identifying information that is missing or unsupported
 
-The project will focus on **controlled AI generation**, rather than simply asking an AI model to write a case study.
+The hard requirement is **accuracy, not fluency**. The project focuses on controlled AI generation, rather than simply asking an AI model to write a case study.
 
-## 7. Inputs and Outputs
+## 7. Why Not Just Use a General AI Tool
+
+CaseForge runs on a general model (Google Gemini). We are not claiming a better model, and we could not build one. The difference is what we build **around** the model.
+
+A general chat tool such as ChatGPT, Claude or Gemini is built to produce text that reads well. CaseForge is built to produce text that can be **proven**. Those are different objectives, and the second one requires a system, not a better prompt.
+
+| | General AI chat tool | CaseForge |
+|---|---|---|
+| **Objective** | Produce fluent, helpful text | Produce text in which every claim is traceable to the input |
+| **Given thin input** | Fills the gap with a plausible figure | Flags the gap and refuses to invent one |
+| **Verification** | None, or the model checking its own output | A separate pass that compares each claim against the source and labels it supported, reworded, unsupported, or contradicted |
+| **Approval** | No concept of approval | Export is disabled until every flag is resolved and a person approves |
+| **Memory** | Forgets between conversations | Stores a structured project record and regenerates every format from it |
+| **Consistency** | A different story each time you ask | PDF, one-page summary and portfolio page all built from the same record |
+| **Measurable accuracy** | Cannot be stated | Specified and tested: no unsupported claims across every test case (see [Test Plan](test-plan.md)) |
+| **Fits the workflow** | The user must know how to prompt | Structured intake, fixed template, company's own house style |
+
+> [!NOTE]
+> To be precise about the claim: a careful user with a good prompt can often get a general tool to avoid inventing facts. The difference is that in CaseForge this is **guaranteed by the system, enforced before export, measured on every test case, and repeatable by a user who knows nothing about prompting**. We are not competing with the model. We are competing with the absence of verification around it.
+
+We plan to demonstrate this empirically rather than assert it: the same messy project notes will be run through a general AI tool and through CaseForge, and every claim each one produces that was not in the input will be recorded and reported.
+
+## 8. Inputs and Outputs
 
 ### Inputs
 
-The system may receive:
-
-- Rough project notes
-- Project descriptions
-- Client problem information
+- Client problem
 - Work completed
-- Development approach
+- Technical approach
 - Tools and technologies
 - Challenges
 - Results
-- Screenshots or project images
-- Other messy project information
+- Supporting images
+- Rough notes or pasted conversations (Target)
 
-The team will deliberately test the system with poor or messy inputs. A system that only works with clean and well-written information will not fully solve the intended problem.
+We will deliberately test the system with poor and messy inputs. A system that only works with clean and well-written information has not solved the problem.
 
 ### Outputs
 
-The main initial output will be a **professional case study in PDF format**.
+**Baseline:**
 
-Planned additional formats include:
+- A downloadable **PDF case study** following a fixed template
+- A **one-page summary**
 
-- Portfolio page
-- One-page summary
-- Partner presentation
+**Target (from the same project record):**
 
-The final output should contain only information that can be supported by the provided project information.
+- Website portfolio page
+- Partner-facing presentation
 
-## 8. Planned Core Features
+Every output should contain only information that is supported by the provided project information.
 
-The planned system will include the following features:
+## 9. Planned Core Features
 
 ### Feature 1 - Structured Input Intake
 
-The system will collect information about:
-
-- Client problem
-- Work completed
-- Approach
-- Tools and technologies
-- Challenges
-- Results
-- Images
+The system will collect information about the client problem, work completed, approach, tools and technologies, challenges, results, and images.
 
 ### Feature 2 - Fact Extraction
 
-The system will extract only facts that are stated in the input. If important information is missing, the system should flag it instead of creating unsupported information.
+The system will extract only facts that are stated in the input. If important information is missing, the system will flag it instead of creating unsupported information.
 
 ### Feature 3 - Case Study Generation
 
@@ -180,211 +195,218 @@ The extracted facts will be organized into a fixed case-study structure and conv
 
 ### Feature 4 - Automated Faithfulness Check
 
-The system will compare generated claims with the original project information. The purpose is to identify claims that are unsupported by the source information.
+The system will compare generated claims with the original project information and flag claims that are not supported by the source.
 
 ### Feature 5 - Human Review
 
-A human must review and approve the generated case study before it is finalized or published.
+A human must review, edit, and approve the generated content before it is finalized. Nothing is published without approval.
 
-### Feature 6 - PDF Generation
+### Feature 6 - PDF Case Study and One-Page Summary
 
-The approved case study will be converted into a downloadable PDF.
+The approved content will be exported as a downloadable PDF case study and a one-page summary.
 
-## 9. Development Plan
+## 10. Development Plan
 
-The team will first build the minimum working version and then improve it based on testing.
-
-The planned development process is:
+We will get the full Baseline working before moving on to Target, and leave Stretch items until every Baseline item is complete.
 
 1. Define the project structure and user workflow.
-2. Collect safe project information and test examples.
-3. Build the basic input and extraction process.
-4. Build the case-study generation process.
-5. Add the faithfulness checking process.
+2. Collect safe project information and test examples, including messy inputs.
+3. Build the input and fact extraction process.
+4. Build the faithfulness check early, alongside generation rather than at the end.
+5. Build the case-study generation process.
 6. Add human review and editing.
-7. Generate the final PDF.
-8. Test the system with different types of project input.
-9. Identify errors and limitations.
-10. Improve the system based on test results.
+7. Generate the PDF case study and one-page summary.
+8. Test end to end on three real project inputs.
+9. Record errors and limitations, and improve the system based on test results.
+10. Move on to Target features.
 11. Prepare the final demonstration and presentation.
 
-## 10. Baseline
+## 11. Baseline
 
-The Baseline is the minimum version that the team needs to complete first.
+These are the official Baseline items from the project tab, and how we plan to meet each one.
 
-The Baseline will include:
+| # | Baseline Item | Our Plan |
+|---|---|---|
+| B1 | Accepts structured input about a project: client problem, work done, technical approach, tools and technologies used, challenges, results, and supporting images | Input form covering each field, with image upload |
+| B2 | Produces a one-page summary and a downloadable PDF case study following a fixed template | Fixed case-study template; PDF generation with ReportLab or WeasyPrint (choice TBD) |
+| B3 | A human review and edit step before anything is final; nothing publishes without approval | Review screen where the user edits and approves the draft; export only works after approval |
+| B4 | Works end to end on three real project inputs | Test with real inputs from our own projects, classmates' projects, and HumbleBeeAI projects if cleared |
+| B5 | Generates no claim that was not in the input, verified by checking output against input on every test case | Fact extraction + automated faithfulness check + manual claim check on every test case (see [Test Plan](test-plan.md)) |
 
-- Project information input
-- Extraction of stated facts
-- Structured case-study generation
-- Basic automated checking of generated claims
-- Human review before finalization
-- PDF generation
+## 12. Target
 
-The Baseline will focus on proving that messy project information can be transformed into a useful and professional case study without inventing unsupported claims.
+After the Baseline is complete, we will work on the official Target items:
 
-## 11. Target
+| # | Target Item |
+|---|---|
+| T1 | Multiple output formats from one project record: PDF case study, website portfolio page, one-page summary, partner-facing presentation |
+| T2 | Brand rules applied and checkable: tone, structure, layout |
+| T3 | Accepts messier input, such as rough notes or a pasted conversation, rather than requiring a clean form |
+| T4 | Someone outside our team uses it successfully without instruction. We watch them use it and record what broke |
+| T5 | A business case: time to produce a case study manually versus with our tool, measured rather than estimated |
 
-After completing the Baseline, the team will improve the system toward the Target version.
+### Proposed additions under consideration
 
-The Target may include:
+At the progress review on 8 October 2026, the course TA suggested two additions: a **Telegram bot** so users can send project notes and receive a draft inside a chat, and **integration with tools such as Notion** so project information can be pulled from where teams already keep it.
 
-- Better handling of messy input
-- Improved claim verification
-- Better case-study formatting
-- Portfolio page generation
-- One-page summary generation
-- Improved user review and editing
-- More testing examples
+Both are input channels rather than new capabilities, and neither appears in the official Definition of Done. We consider them Target-level work at the earliest, and they will not be started before the Baseline is complete. Which tier they belong to: **TBD**.
 
-The exact Target features may be adjusted based on development progress and testing results.
+## 13. Stretch
 
-## 12. Stretch
+If time allows after the Target is complete:
 
-If the Baseline and Target are completed early, the team may consider additional features.
+| # | Stretch Item |
+|---|---|
+| S1 | Images placed sensibly within the document rather than appended at the end |
+| S2 | Flags weak input, for example noting that no measurable result was provided |
+| S3 | Batch generation across a set of projects |
+| S4 | Output in more than one language |
 
-Possible Stretch features include:
+## 14. What We Will Leave Out
 
-- Partner presentation generation
-- More output templates
-- Improved image placement
-- Additional input formats
-- More advanced quality checks
-- Additional testing with different project types
+To keep the Baseline on track, the following are out of scope for now:
 
-Stretch features will not be prioritized over completing and testing the Baseline.
+- **Automatic publishing.** Content is never published without human approval. This is a permanent design decision, not a temporary limitation.
+- **Paid APIs or services.** We will use free tiers and ask the instructors before paying for anything.
+- **Client confidential or internal company data.**
+- **Training or fine-tuning our own model.** We use a hosted model through an API.
+- **Stretch features** until every Baseline and Target item works.
+- Which Stretch features we attempt, if any: **TBD**, depending on progress.
 
-## 13. Data Sources
+## 15. Data Sources
 
-The project will use safe and appropriate project information.
+| Source | Access Status |
+|---|---|
+| HumbleBeeAI projects cleared for external sharing | TBD, not yet requested |
+| Project information constructed by our team (clean and messy) | Available |
+| Our own project material | Available |
+| Classmates' project material (with permission) | TBD, permission needed |
 
-Possible sources include:
+We will not use client confidential material, internal company data, or protected information. Full details, usage conditions, collection dates and open questions are in [Data Sources](data-sources.md).
 
-- HumbleBeeAI project information that is cleared for external sharing
-- Project information constructed by the team
-- The team's own capstone project information
-- Classmates' project information, with permission
-
-The team will **not** use:
-
-- Client confidential information
-- Internal company information that is not approved for use
-- Protected or sensitive information without appropriate permission
-
-The project will intentionally collect some poor or messy project inputs for testing because handling such inputs is an important part of the problem.
-
-## 14. Tools and Models
+## 16. Tools, Models, and Hardware
 
 | Area | Tool | Notes |
 |---|---|---|
-| **AI Model** | Google Gemini (via Google AI Studio) | The team plans to use the free tier so that the project does not require a project budget for AI API usage. |
-| **Programming** | Python | Used to build the main workflow and supporting components. |
-| **PDF Generation** | ReportLab / WeasyPrint | The final choice may depend on implementation requirements. |
-| **Development Environment** | Local development environment / Google Colab | |
+| **AI Model** | Google Gemini (via Google AI Studio) | Free tier, so no project budget is needed. Rate limits to be tested. |
+| **Programming** | Python | Main workflow and supporting components |
+| **PDF Generation** | ReportLab or WeasyPrint | Final choice TBD |
+| **Development Environment** | Local machine or Google Colab | |
+| **Hardware** | Standard laptop | The model runs through an API, so no GPU is needed |
 
 > [!NOTE]
-> API keys will not be placed directly in the public repository. If an API key is required, the team will use environment variables and an `.env` file.
+> API keys will never be placed in the public repository. Keys are stored in a `.env` file excluded from Git, and the repository includes a `.env.example` with blank values.
 
-## 15. Main Technical Challenges
+## 17. Technical Difficulties to Investigate First
 
-The main technical challenge is preventing the AI from generating information that is not supported by the original project input.
+These come from the project tab's Known Hard Parts, in the order we plan to investigate them:
 
-The system needs to distinguish between:
+1. **Keeping generated text faithful to the input.** This is the central difficulty. Invented metrics and plausible-sounding claims are hard to spot precisely because the writing is good, so we will build a way to check this from the beginning, not at the end.
+2. **Consistent structured output.** The model's output must be parseable and correctly shaped every time, not most of the time.
+3. **Layout that survives variable input length.** A two-sentence project and a three-page project must both produce a well-formatted document.
+4. **Brand rules are harder to enforce than to state.** Tone and voice are easy to describe but hard to verify automatically. We will decide early how we will check them (Target).
 
-- Information that is explicitly provided
-- Information that can be safely reorganized
-- Information that is missing
-- Information that is unsupported or potentially fabricated
+## 18. Testing and Evaluation
 
-Another challenge is handling messy and incomplete input. The system should still produce useful results when the original information is not written in a professional format.
-
-The team will also need to determine how the faithfulness check should work and how to evaluate whether a generated claim is supported by the source.
-
-## 16. Testing and Evaluation
-
-The team will test the system using different project inputs.
-
-Testing will include both:
-
-- Clean and structured project information
-- Poor, incomplete, and messy project information
-
-The main evaluation areas will be:
+We will test with both clean and messy project inputs. The main evaluation areas are:
 
 | # | Evaluation Area | Description |
 |---|---|---|
-| 1 | **Information Accuracy** | Generated content should match the information provided by the user. |
-| 2 | **Claim Faithfulness** | The system should not create unsupported facts, numbers, results, or achievements. |
-| 3 | **Output Quality** | The generated case study should have a clear structure and professional writing. |
-| 4 | **Handling Missing Information** | The system should identify important missing information instead of automatically inventing it. |
-| 5 | **Human Review** | Users should be able to review and edit the generated content before finalization. |
-| 6 | **Final Output** | The system should successfully generate the planned PDF output. |
+| 1 | **Claim Faithfulness** | No unsupported or contradicted claims in the final output, on every test case |
+| 2 | **Handling Missing Information** | Gaps are flagged instead of filled in |
+| 3 | **Output Quality** | Clear structure and professional writing that follows the template |
+| 4 | **Human Review** | Users can edit and approve content before anything is final |
+| 5 | **Final Output** | PDF case study and one-page summary are generated correctly |
+| 6 | **Usability and Time Saved** (Target) | Outside user test and measured time comparison |
 
-The team will record known errors and limitations during testing.
+The full plan, including test cases and success criteria, is in [Test Plan](test-plan.md).
 
-## 17. Expected Final Result
+**No tests have been run yet**, because implementation has not started. See [Section 21](#21-current-status-and-next-steps).
 
-By the end of the semester, the team aims to develop and demonstrate a working Case Study & Portfolio Generator.
+## 19. Expected Final Result
 
-The final prototype should demonstrate the complete workflow:
+By the end of the semester, we aim to demonstrate a working Case Study & Portfolio Generator that runs the complete workflow:
 
 ```
-Raw project information → Fact extraction → Case study generation → Faithfulness check → Human review → Final PDF
+Raw project information → Fact extraction → Case study generation → Faithfulness check → Human review → PDF case study + one-page summary
 ```
 
-## 18. Expected Value
+The final demo will include running a classmate's project through the tool and showing the review step catching and correcting an unsupported claim.
 
-For service companies, the system can reduce the manual effort required to turn completed projects into professional case studies.
+## 20. Expected Value
 
-Potential value includes:
+For service companies, CaseForge can reduce the manual effort needed to turn completed projects into professional case studies:
 
 - Faster creation of portfolio materials
 - More consistent case-study structure
 - Better reuse of completed project information
-- Easier preparation of business development materials
-- Reduced risk of unsupported claims
-- More useful project documentation
+- Something ready to send when a prospective client asks
+- Reduced risk of false claims in client-facing documents
 
-For students, the system can also help turn completed capstone projects into professional portfolio materials.
+For students, it can turn completed projects into portfolio materials for job applications.
 
-## 19. Semester Goal
+## 21. Current Status and Next Steps
 
-The team's main goal for the semester is to build, test, and demonstrate a working prototype rather than only prepare a concept.
+### What is complete
 
-The team will complete the **Baseline** first, then work toward the **Target** and, if time allows, the **Stretch** features.
+The design and planning stage is complete. The following are written and in the repository:
 
-The project will be continuously updated as the team learns more from implementation and testing.
+- Project overview (this document), team roles, team ground rules
+- Definition of Done, aligned with the official Baseline, Target and Stretch
+- C4 Level 1 System Context and Level 2 Container diagrams
+- Data sources with usage conditions and open questions
+- Test plan with test cases and success criteria
+- Demo script
 
-## 20. Current Status
+### What has not started
 
-The project is currently in the **initial draft stage**.
+> [!IMPORTANT]
+> **No code has been written and no tests have been run.** The repository currently contains documentation only. The Baseline is designed but not implemented.
 
-The team has defined the main problem, target users, proposed solution, planned features, initial data sources, and development direction.
+### Remaining Baseline tasks
 
-Some technical and implementation details are still **TBD** and will be decided during development and testing.
+| ID | Task | Owner | Done when | Date |
+|---|---|---|---|---|
+| BT-1 | Set up the code structure, `requirements.txt`, and a working Gemini API call | Abdulaziz | A script sends project notes to Gemini and prints a structured draft | TBD |
+| BT-2 | Prepare three real project inputs with hand-written fact lists | Odina | Three inputs and their fact lists are committed to the repository | TBD |
+| BT-3 | Fact extraction step | Abdulaziz | Extracted facts match the hand-written fact list for each test input | TBD |
+| BT-4 | Automated faithfulness check | Abdulaziz | Each generated claim is labelled supported, reworded, unsupported or contradicted; catch rate measured on the planted-claim test | TBD |
+| BT-5 | Human review and approval step | Abdulaziz | Draft can be edited, approved or rejected; export is blocked until approval | TBD |
+| BT-6 | PDF case study and one-page summary | Abdulaziz | Both open correctly and match the approved text | TBD |
+| BT-7 | End-to-end run on three real inputs | Team | All three produce an approved PDF with no unsupported claims | TBD |
+| BT-8 | Manual claim check on every test case | Odina, plus one reviewer | Every case study checked by two people and recorded in the results log | TBD |
 
-## 21. Project Documentation
+Dates are TBD until the team agrees a schedule. Responsibilities are in [Team Roles](team-roles.md).
 
-The project documentation will be maintained in the public GitHub repository.
+### Main risk and next action
 
-Planned documentation includes:
+The main risk to completing the Baseline is that implementation has not begun and the hardest part, the faithfulness check, is also the part the whole project depends on.
 
-- [ ] Team Roles & Responsibilities
-- [x] Project Overview
-- [ ] Team Ground Rules
-- [ ] Question Log
-- [ ] System Context Diagram (C4 Level 1)
-- [ ] Container Diagram (C4 Level 2)
-- [ ] Data Sources
-- [ ] Test Plan
-- [ ] Definition of Done
-- [ ] Demo Script
-- [ ] README
+To reduce it, we will build the smallest end-to-end path first — project notes in, a draft out, and a list of which claims appear in the input — before building any interface or PDF output. That path proves the idea works and can be tested immediately, and everything else is formatting around it.
 
-These documents will be updated as the project develops.
+Details that are still undecided are marked **TBD** and tracked in the [Question Log](question-log.md).
 
-## 22. Final Project Goal
+## 22. Project Documentation
 
-The final goal is to create a practical AI workflow that helps users turn messy project information into professional, reusable case-study and portfolio materials while keeping the generated content faithful to the original information.
+- [README](../README.md)
+- [Team Roles & Responsibilities](team-roles.md)
+- [Project Overview](project-overview.md)
+- [Team Ground Rules](team-ground-rules.md)
+- [Question Log](question-log.md)
+- [System Context Diagram (C4 Level 1)](c4-context.md)
+- [Container Diagram (C4 Level 2)](c4-container.md)
+- [Data Sources](data-sources.md)
+- [Test Plan](test-plan.md)
+- [Definition of Done](definition-of-done.md)
+- [Demo Script](demo-script.md)
 
-> **The most important principle of the project is that the system should improve how project information is presented without inventing what happened.**
+## 23. References
+
+- HumbleBeeAI, *HBAI Capstone Project Pool*, S1: Case Study & Portfolio Generator ([project tab](HBAI_Capstone_project_pools.pdf))
+- Victoria Kim and Seunghyun Ko, *Inha Capstone Project Documentation Guide*, Capstone Design Course, Inha University, Fall 2026
+- Google AI Studio / Gemini API documentation (link TBD)
+- ReportLab and WeasyPrint documentation (link TBD, once the library is chosen)
+
+---
+
+> **The most important principle of the project: CaseForge should improve how project information is presented, without inventing what happened.**
