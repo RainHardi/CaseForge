@@ -10,7 +10,7 @@
 | **Team** | Team 5 |
 | **Development Period** | Fall 2026 Semester |
 | **Status** | Midterm draft — design complete, implementation not yet started |
-| **Last Updated** | 23 October 2026 |
+| **Last Updated** | 24 October 2026 |
 
 ---
 
@@ -137,8 +137,8 @@ A general chat tool such as ChatGPT, Claude or Gemini is built to produce text t
 | | General AI chat tool | CaseForge |
 |---|---|---|
 | **Objective** | Produce fluent, helpful text | Produce text in which every claim is traceable to the input |
-| **Given thin input** | Fills the gap with a plausible figure | Flags the gap and refuses to invent one |
-| **Verification** | None, or the model checking its own output | A separate pass that compares each claim against the source and labels it supported, reworded, unsupported, or contradicted |
+| **Given thin input** | May note what is missing, as advice the user is free to ignore | Flags it, and blocks export until the flag is resolved |
+| **Verification** | None by default, or the model checking its own output in the same response | A separate pass that compares each claim against the stored source and labels it supported, reworded, unsupported, or contradicted |
 | **Approval** | No concept of approval | Export is disabled until every flag is resolved and a person approves |
 | **Memory** | Forgets between conversations | Stores a structured project record and regenerates every format from it |
 | **Consistency** | A different story each time you ask | PDF, one-page summary and portfolio page all built from the same record |
@@ -148,7 +148,20 @@ A general chat tool such as ChatGPT, Claude or Gemini is built to produce text t
 > [!NOTE]
 > To be precise about the claim: a careful user with a good prompt can often get a general tool to avoid inventing facts. The difference is that in CaseForge this is **guaranteed by the system, enforced before export, measured on every test case, and repeatable by a user who knows nothing about prompting**. We are not competing with the model. We are competing with the absence of verification around it.
 
-We plan to demonstrate this empirically rather than assert it: the same messy project notes will be run through a general AI tool and through CaseForge, and every claim each one produces that was not in the input will be recorded and reported.
+### What we measured
+
+We tested this rather than asserting it. On 24 October 2026 we gave one team-constructed project input to ChatGPT under two conditions — a natural request for a case study, and the same request with an explicit instruction not to invent detail — three runs each. The method and full results are in [Test Plan](test-plan.md), Section 3 Step 4 and Section 12.
+
+**The result did not match our expectation, and we have changed what we claim because of it.** ChatGPT invented no performance metrics, no client name and no false dates in any of the six runs, and in every run it volunteered a list of details the user should verify before publishing. What it did produce consistently were unsupported inferences — in all three runs of the natural condition it stated that Python was used for the backend and React for the frontend, which our notes never said.
+
+We no longer claim that general AI tools invent facts. The defensible claim, supported by what we observed, is:
+
+1. **It advises, it does not enforce.** The tool told the user what to verify, but nothing recorded that advice, and nothing prevented the document being published without acting on it.
+2. **Unsupported inferences still appeared**, at roughly four to six per run in normal use, in the form hardest to notice — plausible, probably true, and never actually stated.
+3. **Faithfulness cost usability.** Under the constrained condition the output stated in the document itself that the client's name and results "were not provided in the available notes" — accurate, and unsendable. The user also had to know to ask for that condition.
+4. **Three runs are not consistency.** A specification such as "zero unsupported claims on every test case" can be stated and tested for our system. It cannot be stated for a chat tool.
+
+Our design addresses exactly that gap: generate the usable prose, then flag the unsupported parts separately, rather than degrading the prose in order to stay safe.
 
 ## 8. Inputs and Outputs
 
