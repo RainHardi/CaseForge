@@ -5,8 +5,8 @@
 | **Project** | S1 - Case Study & Portfolio Generator |
 | **Repository** | CaseForge |
 | **Team** | Team 5 |
-| **Open questions** | 17 |
-| **Last Updated** | 23 October 2026 |
+| **Open questions** | 18 |
+| **Last Updated** | 24 October 2026 |
 
 Every undecided detail in our documents is marked **TBD** and recorded here, so that there is one place to look for what is still unresolved and who can resolve it.
 
@@ -26,6 +26,8 @@ Three questions block work that is already scheduled:
 - **Q-002** — if Google's free-tier terms do not allow sending real client project information, our main test cases disappear and the Baseline needs different data.
 - **Q-001** and **Q-005** — the Baseline requires three *real* project inputs. Neither HumbleBeeAI nor any classmate has been asked yet.
 - **Q-011** — no target dates exist for any implementation task, and the Baseline is the whole project.
+
+One question has been partly answered by evidence rather than by a decision: see **Q-018** and the baseline measurement recorded in the test plan.
 
 ---
 
@@ -50,6 +52,7 @@ Three questions block work that is already scheduled:
 | **Q-015** | Which Gemini model and version do we pin, so that results can be reproduced? | 23 Oct 2026 | Odina | Abdulaziz | Reproducibility, results log | Not decided |
 | **Q-016** | What is our fallback if the Gemini free tier becomes unavailable or rate-limited during the demo? | 23 Oct 2026 | Anvarbek | Team, then instructors | Demo, BT-1 | Not decided — we must ask the instructors before considering any paid option |
 | **Q-017** | Do the TA's suggestions — a Telegram bot and Notion integration — belong in Target, in Stretch, or outside the project? Neither is in the official project pool requirements. | 8 Oct 2026 | Anvarbek | Team / course TA | Scope after Baseline | Not decided |
+| **Q-018** | Does the baseline measurement hold on a second tool and a second input? Our finding currently rests on one tool, one input, six runs and a single labeller. | 24 Oct 2026 | Anvarbek | Team | How strongly we can state our differentiation | Open — repeat on Gemini is the first next test |
 
 ---
 
@@ -67,6 +70,7 @@ Recorded here so that settled questions are not reopened without reason.
 | 14 Oct 2026 | Beachhead market: small and mid-sized IT service and software companies in Seoul–Gyeonggi, roughly 10–200 employees | Week 3 and Week 5 business worksheets |
 | 23 Oct 2026 | Build the smallest end-to-end path first — notes in, draft out, claim list — before any interface or PDF work | [Project Overview](project-overview.md#21-current-status-and-next-steps) |
 | 23 Oct 2026 | Test results are recorded in `tests/results.md`; a test not recorded there is not counted as passed | [Test Plan](test-plan.md), [Definition of Done](definition-of-done.md) |
+| 24 Oct 2026 | Differentiation claim revised, on the evidence of our own measurement: we no longer claim that general AI tools invent facts, but that they advise without enforcing | [Project Overview](project-overview.md#7-why-not-just-use-a-general-ai-tool), [Test Plan](test-plan.md) Section 3 Step 4 |
 
 ---
 
