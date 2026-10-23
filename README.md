@@ -3,7 +3,7 @@
 **Category:** Software / AI Workflow
 **One-liner:** Companies do excellent work and then fail to sell it, because writing it up is nobody's job.
 **Project tab:** [HBAI Capstone Project Pool](./docs/HBAI_Capstone_project_pools.pdf) — S1: Case Study & Portfolio Generator
-**Status:** Midterm draft — design complete, implementation not yet started (last updated 23 October 2026)
+**Status:** Midterm draft — design complete, implementation not yet started (last updated 24 October 2026)
 
 > [!IMPORTANT]
 > **No code has been written yet.** This repository currently contains documentation only. The Baseline is designed but not implemented. See [Project Status](#project-status).
@@ -39,7 +39,7 @@ A general chat tool is built to produce text that **reads well**. CaseForge is b
 
 | | General AI chat tool | CaseForge |
 |---|---|---|
-| Given thin input | Fills the gap with a plausible figure | Flags the gap and refuses to invent one |
+| Given thin input | May note what is missing, as advice the user can ignore | Flags it, and blocks export until it is resolved |
 | Verification | None, or the model checking itself | A separate pass comparing each claim against the source |
 | Approval | No concept of approval | Export blocked until every flag is resolved and a person approves |
 | Memory | Forgets between conversations | Stores a project record and regenerates every format from it |
@@ -47,7 +47,9 @@ A general chat tool is built to produce text that **reads well**. CaseForge is b
 
 A careful user with a good prompt can often get a general tool to avoid inventing facts. The difference is that here it is **guaranteed by the system, enforced before export, measured on every test case, and repeatable by someone who knows nothing about prompting**. Full comparison in the [Project Overview](./docs/project-overview.md#7-why-not-just-use-a-general-ai-tool).
 
-We plan to show this rather than assert it: the same messy notes run through a general AI tool and through CaseForge, with every claim that was not in the input recorded for both. Method in [Test Plan](./docs/test-plan.md), Section 3, Step 4.
+**We measured this rather than asserting it, and the result changed our claim.** On 24 October 2026 we ran one messy project input through ChatGPT six times, under a natural request and under an explicit instruction not to invent detail. It invented no metrics, no client name and no false dates, and in every run it listed what the user should verify. What it did produce were unsupported inferences — four to six per run in normal use, including a backend/frontend split our notes never stated.
+
+So we no longer claim that general AI tools invent facts. We claim that **they advise without enforcing**: nothing recorded the advice, nothing prevented publication without acting on it, the faithful version was unusable as a sales document, and three runs are not a guarantee about the fourth. Method and full results in [Test Plan](./docs/test-plan.md), Section 3 Step 4 and Section 12.
 
 ## Baseline Scope
 
