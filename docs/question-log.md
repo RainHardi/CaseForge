@@ -46,8 +46,8 @@ One question has been partly answered by evidence rather than by a decision: see
 | **Q-009** *(Q-T04)* | Who will be our outside user for the no-instruction test? | 23 Sep 2026 | Odina | Team | T4, T-14 | Not decided |
 | **Q-010** *(Q-T05)* | Who writes the manual case study for the time comparison, and on which project? | 23 Sep 2026 | Odina | Team | T5, T-15 | Not decided |
 | **Q-011** | What are the target dates for Baseline tasks BT-1 to BT-8? | 23 Oct 2026 | Team | Mukhammadkodir | All implementation | Not decided |
-| **Q-012** | ReportLab or WeasyPrint for PDF generation? | 20 Sep 2026 | Abdulaziz | Abdulaziz | BT-6, B2 | Not decided |
-| **Q-013** | Streamlit or a command-line interface for the Baseline? The container diagram currently says "Streamlit or CLI". | 23 Sep 2026 | Abdulaziz | Abdulaziz | BT-1, BT-5 | Not decided |
+| **Q-012** | ReportLab or WeasyPrint for PDF generation? | 20 Sep 2026 | Abdulaziz | Abdulaziz | BT-6, B2 | **Decided 31 Oct 2026: ReportLab** — pure Python, installs with pip on Windows/Mac with no system libraries (WeasyPrint needs Pango/GTK); `KeepInFrame` lets the one-page summary shrink to fit |
+| **Q-013** | Streamlit or a command-line interface for the Baseline? The container diagram currently says "Streamlit or CLI". | 23 Sep 2026 | Abdulaziz | Abdulaziz | BT-1, BT-5 | **Decided 31 Oct 2026: both** — Streamlit (`app.py`) for users and the demo, CLI (`python -m caseforge`) for tests and batch runs. They share the same pipeline code |
 | **Q-014** | Is `module-python-template` the right starter template, given that the Baseline is a pipeline rather than a web service? | 23 Oct 2026 | Anvarbek | Abdulaziz | BT-1 | Proposed, awaiting confirmation |
 | **Q-015** | Which Gemini model and version do we pin, so that results can be reproduced? | 23 Oct 2026 | Odina | Abdulaziz | Reproducibility, results log | Not decided |
 | **Q-016** | What is our fallback if the Gemini free tier becomes unavailable or rate-limited during the demo? | 23 Oct 2026 | Anvarbek | Team, then instructors | Demo, BT-1 | Not decided — we must ask the instructors before considering any paid option |

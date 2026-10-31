@@ -4,7 +4,7 @@
 |---|---|
 | **Project** | S1 - Case Study & Portfolio Generator (CaseForge) |
 | **Team** | Team 5 |
-| **Status** | Designed — none of these containers is implemented yet |
+| **Status** | Baseline implemented (31 Oct 2026) — code map in the [README](../README.md#project-status) |
 | **Last Updated** | 23 October 2026 |
 
 Shows the main parts inside CaseForge, what each is responsible for, and how they communicate. External services sit outside the system boundary.
@@ -54,14 +54,14 @@ flowchart TB
 
 | Container | Technology | Responsibility | Baseline item | Build task | Status |
 |---|---|---|---|---|---|
-| **Interface** | Python — Streamlit or CLI (**Q-013**) | Collects the seven input fields and images, shows the draft with flagged claims, captures edits, records approval, and triggers export only after approval | B1, B3 | BT-1, BT-5 | Planned |
-| **Extraction & Generation Pipeline** | Python + Gemini | Pulls out only the facts stated in the input, then writes the case study from those facts rather than from the raw notes | B5 | BT-3 | Planned |
-| **Faithfulness Checker** | Python + Gemini | Compares every claim in the draft against the source and the extracted facts; labels each one; flags information that is missing rather than supplying it | B5 | BT-4 | Planned |
-| **Project Store** | SQLite or JSON files | Holds the source input, extracted facts, drafts, claim labels, edits and approval status, so that a document can always be traced back to what was provided | B3, B5 | BT-1 | Planned |
-| **Document Renderer** | Python — ReportLab or WeasyPrint (**Q-012**) | Renders approved content into the fixed-template PDF and the one-page summary | B2 | BT-6 | Planned |
+| **Interface** | Python — Streamlit + CLI (Q-013 decided) | Collects the seven input fields and images, shows the draft with flagged claims, captures edits, records approval, and triggers export only after approval | B1, B3 | BT-1, BT-5 | Built |
+| **Extraction & Generation Pipeline** | Python + Gemini | Pulls out only the facts stated in the input, then writes the case study from those facts rather than from the raw notes | B5 | BT-3 | Built |
+| **Faithfulness Checker** | Python + Gemini | Compares every claim in the draft against the source and the extracted facts; labels each one; flags information that is missing rather than supplying it | B5 | BT-4 | Built |
+| **Project Store** | JSON files (one folder per project) | Holds the source input, extracted facts, drafts, claim labels, edits and approval status, so that a document can always be traced back to what was provided | B3, B5 | BT-1 | Built |
+| **Document Renderer** | Python — ReportLab (Q-012 decided) | Renders approved content into the fixed-template PDF and the one-page summary | B2 | BT-6 | Built |
 
-> [!IMPORTANT]
-> **None of these containers has been built.** The whole diagram is a design. Implementation tasks and owners are in the [Project Overview](project-overview.md#21-current-status-and-next-steps).
+> [!NOTE]
+> **All five containers are built.** "Built" means the code exists and the automated tests pass; it does not yet mean the Baseline is met — that needs the real-input runs (BT-7) and the two-person claim check (BT-8).
 
 ## The two things this diagram is designed to guarantee
 

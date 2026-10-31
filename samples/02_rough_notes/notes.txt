@@ -1,0 +1,11 @@
+inventory thing for the noodle factory (fictional - "Han River Noodles")
+- they tracked stock in 3 excel files, nobody trusted the numbers
+- warehouse guys counted by hand every friday
+- we did a dashboard, python + react
+- barcode scanning w/ cheap android phones, scans go straight into postgres
+- low stock alerts by email when flour or packaging gets low
+- biggest pain: their product codes were different in every excel file, took forever to map them
+- also wifi in the cold storage room is bad -> scans are queued offline and synced later
+- went live in march
+- manager said friday count is way faster now
+- no hard numbers yet, they didnt measure before

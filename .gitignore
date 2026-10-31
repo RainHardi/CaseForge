@@ -228,3 +228,7 @@ output/
 data/raw/ 
 data/*.json 
 !data/schema-example.json
+
+# CaseForge runtime data — project records and exported documents stay local
+data/
+exports/

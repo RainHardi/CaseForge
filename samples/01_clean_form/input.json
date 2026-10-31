@@ -1,0 +1,14 @@
+{
+  "_note": "Team-constructed, fictional project. No real client. Safe to send to the Gemini API.",
+  "title": "Appointment No-Show Prediction for a Dental Clinic",
+  "client_name": "Bright Smile Dental (fictional)",
+  "client_problem": "The clinic lost about 18 appointment slots every week to patients who did not show up. Reception staff phoned every patient the day before, which took around two hours a day.",
+  "work_done": "We built a small web tool that ranks the next day's appointments by the chance of a no-show. Reception now calls only the 15 highest-risk patients each afternoon. We also trained two reception staff to use it.",
+  "technical_approach": "We trained a gradient boosting model on 14 months of anonymised appointment history. Features included booking lead time, past no-shows and appointment type. The model is retrained every Sunday night.",
+  "tools": "Python, scikit-learn, pandas, FastAPI, PostgreSQL",
+  "challenges": "The appointment history had duplicate records from an old booking system migration. Patient names had to be removed before any data left the clinic.",
+  "results": "Over the first 8 weeks, weekly no-shows fell from about 18 to 11. Daily reminder calls dropped from around two hours to 40 minutes.",
+  "images": [
+    {"filename": "noshow_chart.png", "caption": "Weekly no-shows before and after the tool went live (constructed example data).", "section": "results"}
+  ]
+}

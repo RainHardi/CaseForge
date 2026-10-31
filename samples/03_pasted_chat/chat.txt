@@ -1,0 +1,12 @@
+[10:02] Jisoo: hey did anyone write up the chatbot project yet
+[10:03] Tom: lol no
+[10:05] Jisoo: ok so for the record. the uni international office wanted something to answer visa + dorm questions for new students
+[10:06] Tom: yeah they got the same 30 questions every semester by email
+[10:07] Jisoo: we made a chatbot on top of their FAQ pages, retrieval + an LLM, answers in english and korean
+[10:09] Tom: it links the source page under every answer so staff can check it
+[10:10] Jisoo: hardest part was the FAQ pages were out of date and contradicted each other
+[10:11] Tom: we had to make the office pick one answer for each conflict before we could index anything
+[10:12] Jisoo: we used langchain, chromadb and streamlit for the demo
+[10:14] Tom: the office said they will use it for the spring intake
+[10:15] Jisoo: we never got usage numbers tho
+[10:15] Tom: ok thanks
