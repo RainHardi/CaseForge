@@ -3,10 +3,10 @@
 **Category:** Software / AI Workflow
 **One-liner:** Companies do excellent work and then fail to sell it, because writing it up is nobody's job.
 **Project tab:** [HBAI Capstone Project Pool](./docs/HBAI_Capstone_project_pools.pdf) — S1: Case Study & Portfolio Generator
-**Status:** Midterm draft — design complete, implementation not yet started (last updated 24 October 2026)
+**Status:** Baseline implemented — pipeline, checker, review step and PDF export working on team-constructed samples; real-input runs (BT-7) and the two-person claim check (BT-8) still to do (last updated 31 October 2026)
 
 > [!IMPORTANT]
-> **No code has been written yet.** This repository currently contains documentation only. The Baseline is designed but not implemented. See [Project Status](#project-status).
+> **To try it:** see [Getting Started](#getting-started) — install, add a free Gemini key, run `streamlit run app.py`.
 
 ## Team
 
@@ -103,35 +103,56 @@ Full details, usage conditions and open questions in [Data Sources](./docs/data-
 Per the course documentation guide, we record our use of AI tools:
 
 - **Documentation.** AI assistants were used to help draft and revise the documents in `docs/` and this README. Every document was read, edited and approved by a team member before being committed, and the content reflects the team's own decisions.
-- **Code.** No code has been written yet. When it is, any AI-assisted code will be noted here, and reviewed and understood by a team member before use.
+- **Code.** The first implementation (`caseforge/`, `app.py`, `tests/`, `eval/`) was written with help from an AI assistant (Claude). Under our ground rules it is reviewed and understood by a team member before it is merged, and the reviewer is named in the pull request.
 - **Verification.** Figures and sources cited in our documents — for example the Korean software industry statistics in our market analysis — were checked against the original sources by the team.
 
 ## Getting Started
 
-> [!NOTE]
-> There is nothing to run yet. These instructions describe the intended setup and will be completed once the first code lands.
+Needs Python 3.11+ and git, and a free Gemini API key from Google AI Studio (aistudio.google.com/apikey).
 
 ```bash
 git clone https://github.com/RainHardi/CaseForge.git
 cd CaseForge
-cp .env.example .env   # then fill in your own GEMINI_API_KEY
+python -m venv .venv
+source .venv/bin/activate          # Windows: .venv\Scripts\activate
+pip install -r requirements.txt
+cp .env.example .env               # Windows: copy .env.example .env  — then add your GEMINI_API_KEY
+python -m pytest                   # 34 tests, no API key needed
+streamlit run app.py               # the web interface
 ```
 
-`requirements.txt`, run instructions and expected outputs will be added with the first working script (task **BT-1** in the [Project Overview](./docs/project-overview.md#21-current-status-and-next-steps)). A clean-clone run has **not** been verified yet.
+Command line, same pipeline:
+
+```bash
+python -m caseforge new samples/02_rough_notes/notes.txt     # prints a project id
+python -m caseforge generate <id>                              # facts -> draft -> checked claims
+python -m caseforge export <id> --draft                        # watermarked preview
+python -m caseforge approve <id> --by "Your Name"              # refuses while anything is flagged
+python -m caseforge export <id>                                # final PDF, one-pager, portfolio page
+python eval/planted_claims.py --repeats 3                      # checker catch rate (T-05)
+```
+
+Without a `GEMINI_API_KEY`, CaseForge runs in **offline mode**: no model is called and each sentence of the draft is a sentence from your notes. It is faithful but plain — useful for tests and when the free tier is exhausted.
 
 API keys are never committed. Keys live in `.env`, which is excluded by `.gitignore`; `.env.example` holds blank placeholders.
 
 ## Project Status
 
-**Complete:** problem definition, target market and personas, Definition of Done, C4 Level 1 and Level 2 diagrams, data sources, test plan, demo script, team roles and ground rules.
+**Complete:** problem definition, target market and personas, Definition of Done, C4 diagrams, data sources, test plan, demo script, team roles and ground rules — and the Baseline implementation:
 
-**Not started:** all implementation. No tests have been run, and `tests/results.md` does not exist yet.
+| Task | What exists | Where |
+|---|---|---|
+| BT-1 | Code structure, `requirements.txt`, Gemini client with JSON-schema output and rate-limit retry | `caseforge/llm.py`, `caseforge/config.py` |
+| BT-3 | Fact extraction; every fact must quote the input, and facts whose quote is not found are dropped | `caseforge/extract.py` |
+| BT-4 | Two-layer faithfulness checker (deterministic rules + an independent model pass); planted-claim test | `caseforge/checker.py`, `eval/planted_claims.py` |
+| BT-5 | Review: edit, delete, add, add-to-source, gap acknowledgement, approve/reject; export locked until approved. Input by upload (PDF, Word, Excel, PowerPoint, text, images) or pasted notes | `caseforge/review.py`, `caseforge/ingest.py`, `app.py`, `caseforge/cli.py` |
+| BT-6 | PDF case study, one-page summary (always one page), portfolio web page | `caseforge/render/` |
 
-**Next step:** build the smallest end-to-end path first — project notes in, a draft out, and a list of which claims appear in the input — before any interface or PDF work. Remaining Baseline tasks, with owners and completion criteria, are in the [Project Overview](./docs/project-overview.md#21-current-status-and-next-steps).
+**Not done yet:** BT-2 real inputs and BT-7/BT-8 real-input runs with the two-person claim check; the planted-claim test **with Gemini** (the offline result is 20/20 but offline drafts are verbatim, so that number proves the rules, not the model pass); partner presentation format (Target).
 
-**Main risk:** implementation has not begun, and the hardest part — the faithfulness check — is the part the whole project depends on.
+**Main risk:** the checker has only been measured offline. The Gemini run of `eval/planted_claims.py --repeats 3` is the next measurement that matters.
 
-**Open questions:** 17, tracked in the [Question Log](./docs/question-log.md). The three most urgent concern permission to use real project data and target dates for the Baseline tasks.
+**Open questions:** tracked in the [Question Log](./docs/question-log.md). Q-012 (ReportLab) and Q-013 (Streamlit + CLI) are now decided.
 
 ## Project Docs
 
