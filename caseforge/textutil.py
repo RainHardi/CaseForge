@@ -120,10 +120,12 @@ def term_in_source(term: str, source_norm: str) -> bool:
     t = normalize(term)
     if not t:
         return True
-    if re.search(rf"(?<![\w]){re.escape(t)}(?![\w])", source_norm):
+    # a name may sit after a digit or slash inside a product code ("S/4HANA", "Python3.11"),
+    # but not inside a longer word ("Java" must not match "javascript")
+    if re.search(rf"(?<![a-z]){re.escape(t)}(?![a-z0-9])", source_norm):
         return True
     # tolerate simple plural/possessive differences ("APIs" vs "API")
-    return t.endswith("s") and re.search(rf"(?<![\w]){re.escape(t[:-1])}(?![\w])", source_norm) is not None
+    return t.endswith("s") and re.search(rf"(?<![a-z]){re.escape(t[:-1])}(?![a-z0-9])", source_norm) is not None
 
 
 # ---------------------------------------------------------------- exaggeration

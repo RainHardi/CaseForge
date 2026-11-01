@@ -54,3 +54,12 @@ def test_generated_claim_must_cite_a_fact():
     assert "cites no source fact" in rule_flags(c, SOURCE, {"F1"})
     c = Claim(id="C1", section="results", text="We built a dashboard.", fact_ids=["F9"])
     assert "cites a fact id that does not exist" in rule_flags(c, SOURCE, {"F1"})
+
+
+def test_product_codes_are_not_false_flags():
+    src = "The client's SAP S/4HANA migration delayed our API access. Backend in Python 3.11 and JavaScript."
+    c = Claim(id="C1", section="challenges", text="The SAP S/4HANA migration delayed API access.", fact_ids=["F1"])
+    assert rule_flags(c, src, {"F1"}) == []
+    # but a shorter name hidden inside a longer word is still caught
+    c = Claim(id="C2", section="tools", text="We used Java.", fact_ids=["F1"])
+    assert any("Java" in f for f in rule_flags(c, src, {"F1"}))
