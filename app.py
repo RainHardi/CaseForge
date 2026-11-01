@@ -385,7 +385,7 @@ def page_review(rec: ProjectRecord) -> None:
         st.markdown("Everything is backed by your notes. Approving means **you** confirm it's correct "
                     "and can be sent to clients.")
     a, b, c = st.columns([3, 1.3, 1])
-    a.text_input("Your name", key="reviewer", placeholder="e.g. Abdulaziz")
+    a.text_input("Your name", key="reviewer")
     named = bool(st.session_state.get("reviewer", "").strip())
     b.write(""); b.write("")
     if b.button("✅ Approve", type="primary", disabled=bool(problems) or not named, width="stretch"):
