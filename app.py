@@ -154,18 +154,35 @@ def load_sample(path: Path) -> None:
         st.session_state["f_raw"] = path.read_text(encoding="utf-8")
 
 
+def clear_form() -> None:
+    """Empty every box, the upload list and any example that was loaded. Runs before the page redraws."""
+    for k in ["f_title", "f_client", "f_raw", *[f"f_{k}" for k in FIELD_KEYS]]:
+        st.session_state[k] = ""
+    st.session_state["ingested"] = {}
+    st.session_state["pending_images"] = {}
+    st.session_state["show_form"] = False
+    st.session_state["up_n"] = st.session_state.get("up_n", 0) + 1  # a new key empties the upload box
+
+
+def form_has_content() -> bool:
+    keys = ["f_title", "f_client", "f_raw", *[f"f_{k}" for k in FIELD_KEYS]]
+    return any(str(st.session_state.get(k, "")).strip() for k in keys) or bool(st.session_state.get("ingested"))
+
+
 def page_new() -> None:
     stepper(0)
     st.header("Add your project notes")
     st.write("Upload files or paste text — or both. Messy is fine. CaseForge only uses what's here, "
              "and tells you what's missing.")
 
-    cols = st.columns(len(SAMPLES) + 1)
+    cols = st.columns([1.3, 1, 1, 1, 1])
     cols[0].caption("No notes handy? Try an example →")
-    for col, (label, path) in zip(cols[1:], SAMPLES.items()):
+    for col, (label, path) in zip(cols[1:4], SAMPLES.items()):
         if path.exists() and col.button(label, width="stretch"):
             load_sample(path)
             st.rerun()
+    cols[4].button("🧹 Clear all", width="stretch", on_click=clear_form, disabled=not form_has_content(),
+                   help="Empty the notes, the form and the uploaded files")
 
     # --- file upload: text is pulled out and put into the notes box, so the user sees exactly what is used
     done: dict[str, str] = st.session_state.setdefault("ingested", {})
