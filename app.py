@@ -276,7 +276,7 @@ def summary_box(rec: ProjectRecord) -> None:
     bad = len(active) - ok
     msg = (f"CaseForge read your notes, pulled out **{len(rec.facts)} facts**, wrote **{len(active)} sentences** "
            f"from them, and checked each one against your notes: **{ok} are backed by your notes**")
-    msg += f" and **{bad} are not**." if bad else " — nothing was invented. 🎉"
+    msg += f" and **{bad} {'is' if bad == 1 else 'are'} not**." if bad else " — nothing was invented. 🎉"
     st.markdown(msg)
 
 
