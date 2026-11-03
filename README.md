@@ -3,7 +3,7 @@
 **Category:** Software / AI Workflow
 **One-liner:** Companies do excellent work and then fail to sell it, because writing it up is nobody's job.
 **Project tab:** [HBAI Capstone Project Pool](./docs/HBAI_Capstone_project_pools.pdf) — S1: Case Study & Portfolio Generator
-**Status:** Baseline implemented — pipeline, checker, review step and PDF export working on team-constructed samples; real-input runs (BT-7) and the two-person claim check (BT-8) still to do (last updated 31 October 2026)
+**Status:** Baseline implemented — pipeline, checker, review step and PDF export working on team-constructed samples; real-input runs (BT-7) and the two-person claim check (BT-8) still to do (last updated 4 November 2026)
 
 > [!IMPORTANT]
 > **To try it:** see [Getting Started](#getting-started) — install, add a free Gemini key, run `streamlit run app.py`.
@@ -103,7 +103,7 @@ Full details, usage conditions and open questions in [Data Sources](./docs/data-
 Per the course documentation guide, we record our use of AI tools:
 
 - **Documentation.** AI assistants were used to help draft and revise the documents in `docs/` and this README. Every document was read, edited and approved by a team member before being committed, and the content reflects the team's own decisions.
-- **Code.** The first implementation (`caseforge/`, `app.py`, `tests/`, `eval/`) was written with help from an AI assistant (Claude). Under our ground rules it is reviewed and understood by a team member before it is merged, and the reviewer is named in the pull request.
+- **Code.** The first implementation (`caseforge/`, `app.py`, `tests/`, `eval/`) was written with help from an AI assistant (Claude). Our ground rules require a second team member to review and understand it, with the reviewer named in the pull request. **This has not happened yet:** pull requests #15–#19 were opened and merged by the author. A review by Muhammadkodir is scheduled for 9 November and is tracked as a risk in the midterm presentation.
 - **Verification.** Figures and sources cited in our documents — for example the Korean software industry statistics in our market analysis — were checked against the original sources by the team.
 
 ## Getting Started
@@ -117,7 +117,7 @@ python -m venv .venv
 source .venv/bin/activate          # Windows: .venv\Scripts\activate
 pip install -r requirements.txt
 cp .env.example .env               # Windows: copy .env.example .env  — then add your GEMINI_API_KEY
-python -m pytest                   # 34 tests, no API key needed
+python -m pytest                   # the full suite; runs offline, no API key needed
 streamlit run app.py               # the web interface
 ```
 
@@ -148,9 +148,13 @@ API keys are never committed. Keys live in `.env`, which is excluded by `.gitign
 | BT-5 | Review: edit, delete, add, add-to-source, gap acknowledgement, approve/reject; export locked until approved. Input by upload (PDF, Word, Excel, PowerPoint, text, images) or pasted notes | `caseforge/review.py`, `caseforge/ingest.py`, `app.py`, `caseforge/cli.py` |
 | BT-6 | PDF case study, one-page summary (always one page), portfolio web page | `caseforge/render/` |
 
-**Not done yet:** BT-2 real inputs and BT-7/BT-8 real-input runs with the two-person claim check; the planted-claim test **with Gemini** (the offline result is 20/20 but offline drafts are verbatim, so that number proves the rules, not the model pass); partner presentation format (Target).
+**Measured so far:** the planted-claim test has now been run with Gemini as well as offline. On 31 October 2026, `gemini-3.5-flash-lite`, 3 team-constructed inputs × 3 repeats: **20 planted claims caught in every repeat (60/60 observations), 0 false flags out of 109 genuine claims**. Full log: [`tests/results.md`](./tests/results.md), raw output in `eval/results/`.
 
-**Main risk:** the checker has only been measured offline. The Gemini run of `eval/planted_claims.py --repeats 3` is the next measurement that matters.
+**Not done yet:** BT-2 three *real* project inputs and the BT-7/BT-8 runs on them; T-02 against the hand-written fact lists; T-04 two-person claim check; partner presentation format (Target).
+
+**Main risk:** every number above comes from inputs we wrote ourselves, where the planted claims are short and obvious. The checker has not been tested on a real project, or on the subtle kind of unsupported inference that ChatGPT produced in our 24 October measurement. That is the next measurement that matters.
+
+**Clean-clone run:** not yet verified by a second person. Re-running the suite from a fresh clone is assigned to Anvarbek.
 
 **Open questions:** tracked in the [Question Log](./docs/question-log.md). Q-012 (ReportLab) and Q-013 (Streamlit + CLI) are now decided.
 
