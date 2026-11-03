@@ -5,8 +5,8 @@
 | **Project** | S1 - Case Study & Portfolio Generator |
 | **Repository** | CaseForge |
 | **Team** | Team 5 |
-| **Status** | Planned — nothing is demonstrable yet |
-| **Last Updated** | 23 October 2026 |
+| **Status** | Demonstrable — the pipeline runs end to end on team-constructed input (31 Oct 2026) |
+| **Last Updated** | 4 November 2026 |
 
 > [!IMPORTANT]
 > **The pipeline now runs end to end**, on team-constructed inputs (31 Oct 2026): notes in → facts → draft → claim labels → approval → PDF out. This document is the scenario the demo follows. The step that matters is the review screen refusing to export while a claim is flagged — the demo is built around showing that, not the finished document.

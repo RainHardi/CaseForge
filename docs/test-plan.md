@@ -6,8 +6,8 @@
 | **Repository** | CaseForge |
 | **Team** | Team 5 |
 | **Reviewer** | Abdulaziz (AI / Engineering) |
-| **Status** | Midterm draft — no system tests run; one baseline evaluation completed |
-| **Last Updated** | 24 October 2026 |
+| **Status** | T-05, T-07, T-08 and T-09 run on team-constructed inputs (31 Oct 2026); T-02, T-04, T-06 and T-10 not run |
+| **Last Updated** | 4 November 2026 |
 
 This document explains what we plan to test, how we'll test it, and what counts as success. It follows our project's [Definition of Done](definition-of-done.md) (Baseline, Target, Stretch). Details we haven't decided yet are marked **TBD**.
 

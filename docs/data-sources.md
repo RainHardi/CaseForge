@@ -6,8 +6,8 @@
 | **Repository** | CaseForge |
 | **Team** | Team 5 |
 | **Reviewer** | Abdulaziz (AI / Engineering) |
-| **Status** | Midterm draft — no data collected yet |
-| **Last Updated** | 23 October 2026 |
+| **Status** | Three team-constructed inputs with fact lists committed 31 Oct 2026; no real project data yet |
+| **Last Updated** | 4 November 2026 |
 
 This document lists the data, APIs, and other sources CaseForge plans to use, the conditions for using each one, when each was collected, and what we still need to confirm. Anything we haven't settled yet is marked **TBD**.
 

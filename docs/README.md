@@ -3,7 +3,7 @@
 **Category:** Software / AI Workflow
 **One-liner:** Companies do excellent work and then fail to sell it, because writing it up is nobody's job.
 **Project tab:** [HBAI Capstone Project Pool](./docs/HBAI_Capstone_project_pools.pdf) — S1: Case Study & Portfolio Generator
-**Status:** Baseline implemented — pipeline, checker, review step and PDF export working on team-constructed samples; real-input runs (BT-7) and the two-person claim check (BT-8) still to do (last updated 31 October 2026)
+**Status:** Baseline implemented — pipeline, checker, review step and PDF export working on team-constructed samples; real-input runs (BT-7) and the two-person claim check (BT-8) still to do (last updated 4 November 2026)
 
 > [!IMPORTANT]
 > **To try it:** see [Getting Started](#getting-started) — install, add a free Gemini key, run `streamlit run app.py`.

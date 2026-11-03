@@ -10,7 +10,7 @@
 | **Team** | Team 5 |
 | **Development Period** | Fall 2026 Semester |
 | **Status** | Baseline built and tested on team-constructed inputs (31 Oct 2026); real-input runs outstanding |
-| **Last Updated** | 24 October 2026 |
+| **Last Updated** | 4 November 2026 |
 
 ---
 

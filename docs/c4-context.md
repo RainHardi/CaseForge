@@ -4,8 +4,8 @@
 |---|---|
 | **Project** | S1 - Case Study & Portfolio Generator (CaseForge) |
 | **Team** | Team 5 |
-| **Status** | Built — all containers implemented and running on team-constructed input (31 Oct 2026) |
-| **Last Updated** | 23 October 2026 |
+| **Status** | Built — the system and its Gemini dependency are implemented and running on team-constructed input (31 Oct 2026) |
+| **Last Updated** | 4 November 2026 |
 
 Shows CaseForge as a single box, who uses it, and the external systems it depends on.
 

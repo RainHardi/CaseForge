@@ -5,7 +5,7 @@
 | **Project** | S1 - Case Study & Portfolio Generator |
 | **Repository** | CaseForge |
 | **Team** | Team 5 |
-| **Open questions** | 13 |
+| **Open questions** | 16 of 20 |
 | **Last Updated** | 4 November 2026 |
 
 Every undecided detail in our documents is marked **TBD** and recorded here, so that there is one place to look for what is still unresolved and who can resolve it.
