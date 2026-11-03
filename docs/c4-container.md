@@ -5,7 +5,7 @@
 | **Project** | S1 - Case Study & Portfolio Generator (CaseForge) |
 | **Team** | Team 5 |
 | **Status** | Baseline implemented (31 Oct 2026) — code map in the [README](../README.md#project-status) |
-| **Last Updated** | 23 October 2026 |
+| **Last Updated** | 4 November 2026 |
 
 Shows the main parts inside CaseForge, what each is responsible for, and how they communicate. External services sit outside the system boundary.
 
