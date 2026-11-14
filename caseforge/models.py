@@ -74,6 +74,7 @@ class ProjectInput(BaseModel):
     raw_notes: str = ""  # messy input: rough notes, pasted chat, anything
     reviewer_additions: list[str] = Field(default_factory=list)  # facts added during review
     images: list[ImageRef] = Field(default_factory=list)
+    logo: str = ""  # filename of the company logo uploaded with the notes (drives the report's colours)
 
     def source_text(self) -> str:
         """The single source of truth every claim is checked against."""
@@ -102,6 +103,16 @@ class Fact(BaseModel):
     statement: str  # the fact, in plain words
     quote: str  # exact text from the input that states it
     grounded: bool = True  # quote was found in the input
+    source_ref: str = ""  # "report.pdf, line 12"
+    estimate: bool = False  # the notes state it as an estimate
+
+
+class Conflict(BaseModel):
+    """The notes give different values for the same thing (e.g. team size 6 / 9 / 11)."""
+
+    topic: str
+    values: list[str]
+    quotes: list[str] = Field(default_factory=list)
 
 
 class Claim(BaseModel):
@@ -139,6 +150,23 @@ class Event(BaseModel):
     by: str = ""
 
 
+class DerivedOutput(BaseModel):
+    """A short format (LinkedIn post, proposal paragraph, ...) written from the APPROVED case study.
+    Every sentence is checked against the original notes, just like the case study."""
+
+    kind: str
+    sentences: list[Claim] = Field(default_factory=list)
+    created_at: str = Field(default_factory=now)
+    based_on_hash: str = ""  # the approval it was made from; stale if the case study changed
+
+    def text(self, sep: str = " ") -> str:
+        return sep.join(c.text for c in self.sentences if not c.deleted)
+
+    @property
+    def blocking(self) -> list[Claim]:
+        return [c for c in self.sentences if c.blocking]
+
+
 Status = Literal["input", "drafted", "approved", "rejected"]
 
 
@@ -148,6 +176,7 @@ class ProjectRecord(BaseModel):
     input: ProjectInput
     facts: list[Fact] = Field(default_factory=list)
     dropped_facts: list[Fact] = Field(default_factory=list)  # extracted but not found in input
+    conflicts: list[Conflict] = Field(default_factory=list)
     claims: list[Claim] = Field(default_factory=list)
     gaps: list[Gap] = Field(default_factory=list)
     brand_warnings: list[str] = Field(default_factory=list)
@@ -157,6 +186,10 @@ class ProjectRecord(BaseModel):
     approved_hash: str = ""
     engine: str = ""  # "gemini:<model>" or "offline"
     llm_calls: int = 0
+    outputs: dict[str, DerivedOutput] = Field(default_factory=dict)
+    report: "ReportDesign | None" = None  # the designed, branded report (caseforge.report)
+    workspace_id: str = ""
+    created_by: str = ""
     history: list[Event] = Field(default_factory=list)
 
     # ---- helpers -------------------------------------------------------
@@ -193,3 +226,8 @@ class ProjectRecord(BaseModel):
         while f"{prefix}{n}" in existing:
             n += 1
         return f"{prefix}{n}"
+
+
+def _resolve_forward_refs() -> None:
+    from .report import ReportDesign  # noqa: F401  (import here: report.py imports this module)
+    ProjectRecord.model_rebuild(_types_namespace={"ReportDesign": ReportDesign})

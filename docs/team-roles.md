@@ -7,9 +7,9 @@
 | **Category** | Software / AI Workflow |
 | **Team** | Team 5 |
 | **Members** | 5 |
-| **Status** | Baseline built and tested on team-constructed inputs (31 Oct 2026); real-input runs outstanding |
+| **Status** | Midterm draft — design complete, implementation not yet started |
 | **Development Period** | Fall 2026 Semester |
-| **Last Updated** | 4 November 2026 |
+| **Last Updated** | 23 October 2026 |
 
 ---
 
@@ -281,22 +281,22 @@ Every member is expected to have read them.
 | Demo Script | Anvarbek | Team | Complete, 23 Oct |
 | Question Log | Mukhammadkodir / Team | Team | Complete, 23 Oct — 17 questions open |
 | Midterm Business Plan | Team | Mukhammadkodir | In progress — due 24 Oct |
-| Baseline implementation (BT-1, BT-3 to BT-6) | Abdulaziz | Muhammadkodir (review due 9 Nov) | **Built 31 Oct 2026** — not yet reviewed by a second member |
-| Baseline implementation (BT-2, BT-7, BT-8) | Odina, Abdulaziz, Dilshod | Team | **Not started** — needs three real project inputs |
+| Baseline implementation (BT-1 to BT-8) | See below | Team | **Not started** |
 
 ### Baseline implementation ownership
 
-BT-1 and BT-3 to BT-6 were built by Abdulaziz and merged on 31 October 2026 (pull request #15, with four follow-up fixes on 1 November). The code was written with help from an AI assistant and is recorded as such in the [README](../README.md#ai-tool-use); it has **not** yet been reviewed by a second member, which our ground rules require.
+No code has been written yet. The remaining Baseline tasks, with completion criteria, are listed in the [Project Overview](project-overview.md#21-current-status-and-next-steps). Ownership:
 
-| Member | Outstanding tasks | Date |
-|---|---|---|
-| Abdulaziz | T-05b harder planted claims; BT-7 end-to-end on three real inputs | 16 Nov, 23 Nov |
-| Odina | BT-2 three **real** inputs with fact lists; BT-8 two-person claim check | 9 Nov, 30 Nov |
-| Mukhammadkodir | Code review of the Baseline, named in the pull request; confirming the schedule (Q-011) | 9 Nov |
-| Anvarbek | Re-run T-07 to T-09 from a clean clone and record the result | 16 Nov |
-| Dilshod | BT-8 second labeller; T4 outside-user test and T5 time comparison (Target) | 30 Nov |
+| Member | Baseline tasks |
+|---|---|
+| Abdulaziz | BT-1 setup and Gemini call, BT-3 fact extraction, BT-4 faithfulness check, BT-5 review and approval, BT-6 PDF and one-page summary |
+| Odina | BT-2 three test inputs with fact lists, BT-8 manual claim check on every test case |
+| Team | BT-7 end-to-end run on three real inputs |
+| Mukhammadkodir | Agreeing target dates, tracking progress, reporting blockers |
+| Dilshodjon | User feedback and business validation once a draft output exists |
+| Anvarbek | Demo scenario, documentation, recording what breaks during testing |
 
-Dates are the team's proposal until confirmed at the next meeting (**Q-011**).
+Target dates are **TBD** until the team agrees a schedule.
 
 ### Contribution records
 

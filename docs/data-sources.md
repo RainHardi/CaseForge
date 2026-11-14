@@ -6,13 +6,13 @@
 | **Repository** | CaseForge |
 | **Team** | Team 5 |
 | **Reviewer** | Abdulaziz (AI / Engineering) |
-| **Status** | Three team-constructed inputs with fact lists committed 31 Oct 2026; no real project data yet |
-| **Last Updated** | 4 November 2026 |
+| **Status** | Midterm draft — no data collected yet |
+| **Last Updated** | 23 October 2026 |
 
 This document lists the data, APIs, and other sources CaseForge plans to use, the conditions for using each one, when each was collected, and what we still need to confirm. Anything we haven't settled yet is marked **TBD**.
 
 > [!IMPORTANT]
-> **Team-constructed inputs exist; real project data does not.** Three fictional inputs with hand-written fact lists were written by the team and committed on 31 October 2026 (`samples/`). They contain no real client and no confidential material, so they are safe to send to the Gemini API. The **real** project inputs required by Baseline item B4 are still task **BT-2** and have not been obtained — that is blocked on permission (Q-001, Q-005).
+> **No project data has been collected yet.** Preparing the first three test inputs is task **BT-2** in the [Project Overview](project-overview.md#21-current-status-and-next-steps) and has not started. The collection dates below are therefore either "not yet collected" or the date the team began writing the material itself.
 
 ---
 
@@ -148,7 +148,7 @@ Before a project input is used for testing, we will:
 For the Baseline, we need at least **three real project inputs** that work end to end. Target number of total test inputs: **TBD**.
 
 > [!NOTE]
-> **Status: partly done.** Three *team-constructed* inputs and their hand-written fact lists are in `samples/` (01 clean form, 02 rough notes, 03 pasted chat), committed 31 October 2026. Each `facts.md` was written before the input was run through CaseForge, as Section 2 requires. **Three *real* project inputs are still missing** — that is the remainder of **BT-2**, owned by Odina, and it is what Baseline item B4 needs.
+> **Status: not started.** No inputs have been prepared and no fact lists have been written. This is task **BT-2**, owned by Odina.
 
 ---
 

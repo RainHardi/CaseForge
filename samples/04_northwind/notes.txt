@@ -1,0 +1,87 @@
+Raw Project Information: Northwind Digital Works - Meridian /
+Dispatch Optimizer
+Synthetic test data for the prototype. Collected from several employees, intentionally unorganized and
+incomplete.
+
+Forwarded message from Priya Raman, project manager, subject line "Meridian notes before I
+forget": The internal name was Meridian but Calloway Freight Group calls it the Dispatch
+Optimizer, so both names appear in documents. Calloway is headquartered in Rotterdam and
+operates 14 warehouses across the Netherlands, Belgium and Germany. Contract signed 9
+February 2024, kickoff on 4 March 2024. Original go-live was 30 September 2024 but the system
+went live on 18 November 2024 because the client's SAP S/4HANA migration delayed our API
+access by roughly six weeks. Contract value was 412,000 euros and the final invoiced amount
+ended at 438,500 euros after two change requests. CR-03 added offline mode to the driver mobile
+app, CR-07 added carbon emissions reporting per route.
+
+Team headcount began at 6 people and reached 11 in August 2024, then dropped to 7 for the
+stabilization phase. I think the final count on the payroll sheet was 9 distinct people over the whole
+project because two contractors left before October. Company is Northwind Digital Works, about
+85 employees, offices in Utrecht and Lisbon. The Lisbon office handled the mobile app and half of
+QA.
+
+Typed from Tomas Ferreira's notebook (backend lead): the routing engine is written in Python 3.11
+with Google OR-Tools for the vehicle routing problem solver. First prototype used a simple
+nearest-neighbour heuristic and produced routes about 4 percent shorter than the client's manual
+planning. After we added time-window constraints, driver break rules from EU Regulation
+561/2006 and vehicle capacity limits, the average improvement rose to 11.8 percent in the pilot on
+the Antwerp and Ghent warehouses. Solver time for 220 stops was 94 seconds in the first build,
+reduced to 9 seconds after moving the distance matrix calculation to a precomputed cache in
+Redis. Database is PostgreSQL 15 with the PostGIS extension. Message queue is RabbitMQ.
+Deployed on AWS eu-west-1 using Terraform and ECS Fargate. Around 60 percent of the
+infrastructure code was reused from the earlier Harbor Tracker project.
+
+Design notes from Amira Haddad (UX designer), written during week 3: interviewed 9 dispatchers
+and 12 drivers at the Rotterdam and Duisburg sites. Main complaint from dispatchers was that the
+previous tool needed 15 to 20 minutes every morning to build routes in a spreadsheet. Drivers said
+the paper manifests were frequently outdated by the time they left the yard. Created 3 rounds of
+Figma prototypes, tested with 6 users in the second round, and the task completion rate for editing
+a route moved from 58 percent to 93 percent between round 1 and round 3. Chose a high-contrast
+palette because drivers use the app in truck cabs with strong sunlight. Button minimum size 48
+pixels. The dispatcher dashboard uses a map-first layout with a collapsible list on the left side.
+
+Metrics sent by Priya, Friday 22 November 2024, three days after go-live: 1,340 routes planned in
+the first 72 hours, 96.2 percent of drivers logged in successfully on the first day, planning time per
+morning reduced from about 18 minutes to 3 minutes for each dispatcher. By February 2025 the
+client reported fuel consumption down 9.4 percent across pilot warehouses and late deliveries
+reduced from 14 percent to 6.1 percent. Annual savings estimate given by the Calloway finance
+director was 1.1 million euros, although our team has not verified that number independently.
+
+Mobile app, from Lucas Oliveira (Lisbon): React Native 0.73, TypeScript, SQLite for local storage
+and a custom sync layer so drivers can keep working without a connection for up to 8 hours.
+Supports Dutch, German, French and Polish because many drivers are Polish speakers. Barcode
+scanning for proof of delivery with the device camera, signature capture, and photo upload with
+automatic compression below 400 KB. The offline mode was the hardest part: we had 3 conflict
+resolution bugs found in October and fixed by 29 October. App store release for Android only
+because Calloway uses Zebra Android handhelds. About 410 active devices in January 2025.
+
+Problems and lessons collected during the retrospective meeting on 12 December 2024 (notes by
+Sofia Marin, QA lead): API documentation from the client was incomplete, so we wrote a mock
+server of the SAP interface to continue development, which saved roughly 5 weeks but caused 14
+defects when the real API behaved differently. Automated test coverage ended at 82 percent for
+the backend and 64 percent for the mobile app. Total of 611 test cases, 187 of them automated
+end to end with Playwright. Load test with 1,500 simulated concurrent drivers passed with a 95th
+percentile response time of 420 milliseconds. Two production incidents in the first month: a
+timezone error for the Poland border routes on 24 November and a cache invalidation problem on
+2 December. Both resolved in under 4 hours.
+
+Short message from Daniel Okafor (DevOps) in the team channel: pipeline uses GitHub Actions,
+average build time 7 minutes, deployments went from monthly in the old Northwind process to 2 or
+3 per week on this project. Monitoring with Grafana and Prometheus, alerts to PagerDuty. Added a
+carbon emissions module in November using the GLEC Framework emission factors, which is
+what the client asked for in CR-07.
+
+Client feedback, quoted from the email of Henrik de Vries, operations director at Calloway, 20
+January 2025: he said it was the first software delivery in five years that the dispatchers asked to
+keep using instead of requesting changes to. He also mentioned the training sessions were useful.
+We ran 6 training sessions of 90 minutes each, 74 dispatchers and team leaders trained in total. A
+follow-up contract for phase 2 (extending to 9 additional warehouses in France and Spain) was
+signed on 3 March 2025 with an estimated value near 290,000 euros.
+
+Other facts that someone should include: project received an internal Northwind Excellence Award
+in April 2025 in the category Client Impact. Tomas gave a talk about the solver caching approach
+at PyCon NL in 2025 with about 120 attendees. Amira wrote a case study draft that was never
+published. The code repository has around 148,000 lines in total, 312 pull requests merged, 2,030
+commits. Security review by an external firm in September 2024 found 2 medium and 5 low
+severity issues, none critical, all closed by 11 October. Project ISO 27001 controls were inherited
+from the company certification obtained in 2022.
+

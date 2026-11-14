@@ -11,5 +11,15 @@ pypdf==6.17.0
 python-docx==1.2.0
 openpyxl==3.1.5
 python-pptx==1.0.2
+# website (FastAPI) + database
+fastapi==0.162.0
+uvicorn==0.54.0
+sqlalchemy==2.1.8
+itsdangerous==2.2.0
+python-multipart==0.0.32
+psycopg[binary]==3.3.8
+# designed report → PDF (Chromium). After pip install, run once: playwright install --with-deps chromium
+playwright==1.63.0
 # tests
+httpx==0.28.1
 pytest==9.1.1

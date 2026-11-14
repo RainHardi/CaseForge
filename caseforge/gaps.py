@@ -2,11 +2,12 @@
 
 from __future__ import annotations
 
-from .models import Claim, Fact, Gap, ProjectInput
+from .models import Claim, Conflict, Fact, Gap, ProjectInput
 from .textutil import numbers_in
 
 
-def find_gaps(inp: ProjectInput, facts: list[Fact], claims: list[Claim] | None = None) -> list[Gap]:
+def find_gaps(inp: ProjectInput, facts: list[Fact], claims: list[Claim] | None = None,
+              conflicts: list[Conflict] | None = None) -> list[Gap]:
     """A topic counts as covered if a fact is filed under it OR the draft has a sentence in that
     section (the model sometimes files 'python + react' under work done, then writes it under Tools)."""
     texts: dict[str, list[str]] = {}
@@ -35,6 +36,9 @@ def find_gaps(inp: ProjectInput, facts: list[Fact], claims: list[Claim] | None =
         add("tools", "No tools or technologies are named.")
     if not texts.get("challenges"):
         add("challenges", "No challenges are described.")
+    for c in conflicts or []:
+        add(f"conflict:{c.topic.lower()}", f"Your notes disagree about {c.topic}: " + " vs ".join(c.values)
+            + ". Which one is right? CaseForge won't pick for you.", blocking=True)
     if not inp.client_name:
         add("client_name", "No client name, so the document will say \"the client\".")
     if not inp.images:

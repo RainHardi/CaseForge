@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="CaseForge, option C">
+  <rect width="64" height="64" rx="15" fill="#F2A91C"/>
+  <path d="M19 12h18l10 10v27a3 3 0 0 1-3 3H19a3 3 0 0 1-3-3V15a3 3 0 0 1 3-3z" fill="#FFFDF8"/>
+  <path d="M37 12v7a3 3 0 0 0 3 3h7z" fill="#14213D" opacity=".28"/>
+  <path d="M23 35.5l5.6 5.6L40 29.5" fill="none" stroke="#14213D" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>
