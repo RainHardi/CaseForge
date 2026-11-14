@@ -1,0 +1,65 @@
+/* CaseForge — shared styles. Three colours: navy (ink), cream (paper), amber (the highlighter that joins
+   a line in the notes to the same line on the page). The document is serif; the interface is sans; headings
+   use the display face. Green = backed by the notes, red = not. */
+:root{
+  --ink:#14213D; --ink-2:#3A4660; --muted:#6B7488; --line:#E2D9C8; --paper:#FFFDF8; --bg:#F4EDE0;
+  --amber:#F2A91C; --amber-soft:#FFE7A8; --on-amber:#0B1429; --ok:#1F7A55; --ok-soft:#E3F3EB; --bad:#B42318; --bad-soft:#FDECEA;
+  --blue:#2F5DA8; --blue-soft:#E8EFFA; --glass:rgba(255,253,248,.72);
+  --sans:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --serif:"IBM Plex Serif",Georgia,"Times New Roman",serif;
+  --display:"Bricolage Grotesque","IBM Plex Sans",system-ui,sans-serif;
+  --r-sm:12px; --r:18px;
+  --mark:url("/static/logo/mark.svg");
+}
+@media (prefers-color-scheme: dark){
+  :root{--ink:#EEF1F7;--ink-2:#C5CCDB;--muted:#8B95AB;--line:#25314F;--paper:#111B36;--bg:#0B1429;--glass:rgba(17,27,54,.7);
+        --amber-soft:#3B2F10;--ok-soft:#12301F;--bad-soft:#3A1715;--blue-soft:#18233A;--ok:#4CC08A;--bad:#F2766A;--blue:#7FA6E8;
+        --mark:url("/static/logo/mark-on-dark.svg")}
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;font-family:var(--sans);color:var(--ink);background:var(--bg);font-size:16px;line-height:1.55}
+a{color:inherit}
+:focus-visible{outline:3px solid var(--amber);outline-offset:2px;border-radius:4px}
+@media (prefers-reduced-motion: reduce){*{animation:none!important;transition:none!important}}
+button,input,textarea,select{font:inherit;color:inherit}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:.4em;border:1px solid var(--line);background:var(--paper);
+  border-radius:999px;padding:.55em 1.1em;cursor:pointer;font-weight:500;text-decoration:none;line-height:1.2;transition:transform .12s ease,border-color .12s ease,filter .12s ease}
+.btn:hover{border-color:var(--ink-2)}
+.btn:active{transform:translateY(1px)}
+.btn.primary{background:var(--amber);color:var(--on-amber);border-color:var(--amber);font-weight:600}
+.btn.primary:hover{filter:brightness(1.06);border-color:var(--amber)}
+.btn.ghost{border-color:transparent;background:transparent}
+.btn.danger{color:var(--bad)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.btn.sm{font-size:.85rem;padding:.35em .7em}
+input[type=text],input[type=email],input[type=password],textarea,select{width:100%;border:1px solid var(--line);
+  border-radius:var(--r-sm);background:var(--paper);padding:.7em .9em;transition:border-color .12s ease,box-shadow .12s ease}
+input[type=text]:focus,input[type=email]:focus,input[type=password]:focus,textarea:focus,select:focus{outline:0;border-color:var(--amber);
+  box-shadow:0 0 0 3px color-mix(in srgb,var(--amber) 30%,transparent)}
+::placeholder{color:var(--muted);opacity:.75}
+textarea{resize:vertical;min-height:6em}
+label{display:block;font-size:.88rem;font-weight:500;margin:0 0 .3em;color:var(--ink-2)}
+.field{margin-bottom:1rem}
+.hint{font-size:.85rem;color:var(--muted)}
+.wordmark{font-weight:700;letter-spacing:-.02em;font-size:1.15rem;text-decoration:none;display:inline-flex;align-items:center;gap:.45em}
+.wordmark{font-family:var(--display);font-weight:700;letter-spacing:-.03em}
+.wordmark .mark{width:1.4em;height:1.4em;display:inline-block;background:var(--mark) center/contain no-repeat}
+
+/* verdict chips: the only coloured elements besides the highlighter */
+.chip{display:inline-block;font-size:.75rem;font-weight:600;border-radius:999px;padding:.12em .6em;white-space:nowrap}
+.chip.ok{background:var(--ok-soft);color:var(--ok)}
+.chip.re{background:var(--blue-soft);color:var(--blue)}
+.chip.bad{background:var(--bad-soft);color:var(--bad)}
+.chip.none{background:var(--amber-soft);color:#8a6200}
+.hl{background:linear-gradient(transparent 58%,var(--amber-soft) 58%)}
+.strike{text-decoration:line-through;text-decoration-color:var(--bad);text-decoration-thickness:2px}
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:var(--ink);color:var(--paper);
+  padding:.7em 1.1em;border-radius:var(--r-sm);z-index:50;max-width:min(560px,calc(100% - 32px));box-shadow:0 6px 24px rgba(20,33,61,.25)}
+.toast.err{background:var(--bad);color:#fff}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+/* file inputs look like the other buttons */
+input[type=file]{font-size:.9rem;color:var(--muted);max-width:100%}
+input[type=file]::file-selector-button{border:1px solid var(--line);background:var(--paper);color:var(--ink);border-radius:var(--r-sm);
+  padding:.5em .9em;margin-right:.8em;font:inherit;font-weight:500;cursor:pointer}
+input[type=file]::file-selector-button:hover{border-color:var(--ink-2)}

@@ -1,0 +1,30 @@
+{
+  "name": "HumbleBeeAI",
+  "company": "HumbleBeeAI",
+  "logo": "",
+  "colors": {
+    "primary": "#FFB902",
+    "accent": "#FFD966",
+    "ink": "#111111",
+    "paper": "#FFFFFF",
+    "surface": "#F4F4F2",
+    "muted": "#55554F",
+    "dark": "#111111"
+  },
+  "heading_font": "Manrope",
+  "body_font": "Manrope",
+  "motif": "hexagon",
+  "accent_bar": "left",
+  "logo_position": "top-right",
+  "page_numbers": true,
+  "voice": "we",
+  "banned_words": ["revolutionary", "cutting-edge", "game-changing"],
+  "max_sentence_words": 24,
+  "cta_text": "",
+  "rules": [
+    "Yellow stripe on the left of every page",
+    "Logo top-right",
+    "Footer with page number",
+    "Keep the text short"
+  ]
+}

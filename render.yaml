@@ -1,0 +1,19 @@
+# Render Blueprint — free web service. Database lives on Neon (free), see docs/DEPLOY.md.
+services:
+  - type: web
+    name: caseforge
+    runtime: docker          # Dockerfile bundles Chromium for the designed-report PDFs
+    plan: free
+    dockerfilePath: ./Dockerfile
+    healthCheckPath: /healthz
+    envVars:
+      - key: SECRET_KEY
+        generateValue: true
+      - key: DATABASE_URL
+        sync: false
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: GEMINI_MODEL
+        value: gemini-3.5-flash-lite
+      - key: DAILY_AI_LIMIT
+        value: "30"

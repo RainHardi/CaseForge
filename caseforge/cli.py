@@ -164,6 +164,58 @@ def cmd_export(args, store: Store) -> None:
         print(p)
 
 
+def cmd_design(args, store: Store) -> None:
+    from . import report
+    from .brandkit import load
+
+    rec = store.load(args.id)
+    try:
+        d = report.build_report(rec, load(args.brand), get_llm())
+    except review.ReviewError as e:
+        sys.exit(f"error: {e}")
+    store.save(rec)
+    print(f"Report designed with brand '{d.brand.name}': {len(d.elements)} checked elements")
+    for e in d.elements:
+        if e.blocking:
+            print(f"  ✗ {e.id}: {e.text}\n      ↳ {e.reason}")
+    for w in d.warnings:
+        print(f"  ! {w}")
+    print("Ready to approve." if not d.blocking else "Fix or remove the flagged elements (edit-report / remove-report).")
+
+
+def cmd_approve_report(args, store: Store) -> None:
+    from . import report
+
+    rec = store.load(args.id)
+    try:
+        report.approve_report(rec, args.by)
+    except review.ReviewError as e:
+        sys.exit(str(e))
+    store.save(rec)
+    print("Report approved.")
+
+
+def cmd_remove_report(args, store: Store) -> None:
+    from . import report
+
+    rec = store.load(args.id)
+    report.remove_element(rec, args.path, args.by)
+    store.save(rec)
+    print(f"Removed {args.path}.")
+
+
+def cmd_export_report(args, store: Store) -> None:
+    from .render.report_pdf import render_report
+
+    rec = store.load(args.id)
+    out = Path(args.out) / f"{rec.id}_report{'_DRAFT' if args.draft else ''}.{args.format}"
+    try:
+        render_report(rec, out, draft=args.draft)
+    except ExportBlocked as e:
+        sys.exit(str(e))
+    print(out)
+
+
 def main(argv: list[str] | None = None) -> None:
     p = argparse.ArgumentParser(prog="caseforge", description="Faithful case studies from messy project notes.")
     sub = p.add_subparsers(dest="cmd", required=True)
@@ -218,6 +270,23 @@ def main(argv: list[str] | None = None) -> None:
     s.add_argument("id"); s.add_argument("--out", default="exports")
     s.add_argument("--draft", action="store_true", help="watermarked preview, allowed before approval")
     s.set_defaults(fn=cmd_export)
+
+    s = sub.add_parser("design", help="design the branded 5-page report from the approved case study")
+    s.add_argument("id"); s.add_argument("--brand", default="humblebee", help="preset name or path to a brand kit JSON")
+    s.set_defaults(fn=cmd_design)
+
+    s = sub.add_parser("remove-report", help="remove one element from the designed report (e.g. metrics.2)")
+    s.add_argument("id"); s.add_argument("path"); s.add_argument("--by", default="")
+    s.set_defaults(fn=cmd_remove_report)
+
+    s = sub.add_parser("approve-report", help="approve the designed report")
+    s.add_argument("id"); s.add_argument("--by", required=True)
+    s.set_defaults(fn=cmd_approve_report)
+
+    s = sub.add_parser("export-report", help="write the designed report (PDF or HTML)")
+    s.add_argument("id"); s.add_argument("--out", default="exports"); s.add_argument("--draft", action="store_true")
+    s.add_argument("--format", choices=["pdf", "html"], default="pdf")
+    s.set_defaults(fn=cmd_export_report)
 
     args = p.parse_args(argv)
     store = Store(get_settings().data_dir)

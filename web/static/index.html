@@ -1,0 +1,458 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>CaseForge — case studies you can prove</title>
+<meta name="description" content="CaseForge turns messy project notes into a designed, client-ready case study. Every sentence is checked against the notes, and nothing goes out until a person approves it.">
+<link rel="icon" type="image/svg+xml" href="/static/logo/mark.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700&family=Instrument+Serif:ital@0;1&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Serif:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/static/style.css">
+<style>
+/* Three colours: navy (the ink of the product), cream (paper), amber (the highlighter that joins a number
+   in the notes to the same number on the page). The hero is the night desk: navy, a slow amber glow, and
+   the three things the product is made of floating on it — the notes, the page, the check. */
+:root{--navy:#14213D;--deep:#0B1429;--cream:#F4EDE0;--card:#FFFDF8;--amber:#F2A91C;--amber-soft:#FFE7A8;--blue:#3F6FE8;
+  --ink:#14213D;--ink-2:#3A4660;--muted:#6B7488;--line:#E2D9C8;--paper:#FFFDF8;--bg:#F4EDE0;
+  --ok:#1F7A55;--ok-soft:#E3F3EB;--bad:#B42318;--bad-soft:#FDECEA;
+  --display:"Bricolage Grotesque","IBM Plex Sans",system-ui,sans-serif;--ital:"Instrument Serif","IBM Plex Serif",Georgia,serif}
+@media (prefers-color-scheme: dark){:root{--ink:#14213D;--ink-2:#3A4660;--muted:#6B7488;--line:#E2D9C8;--paper:#FFFDF8;--bg:#F4EDE0;
+  --amber-soft:#FFE7A8;--ok:#1F7A55;--ok-soft:#E3F3EB;--bad:#B42318;--bad-soft:#FDECEA}}   /* one look, day or night */
+body{background:var(--cream)}
+.wrap{max-width:1160px;margin:0 auto;padding:0 24px}
+h1,h2{font-family:var(--display);font-weight:600;letter-spacing:-.03em}
+h1 em,h2 em{font-family:var(--ital);font-style:italic;font-weight:400;letter-spacing:-.01em}
+.btn{border-radius:999px}
+.btn.amber{background:var(--amber);border-color:var(--amber);color:var(--deep);font-weight:600}
+.btn.amber:hover{filter:brightness(1.06)}
+
+/* ---------- hero */
+.hero{position:relative;background:var(--deep);color:#fff;overflow:hidden;isolation:isolate}
+.sky{position:absolute;inset:0;z-index:-1;overflow:hidden}
+.sky i{position:absolute;border-radius:50%;filter:blur(90px);will-change:transform}
+.sky .a{width:760px;height:520px;left:50%;bottom:-210px;margin-left:-380px;background:var(--amber);opacity:.5;animation:glowA 14s ease-in-out infinite alternate}
+.sky .b{width:560px;height:560px;left:-160px;top:-180px;background:var(--blue);opacity:.42;animation:glowB 19s ease-in-out infinite alternate}
+.sky .c{width:420px;height:420px;right:-120px;top:90px;background:#7A4DE0;opacity:.3;animation:glowC 23s ease-in-out infinite alternate}
+.sky .dots{position:absolute;inset:-40px;border-radius:0;filter:none;opacity:.5;
+  background-image:radial-gradient(rgba(255,255,255,.34) 1px,transparent 1.6px);background-size:26px 26px;
+  -webkit-mask-image:radial-gradient(ellipse 70% 62% at 50% 44%,#000 20%,transparent 78%);mask-image:radial-gradient(ellipse 70% 62% at 50% 44%,#000 20%,transparent 78%);
+  animation:dots 36s linear infinite}
+@keyframes glowA{from{transform:translate(-70px,10px) scale(.94)}to{transform:translate(80px,-40px) scale(1.1)}}
+@keyframes glowB{from{transform:translate(0,0) scale(1)}to{transform:translate(150px,90px) scale(1.18)}}
+@keyframes glowC{from{transform:translate(0,0) scale(1)}to{transform:translate(-130px,70px) scale(.86)}}
+@keyframes dots{to{transform:translate(26px,26px)}}
+header.top{display:flex;align-items:center;justify-content:space-between;padding:18px 0;gap:1rem}
+header.top .wordmark{color:#fff}
+header.top .wordmark .mark{background-image:url("/static/logo/mark-on-dark.svg")}
+header.top .pill{display:flex;gap:2px;padding:5px;border-radius:999px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);backdrop-filter:blur(10px)}
+header.top .pill a{padding:.45em 1em;border-radius:999px;text-decoration:none;color:rgba(255,255,255,.78);font-size:.92rem;font-weight:500}
+header.top .pill a:hover{background:rgba(255,255,255,.1);color:#fff}
+header.top .acts{display:flex;gap:.4rem}
+header.top .acts .btn{background:transparent;border-color:rgba(255,255,255,.22);color:#fff;font-size:.92rem}
+header.top .acts .btn.solid{background:#fff;color:var(--deep);border-color:#fff}
+.hero .mid{text-align:center;padding:26px 0 0;max-width:980px;margin:0 auto}
+.tagline{display:inline-flex;align-items:center;gap:.5em;font-size:.88rem;color:rgba(255,255,255,.8);padding:.4em .95em;border-radius:999px;
+  border:1px solid rgba(255,255,255,.16);background:rgba(255,255,255,.06);margin:0 0 20px}
+.tagline i{width:8px;height:8px;border-radius:50%;background:var(--amber);box-shadow:0 0 0 0 rgba(242,169,28,.7);animation:ping 2.4s ease-out infinite}
+@keyframes ping{to{box-shadow:0 0 0 12px rgba(242,169,28,0)}}
+.hero h1{font-size:clamp(2.3rem,4.9vw,4.1rem);line-height:1.04;margin:0 0 18px;color:#fff}
+.hero h1 em{color:var(--amber-soft)}
+.hero p.lede{font-size:1.08rem;color:rgba(255,255,255,.76);max-width:38em;margin:0 auto 24px}
+.cta{display:flex;gap:.6rem;flex-wrap:wrap;align-items:center;justify-content:center}
+.cta .btn{padding:.85em 1.5em;font-size:1rem}
+.cta .btn.glass{background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.2);color:#fff}
+.hero .proofline{margin:18px 0 0;font-size:.9rem;color:rgba(255,255,255,.62)}
+.hero .proofline b{color:#fff;font-weight:600}
+/* the three things on the desk */
+.trio{position:relative;display:grid;grid-template-columns:1fr 300px 1fr;gap:26px;align-items:end;margin:40px auto 0;max-width:1040px;padding:0 0 0}
+.glass{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.16);border-radius:16px;backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
+  box-shadow:0 30px 60px -30px rgba(0,0,0,.7);text-align:left}
+.trio .notes{padding:18px 20px 20px;transform:rotate(-3.5deg) translateY(-34px);animation:floatL 9s ease-in-out infinite alternate}
+.trio .verdicts{padding:16px 18px 18px;transform:rotate(3.5deg) translateY(-34px);animation:floatR 10s ease-in-out infinite alternate}
+@keyframes floatL{from{transform:rotate(-3.5deg) translateY(-34px)}to{transform:rotate(-2.2deg) translateY(-48px)}}
+@keyframes floatR{from{transform:rotate(3.5deg) translateY(-30px)}to{transform:rotate(2.4deg) translateY(-46px)}}
+.trio .cap{font-size:.76rem;font-weight:600;color:rgba(255,255,255,.6);margin:0 0 10px;display:flex;justify-content:space-between}
+.trio .notes p{margin:0 0 .8em;font-size:.8rem;line-height:1.7;color:rgba(255,255,255,.74)}
+.trio .notes p:last-child{margin:0}
+.trio mark{color:var(--deep);background:linear-gradient(var(--amber),var(--amber)) no-repeat 0 0/100% 100%;border-radius:3px;padding:0 .2em;font-weight:600;
+  animation:mark .8s ease-out .7s both}
+.trio .notes p + p mark{animation-delay:1.3s}
+@keyframes mark{from{background-size:0 100%;color:rgba(255,255,255,.74)}to{background-size:100% 100%;color:var(--deep)}}
+.trio .page{position:relative;margin:0 0 -70px}
+.trio .page img{display:block;width:100%;height:auto;border-radius:6px;box-shadow:0 0 0 1px rgba(255,255,255,.12),0 40px 80px -24px rgba(0,0,0,.8),0 0 90px -10px rgba(242,169,28,.45);
+  animation:rise .9s cubic-bezier(.2,.7,.2,1) .25s both}
+@keyframes rise{from{opacity:0;transform:translateY(40px)}to{opacity:1;transform:none}}
+.verdicts .row{display:grid;gap:5px;padding:9px 0;border-top:1px dashed rgba(255,255,255,.16);font-size:.8rem;color:rgba(255,255,255,.82);line-height:1.4;animation:rowIn .5s ease-out both}
+.verdicts .row:first-of-type{border-top:0;padding-top:0}
+.verdicts .row:nth-of-type(1){animation-delay:1.5s}.verdicts .row:nth-of-type(2){animation-delay:2.1s}.verdicts .row:nth-of-type(3){animation-delay:2.7s}
+@keyframes rowIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.verdicts .chip{justify-self:start;font-size:.7rem}
+.verdicts .row.no span:first-child{text-decoration:line-through;text-decoration-color:#FF8A7A;color:rgba(255,255,255,.55)}
+.hero .floor{height:150px}
+.hero::after{content:"";position:absolute;left:0;right:0;bottom:-1px;height:120px;background:linear-gradient(transparent,var(--cream));z-index:0;pointer-events:none}
+.trio{z-index:1}
+
+/* ---------- sections on paper */
+section{padding:84px 0}
+section + section{border-top:1px solid var(--line)}
+section h2{font-size:clamp(1.8rem,3.4vw,2.9rem);margin:0 0 16px;line-height:1.06;max-width:17em;color:var(--navy)}
+section h2 em{color:#B77A00}
+section .intro{color:var(--ink-2);max-width:40em;margin:0 0 38px;font-size:1.06rem}
+.split{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.05fr);gap:60px;align-items:center}
+.split .intro{margin-bottom:22px}
+.points{list-style:none;margin:0;padding:0;display:grid;gap:14px;color:var(--ink-2)}
+.points li{padding-left:18px;border-left:3px solid var(--line)}
+.points li b{color:var(--ink);font-weight:600;display:block}
+.points li.amber{border-left-color:var(--amber)}
+.measured{margin:28px 0 0;font-size:.95rem;color:var(--ink-2);max-width:34em}
+.measured b{color:var(--ink)}
+
+.proof{margin:0;background:var(--card);border:1px solid var(--line);border-radius:18px;padding:26px 0 22px;position:relative;
+  box-shadow:0 40px 70px -40px rgba(20,33,61,.5);min-height:440px;display:flex;flex-direction:column}
+.proof .doc-title{font-family:var(--serif);font-weight:500;font-size:1.05rem;padding:0 28px 14px;border-bottom:1px solid var(--line);margin-bottom:6px;display:flex;justify-content:space-between;gap:1rem}
+.proof .doc-title span{font-family:var(--sans);font-size:.78rem;color:var(--muted);font-weight:400}
+.line{display:grid;grid-template-columns:1fr 190px;gap:18px;padding:12px 28px;align-items:start}
+.line + .line{border-top:1px dashed var(--line)}
+.line .s{font-family:var(--serif);font-size:1.02rem;line-height:1.55}
+.line .note{font-size:.78rem;color:var(--muted);border-left:2px solid var(--line);padding-left:10px;line-height:1.4}
+.line .note q{font-family:var(--serif);font-style:italic;color:var(--ink-2)}
+.proof [hidden]{display:none!important}
+.proof .reading{padding:20px 28px;display:flex;flex-direction:column;gap:10px}
+.proof .bar{height:10px;border-radius:99px;background:var(--bg);position:relative;overflow:hidden}
+.proof .bar i{position:absolute;top:0;bottom:0;width:40%;background:var(--amber-soft);border-radius:99px;animation:cfScan 1.1s ease-in-out infinite}
+.proof .note.chk{border-left-color:var(--amber)}
+.proof .note.okn{border-left-color:var(--ok)} .proof .note.badn{border-left-color:var(--bad)}
+.proof .strikeable{position:relative}
+.proof .pen{position:absolute;left:0;top:55%;height:2px;background:var(--bad);width:100%;animation:cfStrike .5s ease-out both}
+.proof .lock{margin:auto 28px 0;display:flex;align-items:center;justify-content:space-between;gap:1rem;background:var(--bg);border-radius:12px;padding:10px 14px;font-size:.85rem}
+.proof .lock b{color:var(--bad)}
+.proof .lock.done{background:var(--ok-soft)} .proof .lock.done b{color:var(--ok)}
+.proof .fakebtn{padding:6px 14px;border-radius:999px;background:#CFC6B4;color:#fff;font-weight:600;font-size:.8rem;white-space:nowrap}
+.proof .fakebtn.on{background:var(--navy);color:#fff}
+.proof .enter{animation:cfIn .45s ease-out both} .proof .pop.enter{animation:cfPop .4s ease-out both}
+@keyframes cfIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+@keyframes cfPop{0%{opacity:0;transform:scale(.85)}60%{transform:scale(1.06)}100%{opacity:1;transform:scale(1)}}
+@keyframes cfStrike{from{width:0}to{width:100%}}
+@keyframes cfScan{0%{transform:translateX(-100%)}100%{transform:translateX(250%)}}
+
+.steps{list-style:none;padding:0;margin:0;display:grid;grid-template-columns:repeat(4,1fr);gap:18px;counter-reset:s}
+.steps li{counter-increment:s;background:var(--card);border:1px solid var(--line);border-radius:18px;padding:22px 22px 24px}
+.steps li.amber{background:var(--navy);border-color:var(--navy);color:#fff}
+.steps li::before{content:counter(s);font-family:var(--ital);font-style:italic;font-size:2.6rem;line-height:1;display:block;margin-bottom:14px;color:#B77A00}
+.steps li.amber::before{color:var(--amber)}
+.steps h3{margin:0 0 6px;font-size:1.08rem}
+.steps p{margin:0;color:var(--ink-2);font-size:.95rem}
+.steps li.amber p{color:rgba(255,255,255,.76)}
+
+/* the report: a second night desk */
+section.night{position:relative;background:var(--deep);color:#fff;border:0;overflow:hidden;isolation:isolate;border-radius:28px;margin:0 12px;padding:84px 0}
+section.night + section{border-top:0}
+section.night h2{color:#fff}section.night h2 em{color:var(--amber-soft)}
+section.night .intro{color:rgba(255,255,255,.74)}
+section.night .sky .a{bottom:auto;top:38%;opacity:.34}
+.desk{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:22px;margin:0 0 44px}
+.desk img,.looks img{display:block;width:100%;height:auto;border-radius:5px;box-shadow:0 0 0 1px rgba(255,255,255,.1),0 30px 50px -24px rgba(0,0,0,.8)}
+.desk img{transition:transform .25s ease}
+.desk img:hover{transform:translateY(-8px)}
+.desk figcaption{grid-column:1/-1;font-size:.85rem;color:rgba(255,255,255,.55);margin-top:-2px}
+.facts{display:grid;grid-template-columns:repeat(4,1fr);gap:28px}
+.facts h3{margin:0 0 6px;font-size:1.02rem;color:#fff}.facts p{margin:0;color:rgba(255,255,255,.7);font-size:.95rem}
+.looks{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:22px;margin:0}
+.looks .pair{display:grid;grid-template-columns:1fr 1fr;gap:10px;background:#E9DFCC;border-radius:18px;padding:18px;margin:0}
+.looks img{box-shadow:0 14px 30px -18px rgba(20,33,61,.7)}
+.looks figcaption{grid-column:1/-1;font-size:.85rem;color:var(--ink-2);margin-top:4px}
+
+.chat{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:24px;display:grid;gap:10px;box-shadow:0 40px 70px -44px rgba(20,33,61,.5)}
+.chat .me,.chat .ai{max-width:86%;padding:.6em .95em;border-radius:16px;font-size:.95rem;line-height:1.45}
+.chat .me{justify-self:end;background:var(--navy);color:#fff;border-bottom-right-radius:4px}
+.chat .ai{justify-self:start;background:var(--bg);color:var(--ink-2);border-bottom-left-radius:4px}
+.chat .ai.warn{background:var(--bad-soft);color:var(--bad)}
+.chat .gap{height:6px}
+
+.compare{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.compare > div{padding:28px 30px;border-radius:18px;background:var(--card);border:1px solid var(--line)}
+.compare > div.us{background:var(--navy);border-color:var(--navy);color:#fff}
+.compare h3{margin:0 0 12px;font-size:1.05rem}
+.compare ul{margin:0;padding-left:1.1em;color:var(--ink-2)} .compare li{margin-bottom:.45em}
+.compare .us ul{color:rgba(255,255,255,.8)}.compare .us li::marker{color:var(--amber)}
+.outputs{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+.outputs div{background:var(--card);padding:20px 22px;border:1px solid var(--line);border-radius:16px}
+.outputs div.main{grid-column:span 2;grid-row:span 3;display:flex;flex-direction:column;justify-content:flex-end;background:var(--amber);border-color:var(--amber);min-height:230px}
+.outputs div.main h3{font-family:var(--display);font-weight:600;font-size:1.7rem;letter-spacing:-.02em;color:var(--deep)}
+.outputs div.main p{color:#4A3A12;font-size:1rem;max-width:26em}
+.outputs h3{margin:0 0 4px;font-size:1rem}
+.outputs p{margin:0;color:var(--muted);font-size:.92rem}
+.who{display:grid;grid-template-columns:repeat(3,1fr);gap:36px}
+.who h3{margin:0 0 6px;font-size:1.05rem}.who p{margin:0;color:var(--ink-2)}
+.plans{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+.plan{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:28px}
+.plan.now{background:var(--navy);border-color:var(--navy);color:#fff}
+.plan h3{margin:0;font-size:1.1rem}
+.plan .price{font-family:var(--display);font-weight:600;font-size:2.1rem;letter-spacing:-.03em;margin:10px 0 2px}
+.plan .when{font-size:.85rem;color:var(--muted);margin-bottom:14px}
+.plan.now .when{color:rgba(255,255,255,.6)}
+.plan ul{margin:0 0 20px;padding-left:1.1em;color:var(--ink-2);font-size:.95rem}
+.plan.now ul{color:rgba(255,255,255,.82)}.plan.now li::marker{color:var(--amber)}
+section.end{text-align:center;padding:96px 0;margin-bottom:12px}
+.end h2{margin:0 auto 14px;max-width:14em}.end p{color:rgba(255,255,255,.74);margin:0 auto 28px;max-width:32em}
+footer{padding:28px 0 44px;color:var(--muted);font-size:.88rem;display:flex;justify-content:space-between;gap:1rem;flex-wrap:wrap}
+@media (max-width:980px){
+  .split{grid-template-columns:1fr;gap:40px}
+  .steps,.facts,.plans,.who{grid-template-columns:1fr 1fr}
+  .outputs{grid-template-columns:1fr 1fr}
+  .looks{grid-template-columns:1fr}
+  header.top .pill{display:none}
+  .trio{grid-template-columns:1fr 240px 1fr;gap:14px}
+  .trio .notes p:last-child{display:none}
+}
+@media (max-width:700px){
+  .wrap{padding:0 16px}
+  section{padding:56px 0}
+  section.night{border-radius:20px;margin:0 6px;padding:56px 0}
+  .hero .mid{padding-top:26px}
+  .trio{grid-template-columns:1fr;max-width:340px;gap:16px;margin-top:40px}
+  .trio .notes,.trio .verdicts{transform:none;animation:none}
+  .trio .notes p:last-child{display:block}
+  .trio .page{order:3;margin-bottom:-60px;max-width:250px;justify-self:center}
+  .line{grid-template-columns:1fr;gap:6px}
+  .proof .doc-title{flex-direction:column;gap:2px}
+  .desk{grid-template-columns:1fr 1fr;gap:14px}
+  .steps,.facts,.plans,.who,.compare,.outputs{grid-template-columns:1fr}
+  .outputs div.main{grid-column:auto;grid-row:auto;min-height:0}
+}
+</style>
+</head>
+<body>
+<div class="hero">
+  <div class="sky" aria-hidden="true"><i class="b"></i><i class="c"></i><i class="a"></i><i class="dots"></i></div>
+  <div class="wrap">
+    <header class="top">
+      <a class="wordmark" href="/"><span class="mark" aria-hidden="true"></span>CaseForge</a>
+      <nav class="pill" aria-label="Sections"><a href="#check">The check</a><a href="#how">How it works</a><a href="#report">The report</a><a href="#pricing">Pricing</a></nav>
+      <div class="acts"><a class="btn" href="/app#login">Log in</a><a class="btn solid" href="/app#signup">Start free</a></div>
+    </header>
+    <div class="mid">
+      <p class="tagline"><i aria-hidden="true"></i>Every sentence checked against your notes</p>
+      <h1>Case studies you can <em>prove</em>, from the notes you <em>already have</em>.</h1>
+      <p class="lede">Drop in the messy notes your team left behind. CaseForge writes the case study, checks it line by line, and lays it out as a branded report. Nothing goes out until a person approves it.</p>
+      <div class="cta"><a class="btn amber" href="/app#signup">Start free</a><a class="btn glass" href="#check">See how the check works</a></div>
+      <p class="proofline">On our test set: <b>60 of 60</b> planted errors caught, <b>0</b> false flags on 109 true sentences.</p>
+    </div>
+    <div class="trio">
+      <div class="glass notes" aria-label="An excerpt of raw project notes">
+        <p class="cap"><span>notes.txt</span><span>6 people's notebooks</span></p>
+        <p>…driver break rules from EU Regulation 561/2006 and vehicle capacity limits, the average improvement rose to <mark>11.8 percent</mark> in the pilot on the Antwerp and Ghent warehouses…</p>
+        <p>…planning time per morning reduced from <mark>about 18 minutes</mark> to 3 minutes for each dispatcher…</p>
+      </div>
+      <figure class="page"><img src="/static/img/report-cover.webp" width="640" height="905" alt="The finished report cover showing 11.8 percent, the number highlighted in the notes"></figure>
+      <div class="glass verdicts" aria-label="Sentences with their verdicts">
+        <p class="cap"><span>The check</span><span>3 sentences</span></p>
+        <div class="row"><span>Route improvement rose to 11.8 percent in the pilot.</span><span class="chip ok">In your notes</span></div>
+        <div class="row"><span>Planning fell from about 18 minutes to 3.</span><span class="chip ok">In your notes, kept as an estimate</span></div>
+        <div class="row no"><span>Fuel consumption fell by 20 percent.</span><span class="chip bad">Not in your notes: they say 9.4</span></div>
+      </div>
+    </div>
+    <div class="floor"></div>
+  </div>
+</div>
+
+<div class="wrap">
+  <main>
+  <section id="check">
+    <div class="split">
+      <div>
+        <h2>Every sentence shows <em>where it came from</em>.</h2>
+        <p class="intro">Generating text is easy. Knowing it is true is the hard part, so the check is built in instead of left to whoever is in a hurry.</p>
+        <ul class="points">
+          <li><b>Written from quoted facts only</b>Each fact is pulled from your notes with the exact words and the line it sits on.</li>
+          <li class="amber"><b>Checked twice</b>Fixed rules compare numbers, names and estimate wording. A separate AI pass reads each sentence against the notes. The stricter verdict wins.</li>
+          <li><b>Estimates stay estimates</b>"About 18 minutes" never turns into "18 minutes".</li>
+          <li><b>When the notes disagree, you decide</b>Two different numbers for the same thing become a question for you, not a guess.</li>
+        </ul>
+        <p class="measured">On our own test set the checker caught <b>60 of 60</b> planted errors and raised <b>no false flags</b> on 109 true sentences.</p>
+      </div>
+      <figure class="proof" id="demo" data-step="6" aria-label="Animation: a draft is written and every sentence is checked against the notes">
+        <div class="doc-title">Dispatch Optimizer, draft <span id="demo-status">1 sentence not backed</span></div>
+        <div class="reading" data-from="0" data-to="0" hidden>
+          <div class="hint">Pulling facts from 6 people's notes…</div>
+          <div class="bar"><i></i></div><div class="bar" style="width:82%"></div><div class="bar" style="width:64%"></div>
+        </div>
+        <div class="line" data-from="1">
+          <div class="s">Dispatchers' morning planning time fell from about 18 minutes to 3.</div>
+          <div class="note chk" data-from="1" data-to="1" hidden><span class="chip none">Checking</span></div>
+          <div class="note okn pop" data-from="2"><span class="chip ok">In your notes</span><br><q>planning time per morning reduced from about 18 minutes to 3 minutes</q></div>
+        </div>
+        <div class="line" data-from="3">
+          <div class="s">The routing engine runs on Python and Google OR-Tools.</div>
+          <div class="note chk" data-from="3" data-to="3" hidden><span class="chip none">Checking</span></div>
+          <div class="note okn pop" data-from="4"><span class="chip ok">In your notes</span><br><q>Python 3.11 with Google OR-Tools</q></div>
+        </div>
+        <div class="line" data-from="5">
+          <div class="s" data-from="5" data-to="6"><span class="strikeable">Fuel consumption fell by 20 percent.<i class="pen" data-from="6" data-to="6"></i></span></div>
+          <div class="s" data-from="7" hidden>Fuel consumption fell by 9.4 percent.</div>
+          <div class="note chk" data-from="5" data-to="5" hidden><span class="chip none">Checking</span></div>
+          <div class="note badn pop" data-from="6" data-to="6"><span class="chip bad">Not in your notes</span><br>Notes say 9.4&nbsp;percent.</div>
+          <div class="note okn pop" data-from="7" hidden><span class="chip ok">In your notes</span><br><q>fuel consumption down 9.4 percent</q></div>
+        </div>
+        <div class="lock" data-from="6" data-to="6"><span><b>Approval locked</b> until this sentence is fixed.</span><span class="fakebtn">Approve</span></div>
+        <div class="lock done" data-from="7" hidden><span><b>Approved by Minji.</b> The report is unlocked.</span><span class="fakebtn on pop">Download PDF</span></div>
+      </figure>
+    </div>
+  </section>
+
+  <section id="how">
+    <h2>Four steps. Only <em>one needs you</em>.</h2>
+    <p class="intro">You bring the notes and the final say. Everything between is done for you.</p>
+    <ol class="steps">
+      <li><h3>Add your notes</h3><p>Upload PDF, Word, Excel or PowerPoint files, or paste rough notes and chat threads. Add your logo if you have one.</p></li>
+      <li><h3>Get a checked draft</h3><p>CaseForge pulls out the facts, writes from those facts alone, and marks anything the notes don't back in red, with the reason.</p></li>
+      <li class="amber"><h3>You approve</h3><p>Read it, fix or delete what is red, and approve. Your name and the date go on the document. Any later edit removes the approval.</p></li>
+      <li><h3>Download the report</h3><p>The report is laid out for you the moment you approve. Change anything by typing, approve the layout, and download.</p></li>
+    </ol>
+  </section>
+
+  </main>
+</div>
+
+<section class="night" id="report">
+  <div class="sky" aria-hidden="true"><i class="b"></i><i class="a"></i><i class="dots"></i></div>
+  <div class="wrap">
+    <h2>A report laid out from <em>what your notes contain</em>.</h2>
+    <p class="intro">Three to five pages. The layout is chosen from the content: projects with measured results lead with numbers, projects with a strong client quote lead with the quote.</p>
+    <figure class="desk">
+      <img src="/static/img/report-cover.webp" width="640" height="905" alt="Report cover with the strongest measured result" loading="lazy">
+      <img src="/static/img/report-results.webp" width="640" height="905" alt="Results page: three key numbers and before-and-after bars, one marked as an estimate" loading="lazy">
+      <img src="/static/img/report-solution.webp" width="640" height="905" alt="Challenge and solution page with a timeline and the tools used" loading="lazy">
+      <img src="/static/img/report-close.webp" width="640" height="905" alt="Closing page with outcomes, a client quote and a note on how the report was checked" loading="lazy">
+      <figcaption>The whole report from the sample notes, exactly as it downloads.</figcaption>
+    </figure>
+    <div class="facts">
+      <div><h3>Numbers get room</h3><p>Key results are set large. Before-and-after pairs become a chart.</p></div>
+      <div><h3>Each fact once</h3><p>A number on the cover is not repeated inside. Short copy, no walls of text.</p></div>
+      <div><h3>Your logo sets the colours</h3><p>Upload a logo and the report takes its colours from it. No logo: a palette matched to the subject of your notes.</p></div>
+      <div><h3>Checked again</h3><p>Every headline, label and number in the layout is checked against the notes a second time before you can approve it.</p></div>
+    </div>
+  </div>
+</section>
+
+<div class="wrap">
+  <div>
+
+  <section>
+    <div class="split">
+      <div>
+        <h2>Change it <em>by asking</em>.</h2>
+        <p class="intro">There are no templates to pick from. Type what you want, in your own words: the layout, the graphs, the colours, the order, the wording. New wording is checked like everything else.</p>
+        <ul class="points">
+          <li><b>Redesign keeps the words</b>A new page structure, theme, cover and graph style for the same checked text, so nothing has to be checked again.</li>
+          <li class="amber"><b>It won't make things up for you</b>Ask for a fact that is not in your notes and it tells you so. Add the fact to your notes first, under your name.</li>
+        </ul>
+      </div>
+      <div class="chat" aria-label="Example of changing the report by typing">
+        <div class="me">show the chart as columns</div>
+        <div class="ai">Done. The before-and-after pairs are drawn as columns.</div>
+        <div class="gap"></div>
+        <div class="me">call us Northwind Digital Works</div>
+        <div class="ai">Done. That name is now on every page.</div>
+        <div class="gap"></div>
+        <div class="me">say we cut fuel use by 20 percent</div>
+        <div class="ai warn">20 percent is not in your notes. They say 9.4. That line is marked red and can't be approved until it is fixed.</div>
+      </div>
+    </div>
+    <div style="height:48px"></div>
+    <div class="looks">
+      <figure class="pair" style="margin:0"><img src="/static/img/look-dark-cover.webp" width="640" height="905" alt="A dark cover with a bar motif" loading="lazy"><img src="/static/img/look-dark-page.webp" width="640" height="905" alt="A dark dashboard-style page" loading="lazy"><figcaption>Dark, dashboard pages</figcaption></figure>
+      <figure class="pair" style="margin:0"><img src="/static/img/look-light-cover.webp" width="640" height="905" alt="A light cover showing a before and after" loading="lazy"><img src="/static/img/look-light-page.webp" width="640" height="905" alt="A light page with key numbers in a side column" loading="lazy"><figcaption>Light, key numbers in a side column</figcaption></figure>
+      <figure class="pair" style="margin:0"><img src="/static/img/look-quote-cover.webp" width="640" height="905" alt="A cover led by the client's quote" loading="lazy"><img src="/static/img/look-quote-page.webp" width="640" height="905" alt="A page with large number cards" loading="lazy"><figcaption>Led by the client's quote</figcaption></figure>
+    </div>
+    <p class="measured">Same notes, same checked text, three presses of Redesign.</p>
+  </section>
+
+  <section>
+    <h2>Why not <em>just ask a chatbot</em>?</h2>
+    <p class="intro">We tested a general AI tool on the same messy notes six times. It invented no numbers, but added four to six claims per draft that the notes never made.</p>
+    <div class="compare">
+      <div><h3>A general AI chat</h3><ul><li>Writes fluently, fills gaps with plausible guesses</li><li>Leaves checking to you, sentence by sentence</li><li>Nothing stops an unchecked draft from being sent</li><li>No record of what came from where</li></ul></div>
+      <div class="us"><h3>CaseForge</h3><ul><li>Writes only from facts quoted from your notes</li><li>Flags anything the notes don't back, with the reason</li><li>Download stays locked until a person approves</li><li>Every sentence traces back to its source line</li></ul></div>
+    </div>
+  </section>
+
+  <section>
+    <h2>One approval, <em>every format</em>.</h2>
+    <p class="intro">Once the case study is approved, the other formats are written from that approved text and checked again.</p>
+    <div class="outputs">
+      <div class="main"><h3>Designed report</h3><p>Three to five branded pages with key numbers, charts, a timeline and the client's quote. PDF.</p></div>
+      <div><h3>Case study</h3><p>The full write-up, as many pages as the project needs. PDF.</p></div>
+      <div><h3>One-page summary</h3><p>Always exactly one page, for quick sharing. PDF.</p></div>
+      <div><h3>Portfolio page</h3><p>One self-contained page, ready for your website.</p></div>
+      <div><h3>LinkedIn post</h3><p>Four to six sentences announcing the work.</p></div>
+      <div><h3>Proposal paragraph</h3><p>A "relevant experience" block for bids and tenders.</p></div>
+      <div><h3>Elevator pitch</h3><p>Two sentences a salesperson can say out loud.</p></div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Who it's <em>for</em></h2>
+    <div class="who">
+      <div><h3>IT services companies</h3><p>Ten to two hundred people who win work by showing past projects, but never have billable hours to write them up.</p></div>
+      <div><h3>Agencies and studios</h3><p>Teams whose portfolio is always a year behind, with notes scattered across chats, tickets and decks.</p></div>
+      <div><h3>Students and graduates</h3><p>Real project work that deserves a proper write-up for applications, without overstating what was done.</p></div>
+    </div>
+  </section>
+
+  <section id="pricing">
+    <h2>Free while <em>we test it</em>.</h2>
+    <p class="intro">CaseForge is a university capstone prototype. Paid plans are planned, not live.</p>
+    <div class="plans">
+      <div class="plan now"><h3>Free</h3><div class="price">₩0</div><div class="when">Available now</div>
+        <ul><li>Unlimited case studies</li><li>30 AI actions a day</li><li>The designed report and six other formats</li><li>Your logo and its colours on the report</li><li>One workspace, invite teammates</li></ul>
+        <a class="btn amber" href="/app#signup">Start free</a></div>
+      <div class="plan"><h3>Team</h3><div class="price">Planned</div><div class="when">For a delivery team</div>
+        <ul><li>Higher daily limits</li><li>Brand rules imported from your guidelines document</li><li>Reviewer roles and approval history export</li></ul></div>
+      <div class="plan"><h3>Agency</h3><div class="price">Planned</div><div class="when">For several brands or clients</div>
+        <ul><li>Several workspaces</li><li>Batch runs over many projects</li><li>Bring your own AI key</li></ul></div>
+    </div>
+  </section>
+
+  </div>
+</div>
+
+<section class="night end">
+  <div class="sky" aria-hidden="true"><i class="c"></i><i class="a"></i><i class="dots"></i></div>
+  <div class="wrap">
+    <h2>Try it on the <em>sample notes</em>.</h2>
+    <p>The app comes with the messy notes these pages were made from. Load them, approve the draft and download the report.</p>
+    <div class="cta"><a class="btn amber" href="/app#signup">Start free</a><a class="btn glass" href="/app#login">Log in</a></div>
+  </div>
+</section>
+
+<div class="wrap">
+  <footer><span>CaseForge, by Team 5. BIG X INHA Interdisciplinary Capstone, 2026.</span><span>Don't upload confidential client data to this prototype.</span></footer>
+</div>
+
+<script>
+/* One orchestrated moment: when the proof page scrolls into view, the draft writes itself and gets
+   checked, then loops. Without JavaScript, or with reduced motion, it shows the flagged state (step 6) still. */
+(function(){
+  var fig=document.getElementById("demo"); if(!fig) return;
+  if(window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  var status=["reading notes","writing and checking","writing and checking","writing and checking","writing and checking","writing and checking","1 sentence not backed","all backed by the notes"];
+  var at=[0,1400,2400,3000,4000,4600,5800,9000], loop=13000, timers=[];
+  function set(step){
+    fig.dataset.step=step;
+    document.getElementById("demo-status").textContent=status[step];
+    fig.querySelectorAll("[data-from]").forEach(function(el){
+      var from=+el.dataset.from, to=el.dataset.to===undefined?99:+el.dataset.to;
+      var show=step>=from&&step<=to, was=!el.hidden;
+      el.hidden=!show;
+      if(show&&!was){el.classList.remove("enter");void el.offsetWidth;el.classList.add("enter");}
+    });
+  }
+  function play(){timers.forEach(clearTimeout);timers=at.map(function(t,i){return setTimeout(function(){set(i)},t)});timers.push(setTimeout(play,loop));}
+  var io=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting)play();else timers.forEach(clearTimeout);});},{threshold:.35});
+  io.observe(fig);
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,233 @@
+{
+  "title": "Dispatch Optimizer: route planning in minutes, not mornings",
+  "subtitle": "How Northwind Digital Works replaced spreadsheet route planning for a 14-warehouse freight network.",
+  "tags": [
+    "Route optimisation",
+    "Logistics",
+    "Mobile app",
+    "Offline-first"
+  ],
+  "client_line": "Calloway Freight Group \u00b7 Rotterdam \u00b7 14 warehouses in NL, BE and DE",
+  "challenge_intro": "Dispatchers built routes in a spreadsheet every morning, and drivers left the yard with paper manifests that were often already out of date.",
+  "challenges": [
+    {
+      "title": "Slow mornings",
+      "text": "The previous tool needed 15 to 20 minutes every morning to build routes in a spreadsheet.",
+      "cites": [
+        "C1"
+      ]
+    },
+    {
+      "title": "Outdated paperwork",
+      "text": "Drivers said paper manifests were frequently outdated by the time they left the yard.",
+      "cites": [
+        "C2"
+      ]
+    },
+    {
+      "title": "Hard rules",
+      "text": "Routes had to respect time windows, EU driver break rules and vehicle capacity limits.",
+      "cites": [
+        "C3"
+      ]
+    }
+  ],
+  "brief": "Plan better routes faster, and keep drivers working even without a connection.",
+  "solution_intro": "We built a routing engine, a map-first dispatcher dashboard and an offline-first driver app, piloted at the Antwerp and Ghent warehouses.",
+  "pillars": [
+    {
+      "title": "Constraint-aware routing",
+      "text": "Google OR-Tools solves the vehicle routing problem with time windows, breaks and capacity.",
+      "cites": [
+        "C4"
+      ]
+    },
+    {
+      "title": "Map-first dashboard",
+      "text": "Dispatchers see the map first, with a collapsible list of routes on the left.",
+      "cites": [
+        "C5"
+      ]
+    },
+    {
+      "title": "Works offline",
+      "text": "Drivers keep working without a connection for up to 8 hours, then sync.",
+      "cites": [
+        "C6"
+      ]
+    },
+    {
+      "title": "Built for the cab",
+      "text": "High-contrast design and 48-pixel buttons for use in strong sunlight.",
+      "cites": [
+        "C7"
+      ]
+    }
+  ],
+  "steps": [
+    {
+      "title": "Orders in",
+      "text": "Stops and delivery windows arrive from the client's SAP system",
+      "cites": [
+        "C8"
+      ]
+    },
+    {
+      "title": "Precompute distances",
+      "text": "Distance matrix cached in Redis",
+      "cites": [
+        "C9"
+      ]
+    },
+    {
+      "title": "Solve routes",
+      "text": "OR-Tools plans 220 stops in 9 seconds",
+      "cites": [
+        "C9"
+      ]
+    },
+    {
+      "title": "Dispatcher review",
+      "text": "Adjust routes on the map-first dashboard",
+      "cites": [
+        "C5"
+      ]
+    },
+    {
+      "title": "Drive and deliver",
+      "text": "Scan, sign and photograph proof of delivery",
+      "cites": [
+        "C10"
+      ]
+    }
+  ],
+  "tech": [
+    "Python 3.11",
+    "Google OR-Tools",
+    "PostgreSQL 15 + PostGIS",
+    "Redis",
+    "RabbitMQ",
+    "React Native",
+    "AWS ECS Fargate",
+    "Terraform"
+  ],
+  "metrics": [
+    {
+      "value": "11.8",
+      "unit": "%",
+      "label": "average route improvement in the Antwerp and Ghent pilot",
+      "estimate": false,
+      "cites": [
+        "C11"
+      ]
+    },
+    {
+      "value": "9.4",
+      "unit": "%",
+      "label": "less fuel used across pilot warehouses by February 2025",
+      "estimate": false,
+      "cites": [
+        "C12"
+      ]
+    },
+    {
+      "value": "1,340",
+      "unit": "",
+      "label": "routes planned in the first 72 hours after go-live",
+      "estimate": false,
+      "cites": [
+        "C13"
+      ]
+    },
+    {
+      "value": "1.1",
+      "unit": "M\u20ac",
+      "label": "annual savings estimated by the client's finance director, not verified by us",
+      "estimate": true,
+      "cites": [
+        "C14"
+      ]
+    }
+  ],
+  "comparisons": [
+    {
+      "label": "Morning planning per dispatcher (min)",
+      "before": 18,
+      "after": 3,
+      "unit": "",
+      "cites": [
+        "C15"
+      ]
+    },
+    {
+      "label": "Late deliveries (%)",
+      "before": 14,
+      "after": 6.1,
+      "unit": "",
+      "cites": [
+        "C16"
+      ]
+    },
+    {
+      "label": "Solver time for 220 stops (s)",
+      "before": 94,
+      "after": 9,
+      "unit": "",
+      "cites": [
+        "C9"
+      ]
+    }
+  ],
+  "outcomes": [
+    {
+      "title": "Adopted on day one",
+      "text": "96.2 percent of drivers logged in successfully on the first day.",
+      "cites": [
+        "C17"
+      ]
+    },
+    {
+      "title": "Phase 2 signed",
+      "text": "A follow-up contract extends the system to 9 more warehouses in France and Spain.",
+      "cites": [
+        "C18"
+      ]
+    }
+  ],
+  "quote": {
+    "text": "The first software delivery in five years that the dispatchers asked to keep using instead of requesting changes to.",
+    "who": "Henrik de Vries, operations director, Calloway (paraphrased)",
+    "cites": [
+      "C19"
+    ]
+  },
+  "conclusion": "Faster planning, fewer late deliveries and a phase 2 contract: built step by step with the people who use it every morning.",
+  "cites": {
+    "subtitle": [
+      "C1"
+    ],
+    "client_line": [
+      "C20"
+    ],
+    "challenge_intro": [
+      "C1",
+      "C2"
+    ],
+    "brief": [
+      "C6"
+    ],
+    "solution_intro": [
+      "C4",
+      "C5",
+      "C6"
+    ],
+    "conclusion": [
+      "C15",
+      "C16",
+      "C18"
+    ],
+    "tech": [
+      "C21"
+    ]
+  }
+}
