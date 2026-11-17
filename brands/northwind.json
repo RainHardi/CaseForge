@@ -1,0 +1,34 @@
+{
+  "name": "Northwind Digital Works",
+  "company": "Northwind Digital Works",
+  "logo": "",
+  "colors": {
+    "primary": "#0E6E73",
+    "accent": "#F2765C",
+    "ink": "#1C2430",
+    "paper": "#FFFFFF",
+    "surface": "#EEF3F3",
+    "muted": "#56606B",
+    "dark": "#0B2B33"
+  },
+  "heading_font": "Plus Jakarta Sans",
+  "body_font": "Source Serif 4",
+  "motif": "bars",
+  "accent_bar": "top",
+  "logo_position": "top-left",
+  "page_numbers": true,
+  "voice": "we",
+  "banned_words": [
+    "synergy",
+    "best-in-class",
+    "world-class"
+  ],
+  "max_sentence_words": 22,
+  "cta_text": "Talk to us about your next project · northwind.example",
+  "rules": [
+    "Thin teal rule along the top of every page",
+    "Logo top-left",
+    "Bar-shaped graphics, no hexagons",
+    "Coral for small highlights only"
+  ]
+}

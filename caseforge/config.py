@@ -25,6 +25,8 @@ class Settings:
     # "gemini"  -> always Gemini (error if no key)
     # "offline" -> never call an LLM (deterministic, free, good for tests)
     llm_mode: str
+    # tried in order when the main model answers "busy" (503/429) after its retries
+    gemini_fallbacks: tuple[str, ...] = ()
 
     @property
     def use_gemini(self) -> bool:
@@ -42,4 +44,6 @@ def get_settings() -> Settings:
         gemini_model=os.getenv("GEMINI_MODEL", "gemini-flash-latest").strip(),
         data_dir=Path(os.getenv("CASEFORGE_DATA_DIR", str(ROOT / "data" / "projects"))),
         llm_mode=os.getenv("CASEFORGE_LLM_MODE", "auto").strip().lower(),
+        gemini_fallbacks=tuple(m.strip() for m in os.getenv(
+            "GEMINI_FALLBACK_MODELS", "gemini-flash-latest,gemini-flash-lite-latest").split(",") if m.strip()),
     )

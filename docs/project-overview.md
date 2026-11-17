@@ -9,8 +9,8 @@
 | **Repository** | [CaseForge](https://github.com/RainHardi/CaseForge) |
 | **Team** | Team 5 |
 | **Development Period** | Fall 2026 Semester |
-| **Status** | Baseline built and tested on team-constructed inputs (31 Oct 2026); real-input runs outstanding |
-| **Last Updated** | 4 November 2026 |
+| **Status** | Midterm draft — design complete, implementation not yet started |
+| **Last Updated** | 24 October 2026 |
 
 ---
 
@@ -334,7 +334,7 @@ We will test with both clean and messy project inputs. The main evaluation areas
 
 The full plan, including test cases and success criteria, is in [Test Plan](test-plan.md).
 
-**Tests run so far:** T-05 (planted claims), T-07 (approval lock) and T-08/T-09 (output layout), all on team-constructed inputs, 31 October 2026 — recorded in [`tests/results.md`](../tests/results.md). T-02, T-04, T-06 and T-10 have not been run. See [Section 21](#21-current-status-and-next-steps).
+**No tests have been run yet**, because implementation has not started. See [Section 21](#21-current-status-and-next-steps).
 
 ## 19. Expected Final Result
 
@@ -371,46 +371,31 @@ The design and planning stage is complete. The following are written and in the 
 - Test plan with test cases and success criteria
 - Demo script
 
-### What is built
-
-The Baseline implementation landed on 31 October 2026 (pull request #15, with four follow-up fixes on 1 November).
-
-| Task | What exists | Where |
-|---|---|---|
-| BT-1 | Code structure, `requirements.txt`, Gemini client with JSON-schema output and rate-limit retry | `caseforge/llm.py`, `caseforge/config.py` |
-| BT-3 | Fact extraction; every fact must quote the input, and a fact whose quote is not found is dropped | `caseforge/extract.py` |
-| BT-4 | Two-layer faithfulness checker (deterministic rules, then an independent model pass) and the planted-claim test | `caseforge/checker.py`, `eval/planted_claims.py` |
-| BT-5 | Review and approval: edit, delete, add, acknowledge a gap, approve or reject; export locked until approved. Input by upload or pasted notes | `caseforge/review.py`, `caseforge/ingest.py`, `app.py`, `caseforge/cli.py` |
-| BT-6 | PDF case study, one-page summary, portfolio web page | `caseforge/render/` |
+### What has not started
 
 > [!IMPORTANT]
-> **Built is not the same as done.** Every result so far comes from three inputs the team wrote itself. The Baseline requires three *real* project inputs (B4) and a two-person claim check (B5), and neither has happened. Nothing has been tested on a real client project.
+> **No code has been written and no tests have been run.** The repository currently contains documentation only. The Baseline is designed but not implemented.
 
 ### Remaining Baseline tasks
 
 | ID | Task | Owner | Done when | Date |
 |---|---|---|---|---|
-| ID | Task | Owner | Done when | Date |
-|---|---|---|---|---|
-| BT-1 | Code structure, `requirements.txt`, working Gemini call | Abdulaziz | **Done** 31 Oct 2026 | — |
-| BT-3 | Fact extraction step | Abdulaziz | **Done** 31 Oct 2026; T-02 against the fact lists still to run | — |
-| BT-4 | Automated faithfulness check | Abdulaziz | **Done** 31 Oct 2026; measured on team-constructed inputs only | — |
-| BT-5 | Human review and approval step | Abdulaziz | **Done** 31 Oct 2026 | — |
-| BT-6 | PDF case study and one-page summary | Abdulaziz | **Done** 31 Oct 2026 | — |
-| T-05b | Harder planted claims: inference-style, not just invented numbers | Abdulaziz | Catch and false-flag rate recorded over 3 repeats | 16 Nov |
-| BT-2 | Three **real** project inputs with hand-written fact lists | Odina | Three inputs and their fact lists committed, reviewed by a second person | 9 Nov |
-| — | Code review of the Baseline by a second member | Muhammadkodir | Reviewer named in the pull request | 9 Nov |
-| — | Re-run T-07 to T-09 from a clean clone | Anvarbek | Same results on a fresh clone, recorded in `tests/results.md` | 16 Nov |
-| BT-7 | End-to-end run on three real inputs | Abdulaziz | All three produce an approved PDF | 23 Nov |
-| BT-8 | Two-person manual claim check | Odina, Dilshod | Zero unsupported claims in every approved PDF, recorded in the log | 30 Nov |
+| BT-1 | Set up the code structure, `requirements.txt`, and a working Gemini API call | Abdulaziz | A script sends project notes to Gemini and prints a structured draft | TBD |
+| BT-2 | Prepare three real project inputs with hand-written fact lists | Odina | Three inputs and their fact lists are committed to the repository | TBD |
+| BT-3 | Fact extraction step | Abdulaziz | Extracted facts match the hand-written fact list for each test input | TBD |
+| BT-4 | Automated faithfulness check | Abdulaziz | Each generated claim is labelled supported, reworded, unsupported or contradicted; catch rate measured on the planted-claim test | TBD |
+| BT-5 | Human review and approval step | Abdulaziz | Draft can be edited, approved or rejected; export is blocked until approval | TBD |
+| BT-6 | PDF case study and one-page summary | Abdulaziz | Both open correctly and match the approved text | TBD |
+| BT-7 | End-to-end run on three real inputs | Team | All three produce an approved PDF with no unsupported claims | TBD |
+| BT-8 | Manual claim check on every test case | Odina, plus one reviewer | Every case study checked by two people and recorded in the results log | TBD |
 
-Dates are the team's proposal until confirmed at the next meeting (**Q-011**). Responsibilities are in [Team Roles](team-roles.md).
+Dates are TBD until the team agrees a schedule. Responsibilities are in [Team Roles](team-roles.md).
 
 ### Main risk and next action
 
-The main risk is no longer whether the pipeline can be built — it runs. It is that the only evidence we have comes from inputs we wrote ourselves, with planted claims that are short and obvious. The unsupported claims that matter in practice are subtle inferences of the kind ChatGPT produced in our 24 October measurement, and a 100% catch rate on obvious plants says nothing about those.
+The main risk to completing the Baseline is that implementation has not begun and the hardest part, the faithfulness check, is also the part the whole project depends on.
 
-To reduce it, the next test is T-05b: planted claims written as inferences rather than as invented numbers, run on the same three inputs. After that, the three real project inputs from BT-2, which is blocked on permission (Q-001, Q-005) and is the single oldest open item in the project.
+To reduce it, we will build the smallest end-to-end path first — project notes in, a draft out, and a list of which claims appear in the input — before building any interface or PDF output. That path proves the idea works and can be tested immediately, and everything else is formatting around it.
 
 Details that are still undecided are marked **TBD** and tracked in the [Question Log](question-log.md).
 

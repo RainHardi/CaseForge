@@ -5,11 +5,11 @@
 | **Project** | S1 - Case Study & Portfolio Generator |
 | **Repository** | CaseForge |
 | **Team** | Team 5 |
-| **Status** | Demonstrable — the pipeline runs end to end on team-constructed input (31 Oct 2026) |
-| **Last Updated** | 4 November 2026 |
+| **Status** | Planned — nothing is demonstrable yet |
+| **Last Updated** | 23 October 2026 |
 
 > [!IMPORTANT]
-> **The pipeline now runs end to end**, on team-constructed inputs (31 Oct 2026): notes in → facts → draft → claim labels → approval → PDF out. This document is the scenario the demo follows. The step that matters is the review screen refusing to export while a claim is flagged — the demo is built around showing that, not the finished document.
+> **There is nothing to demonstrate yet.** Implementation has not started. This document is the scenario we are building towards, so that the demo shapes the build rather than being assembled at the end.
 
 ## What the demo has to prove
 

@@ -4,3 +4,7 @@ Pipeline:  input -> fact extraction -> writing -> faithfulness check -> human re
 """
 
 __version__ = "0.1.0"
+
+from .models import _resolve_forward_refs  # noqa: E402
+
+_resolve_forward_refs()

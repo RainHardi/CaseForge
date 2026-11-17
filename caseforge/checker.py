@@ -17,6 +17,7 @@ from . import prompts
 from .llm import LLM
 from .models import Claim, Label, ProjectRecord, worst
 from .textutil import (
+    estimate_flags,
     best_overlap,
     inflated_words,
     named_terms,
@@ -50,6 +51,7 @@ def rule_flags(claim: Claim, source: str, known_fact_ids: set[str]) -> list[str]
     for word in sorted(inflated_words(claim.text)):
         if word not in src_norm.split():
             flags.append(f"inflated wording '{word}' is not in the input")
+    flags += estimate_flags(claim.text, source)
     if not claim.manual:
         if not claim.fact_ids:
             flags.append("cites no source fact")
@@ -60,22 +62,27 @@ def rule_flags(claim: Claim, source: str, known_fact_ids: set[str]) -> list[str]
 
 def check_claims(record: ProjectRecord, llm: LLM | None, only_ids: set[str] | None = None) -> None:
     """Labels claims in place. only_ids = re-check just these (after an edit)."""
-    source = record.input.source_text()
-    known = {f.id for f in record.facts}
     targets = [c for c in record.active_claims() if only_ids is None or c.id in only_ids]
+    label_claims(targets, record.input.source_text(), {f.id for f in record.facts}, llm)
+    if llm:
+        record.llm_calls = llm.calls
+
+
+def label_claims(targets: list[Claim], source: str, known_ids: set[str], llm: LLM | None,
+                 system: str = "") -> None:
+    """The checker itself: rules + an independent model pass, stricter one wins. Used for the case
+    study and for every derived format (LinkedIn post, proposal paragraph, ...)."""
     if not targets:
         return
-
     for c in targets:
-        c.rule_flags = rule_flags(c, source, known)
+        c.rule_flags = rule_flags(c, source, known_ids)
 
     verdicts: dict[str, Verdict] = {}
     if llm:
         claim_lines = "\n".join(f"{c.id}: {c.text}" for c in targets)
         result = llm.generate_json(
-            prompts.CHECK_SYSTEM, prompts.CHECK_PROMPT.format(source=source, claims=claim_lines), CheckResult
+            system or prompts.CHECK_SYSTEM, prompts.CHECK_PROMPT.format(source=source, claims=claim_lines), CheckResult
         )
-        record.llm_calls = llm.calls
         verdicts = {v.claim_id.strip(): v for v in result.verdicts}
     else:
         sentences = split_sentences(source)

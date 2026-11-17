@@ -81,7 +81,7 @@ def add_to_source(record: ProjectRecord, text: str, llm: LLM | None, field: str 
                              statement=text, quote=text))
     check_claims(record, llm)
     old_resolved = {g.field: g for g in record.gaps if g.resolved}
-    record.gaps = find_gaps(record.input, record.facts, record.claims)
+    record.gaps = find_gaps(record.input, record.facts, record.claims, record.conflicts)
     for g in record.gaps:  # keep earlier acknowledgements
         if g.field in old_resolved:
             g.resolved, g.resolution = True, old_resolved[g.field].resolution
@@ -92,7 +92,7 @@ def add_to_source(record: ProjectRecord, text: str, llm: LLM | None, field: str 
 def refresh_gaps(record: ProjectRecord) -> None:
     """Recompute missing-info flags (e.g. after adding info or images), keeping earlier answers."""
     old = {g.field: g for g in record.gaps if g.resolved}
-    record.gaps = find_gaps(record.input, record.facts, record.claims)
+    record.gaps = find_gaps(record.input, record.facts, record.claims, record.conflicts)
     for g in record.gaps:
         if g.field in old:
             g.resolved, g.resolution = True, old[g.field].resolution
@@ -103,6 +103,10 @@ def resolve_gap(record: ProjectRecord, gap_id: str, note: str, by: str = "") -> 
     if not note.strip():
         raise ReviewError("Say how the gap was handled (e.g. 'no measured result exists').")
     g.resolved, g.resolution = True, note.strip()
+    if g.field.startswith("conflict") and not note.lower().startswith("left out"):
+        # the reviewer's answer becomes part of the source, so the checker accepts the confirmed value
+        record.input.reviewer_additions.append(f"Confirmed by {by or 'reviewer'}: {g.message.split(':')[0]}"
+                                               f" — {note.strip()}")
     record.log("gap resolved", f"{g.id} [{g.field}]: {note.strip()}", by)
 
 
