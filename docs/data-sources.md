@@ -6,13 +6,13 @@
 | **Repository** | CaseForge |
 | **Team** | Team 5 |
 | **Reviewer** | Abdulaziz (AI / Engineering) |
-| **Status** | Midterm draft — no data collected yet |
-| **Last Updated** | 23 October 2026 |
+| **Status** | Four team-constructed inputs committed; no real project data yet. The live website now also collects user account data — see DS-05 |
+| **Last Updated** | 18 November 2026 |
 
 This document lists the data, APIs, and other sources CaseForge plans to use, the conditions for using each one, when each was collected, and what we still need to confirm. Anything we haven't settled yet is marked **TBD**.
 
 > [!IMPORTANT]
-> **No project data has been collected yet.** Preparing the first three test inputs is task **BT-2** in the [Project Overview](project-overview.md#21-current-status-and-next-steps) and has not started. The collection dates below are therefore either "not yet collected" or the date the team began writing the material itself.
+> **Team-constructed inputs exist; real project data does not.** Three fictional inputs with hand-written fact lists were written by the team and committed on 31 October 2026 (`samples/`). They contain no real client and no confidential material, so they are safe to send to the Gemini API. The **real** project inputs required by Baseline item B4 are still task **BT-2** and have not been obtained — that is blocked on permission (Q-001, Q-005).
 
 ---
 
@@ -37,7 +37,10 @@ For every test input, we also need a way to check the output. Our plan is to wri
 | DS-02 | Project information constructed by our team | Written test inputs | Clean and messy test cases, edge cases | Available — we create it | Writing begins Oct 2026, ongoing | No — invented names | Yes |
 | DS-03 | Our own project material | Project information | Test case and demo example | Available | From Sept 2026, ongoing | Team names only, by agreement | Yes, after removing private details |
 | DS-04 | Classmates' project material | Project information | Student-facing test cases, user testing, demo | Permission needed from each team | Not yet collected | Possibly names — removed before use | Only with that team's agreement |
-| API-01 | Google Gemini API (Google AI Studio) | External AI service | Fact extraction, case study writing, claim checking | Free tier, not yet tested | Model version TBD, to be recorded when fixed | No personal information is sent | Not applicable — no key in repo |
+| DS-05 | **User accounts on the live website** | Personal data | Signing in, scoping projects to a workspace | Collected from 14 Nov 2026, as soon as anyone signs up | Live, ongoing | **Yes** — name, email address, password (stored as a scrypt hash), workspace membership | **No** — never in the repository; held only in the hosted database |
+| DS-06 | Brand kits (colours, fonts, logo, banned words) | Configuration | Styling the designed report | Available — two example kits | From Nov 2026 | Logos may identify a company | Only the two example kits (HumbleBeeAI and the fictional Northwind) |
+| API-01 | Google Gemini API (Google AI Studio) | External AI service | Fact extraction, case study writing, claim checking | Free tier, in use | Pinned to `gemini-3.5-flash-lite` (Q-015 decided 31 Oct 2026) | No account data is sent — only project notes | Not applicable — no key in repo |
+| API-02 | Render (web hosting) + Neon (Postgres) | Infrastructure | Running the site and storing accounts and projects | Free tier, in use since 14 Nov 2026 | Live | Stores DS-05 and all uploaded project material | Not applicable — credentials in environment variables |
 
 ---
 
@@ -111,6 +114,28 @@ We plan to use either **ReportLab** or **WeasyPrint** (Python) to create the fin
 
 ---
 
+## 4a. Personal Data Collected by the Live Website
+
+Added in November 2026, when CaseForge became a hosted website with accounts. This is the only personal data the project collects, and it is about **our users**, not about project subjects.
+
+| What | Why it is needed | How it is stored | Who can see it |
+|---|---|---|---|
+| Name | Shown on the approval line of an approved document | Plain text in the `users` table | The user and others in their workspace |
+| Email address | Logging in, workspace invitations | Plain text in the `users` table | The user and others in their workspace |
+| Password | Logging in | **scrypt hash only** (`caseforge.db.hash_password`) — the password itself is never stored and cannot be recovered | Nobody |
+| Workspace membership | Scoping projects to a team | `workspaces` table | Members of that workspace |
+| Uploaded project material and images | The product's whole purpose | `projects` and `images` tables | The owner's workspace only |
+
+**Rules we hold ourselves to:**
+
+- None of this is ever committed to the public repository, and none of it appears in screenshots, slides or the demo video.
+- Account data is **not** sent to the Gemini API. Only the project notes a user submits are sent.
+- Every project request is scoped to the signed-in user's workspace, so one team cannot read another's material.
+- A user can change their password, leave a workspace or delete their account from the app (`/api/me/password`, `/api/me/leave`, `/api/me/delete`).
+- **Open point:** this is a student project on free hosting. We should not invite anyone outside the course and HumbleBeeAI to put real client material into it until we can say clearly how long data is kept and who can reach it. This is recorded as **Q-021**.
+
+---
+
 ## 5. What Can Be Shared Publicly
 
 | Item | In the public repository? |
@@ -148,7 +173,7 @@ Before a project input is used for testing, we will:
 For the Baseline, we need at least **three real project inputs** that work end to end. Target number of total test inputs: **TBD**.
 
 > [!NOTE]
-> **Status: not started.** No inputs have been prepared and no fact lists have been written. This is task **BT-2**, owned by Odina.
+> **Status: partly done.** Three *team-constructed* inputs and their hand-written fact lists are in `samples/` (01 clean form, 02 rough notes, 03 pasted chat), committed 31 October 2026. Each `facts.md` was written before the input was run through CaseForge, as Section 2 requires. **Three *real* project inputs are still missing** — that is the remainder of **BT-2**, owned by Odina, and it is what Baseline item B4 needs.
 
 ---
 

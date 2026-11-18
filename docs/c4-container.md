@@ -4,8 +4,8 @@
 |---|---|
 | **Project** | S1 - Case Study & Portfolio Generator (CaseForge) |
 | **Team** | Team 5 |
-| **Status** | Baseline implemented (31 Oct 2026) — code map in the [README](../README.md#project-status) |
-| **Last Updated** | 23 October 2026 |
+| **Status** | Built and deployed (14 Nov 2026) — live at https://caseforge-rcdu.onrender.com; code map in the [README](../README.md#project-status) |
+| **Last Updated** | 18 November 2026 |
 
 Shows the main parts inside CaseForge, what each is responsible for, and how they communicate. External services sit outside the system boundary.
 
@@ -15,27 +15,30 @@ flowchart TB
 
     subgraph Boundary["CaseForge — System Boundary"]
         direction TB
-        UI["<b>Interface</b><br/>Python — Streamlit or CLI<br/>Collects project input, shows the draft<br/>with flagged claims, captures edits<br/>and approval, triggers export"]
+        Web["<b>Web Application</b><br/>Python — FastAPI + static front end<br/>Serves the landing page and the app,<br/>handles sign-up, log-in and workspaces,<br/>and exposes the project API"]
+        UI["<b>Review Interface</b><br/>Browser front end (also Streamlit / CLI)<br/>Shows the draft with flagged claims,<br/>captures edits and approval,<br/>triggers export"]
         Pipeline["<b>Extraction &amp; Generation Pipeline</b><br/>Python<br/>Extracts only the facts stated in the input,<br/>then writes the case study from those facts"]
-        Checker["<b>Faithfulness Checker</b><br/>Python<br/>Compares every claim in the draft against<br/>the source input and the extracted facts.<br/>Labels each claim supported, reworded,<br/>unsupported or contradicted, and flags<br/>missing information"]
-        Store[("<b>Project Store</b><br/>SQLite / JSON files<br/>Source input, extracted facts, drafts,<br/>claim labels, edits and approval status")]
-        Renderer["<b>Document Renderer</b><br/>Python — ReportLab / WeasyPrint<br/>Renders approved content into the PDF<br/>case study and the one-page summary"]
+        Checker["<b>Faithfulness Checker</b><br/>Python<br/>Compares every claim against the source<br/>and the extracted facts; labels each one<br/>and flags missing information"]
+        Store[("<b>Project Store</b><br/>Postgres in production, SQLite locally<br/>Workspaces, users, projects, images,<br/>brand kits, claim labels, approvals")]
+        Renderer["<b>Document Renderer</b><br/>Python — ReportLab + Chromium<br/>PDF case study, one-page summary,<br/>portfolio page, designed 4–5 page report"]
     end
 
     LLM[["<b>LLM API</b> — Google Gemini, free tier<br/>(outside the system boundary)"]]
 
-    User -- "Submits notes and images; reviews flagged<br/>claims, edits, approves, and downloads<br/>the finished documents" --> UI
-    UI -- "Sends raw project input" --> Pipeline
+    User -- "Signs up, logs in, submits notes,<br/>images and brand kit" --> Web
+    Web -- "Authenticates and scopes<br/>every request to a workspace" --> Store
+    Web -- "Hands the project to the pipeline" --> Pipeline
+    Web -- "Serves the review screen" --> UI
     Pipeline -- "Prompt + notes →<br/>stated facts, then draft" --> LLM
-    Pipeline -- "Saves input, facts<br/>and draft" --> Store
+    Pipeline -- "Saves input, facts and draft" --> Store
     Pipeline -- "Hands over the draft<br/>for checking" --> Checker
     Checker -- "Reads the draft, the source input<br/>and the extracted facts" --> Store
-    Checker -- "Claim vs source<br/>comparison" --> LLM
+    Checker -- "Claim vs source comparison" --> LLM
     Checker -- "Writes a label for every claim<br/>and any missing-information flags" --> Store
     UI -- "Reads draft and flags for review;<br/>writes edits and approval" --> Store
     UI -- "Triggers export —<br/>only once approved" --> Renderer
     Renderer -- "Reads the approved content" --> Store
-    Renderer -- "Returns the rendered PDF case study<br/>and one-page summary" --> UI
+    Renderer -- "Returns the rendered documents" --> UI
 
     classDef person fill:#1168bd,color:#fff,stroke:#0b4884,stroke-width:2px
     classDef container fill:#438dd5,color:#fff,stroke:#2d6ca8,stroke-width:2px
@@ -43,7 +46,7 @@ flowchart TB
     classDef external fill:#999999,color:#fff,stroke:#6b6b6b,stroke-width:2px
 
     class User person
-    class UI,Pipeline,Checker,Renderer container
+    class Web,UI,Pipeline,Checker,Renderer container
     class Store store
     class LLM external
 ```
@@ -54,11 +57,12 @@ flowchart TB
 
 | Container | Technology | Responsibility | Baseline item | Build task | Status |
 |---|---|---|---|---|---|
-| **Interface** | Python — Streamlit + CLI (Q-013 decided) | Collects the seven input fields and images, shows the draft with flagged claims, captures edits, records approval, and triggers export only after approval | B1, B3 | BT-1, BT-5 | Built |
+| **Web Application** | Python — FastAPI, static HTML/CSS/JS front end | Serves the public landing page and the app; handles sign-up, log-in, team workspaces and invite codes; scopes every project request to the signed-in user's workspace | B1, B3 | — | Built (Nov 2026) |
+| **Review Interface** | Browser front end; Streamlit and CLI still work (Q-013 decided) | Collects the seven input fields and images, shows the draft with flagged claims, captures edits, records approval, and triggers export only after approval | B1, B3 | BT-1, BT-5 | Built |
 | **Extraction & Generation Pipeline** | Python + Gemini | Pulls out only the facts stated in the input, then writes the case study from those facts rather than from the raw notes | B5 | BT-3 | Built |
 | **Faithfulness Checker** | Python + Gemini | Compares every claim in the draft against the source and the extracted facts; labels each one; flags information that is missing rather than supplying it | B5 | BT-4 | Built |
-| **Project Store** | JSON files (one folder per project) | Holds the source input, extracted facts, drafts, claim labels, edits and approval status, so that a document can always be traced back to what was provided | B3, B5 | BT-1 | Built |
-| **Document Renderer** | Python — ReportLab (Q-012 decided) | Renders approved content into the fixed-template PDF and the one-page summary | B2 | BT-6 | Built |
+| **Project Store** | Postgres (Neon) in production, SQLite locally; five tables — workspaces, users, projects, images, brand kits | Holds the source input, extracted facts, drafts, claim labels, edits and approval status, so that a document can always be traced back to what was provided. Also holds user accounts; passwords are stored as scrypt hashes, never in plain text | B3, B5 | BT-1 | Built |
+| **Document Renderer** | Python — ReportLab (Q-012 decided) plus Chromium for the designed report | Renders approved content into the PDF case study, the one-page summary, the portfolio page and the designed 4–5 page branded report | B2, T1, T2 | BT-6 | Built |
 
 > [!NOTE]
 > **All five containers are built.** "Built" means the code exists and the automated tests pass; it does not yet mean the Baseline is met — that needs the real-input runs (BT-7) and the two-person claim check (BT-8).
@@ -87,6 +91,9 @@ We rejected it. A model checking its own output in the same call is not an indep
 | **Renamed Draft Store → Project Store, and widened what it holds** | The Checker needs the source input and the extracted facts, not just the draft. A store holding only drafts could not support the check at all |
 | **Added the missing link from the store to the Document Renderer** | As previously drawn, the Renderer had no way to read the approved text it was supposed to render |
 | **Renamed the boundary to CaseForge** | The repository, documents and product now use one name |
+| **Added the Web Application container** (Nov 2026) | The product is now a hosted website with accounts and team workspaces. The previous diagram had no server, no authentication and no multi-user concept at all |
+| **Project Store is now a real database** (Nov 2026) | JSON folders could not support accounts, workspaces or concurrent users. It is Postgres in production and SQLite locally, and it now also holds personal data — see [Data Sources](data-sources.md) |
+| **Document Renderer gained Chromium** (Nov 2026) | The designed 4–5 page report is laid out in HTML/CSS and printed by headless Chromium; ReportLab still produces the fixed-template PDF and the one-pager |
 | Recorded that the Checker also calls the LLM API | Level 1 was updated to match |
 
 ## Related

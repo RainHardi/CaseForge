@@ -6,7 +6,7 @@
 | **Repository** | CaseForge |
 | **Team** | Team 5 |
 | **Development Period** | Fall 2026 Semester |
-| **Last Updated** | 23 October 2026 |
+| **Last Updated** | 18 November 2026 |
 
 These are the working agreements the team follows for the whole semester. They sit on top of the course rules on data, attribution and repositories, which we follow in every case. We update this document when something stops working.
 
@@ -55,6 +55,7 @@ These are the working agreements the team follows for the whole semester. They s
 - Confidential client information will not be used.
 - Private company information will not be used.
 - Unnecessary personal information will not be collected or shared.
+- **Since the website went live (14 Nov 2026) we do collect personal data:** the name, email address and password of anyone who signs up. Passwords are stored only as scrypt hashes. None of it is committed to the repository, shown in slides or screenshots, or sent to the Gemini API. The conditions are recorded in [Data Sources](./data-sources.md), and we do not invite anyone outside the course and HumbleBeeAI to put real client material into the hosted site until Q-021 is answered.
 - Permission will be obtained before using classmates' project information, and their material is not published without their agreement.
 - Recordings of people, video of people and exported community chat messages are never uploaded to the public repository, even with class-project consent.
 - For every data source the team records where it came from, its usage conditions, the collection date or version, whether it contains personal information, and how it was prepared. These records are kept in [Data Sources](./data-sources.md) and summarized in the [README](../README.md).

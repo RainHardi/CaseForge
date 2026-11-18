@@ -4,8 +4,8 @@
 |---|---|
 | **Project** | S1 - Case Study & Portfolio Generator (CaseForge) |
 | **Team** | Team 5 |
-| **Status** | Designed — not implemented |
-| **Last Updated** | 23 October 2026 |
+| **Status** | Built and deployed — live at https://caseforge-rcdu.onrender.com (14 Nov 2026) |
+| **Last Updated** | 18 November 2026 |
 
 Shows CaseForge as a single box, who uses it, and the external systems it depends on.
 
@@ -17,8 +17,11 @@ flowchart TB
 
     LLM[["<b>LLM API</b><br/>Google Gemini, free tier<br/>Generates structured text and<br/>compares claims to the source"]]
 
-    User -- "Submits project notes and images,<br/>reviews flagged claims, edits,<br/>approves, downloads the PDF" --> System
+    Host[["<b>Hosting</b><br/>Render (web service) + Neon (Postgres)<br/>Runs the website and stores<br/>accounts and projects"]]
+
+    User -- "Signs in, submits project notes<br/>and images, reviews flagged claims,<br/>edits, approves, downloads" --> System
     System -- "Sends prompts, notes and<br/>claims for checking;<br/>receives structured text" --> LLM
+    System -- "Runs on; reads and writes<br/>accounts, projects and images" --> Host
 
     classDef person fill:#1168bd,color:#fff,stroke:#0b4884,stroke-width:2px
     classDef system fill:#08427b,color:#fff,stroke:#052e56,stroke-width:2px
@@ -26,7 +29,7 @@ flowchart TB
 
     class User person
     class System system
-    class LLM external
+    class LLM,Host external
 ```
 
 **Legend:** Dark blue = the system we are building. Mid blue = the person who uses it. Grey = external systems outside our control.

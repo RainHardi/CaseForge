@@ -5,11 +5,11 @@
 | **Project** | S1 - Case Study & Portfolio Generator |
 | **Repository** | CaseForge |
 | **Team** | Team 5 |
-| **Status** | Planned — nothing is demonstrable yet |
-| **Last Updated** | 23 October 2026 |
+| **Status** | Demonstrable live — https://caseforge-rcdu.onrender.com (14 Nov 2026) |
+| **Last Updated** | 18 November 2026 |
 
 > [!IMPORTANT]
-> **There is nothing to demonstrate yet.** Implementation has not started. This document is the scenario we are building towards, so that the demo shapes the build rather than being assembled at the end.
+> **The product runs live at https://caseforge-rcdu.onrender.com** — sign in, upload notes, get a checked draft, resolve what is flagged, approve, download the designed report. This document is the scenario the demo follows. The step that matters is the review screen refusing to export while a claim is flagged — the demo is built around showing that, not the finished document. **Fallback:** a recording, plus the local `streamlit run app.py`, in case the free-tier host is asleep or slow to wake.
 
 ## What the demo has to prove
 
