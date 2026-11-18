@@ -3,7 +3,7 @@
 **Category:** Software / AI Workflow
 **One-liner:** Companies do excellent work and then fail to sell it, because writing it up is nobody's job.
 **Project tab:** [HBAI Capstone Project Pool](./docs/HBAI_Capstone_project_pools.pdf) — S1: Case Study & Portfolio Generator
-**Status:** Baseline implemented — pipeline, checker, review step and PDF export working on team-constructed samples; real-input runs (BT-7) and the two-person claim check (BT-8) still to do (last updated 31 October 2026)
+**Status:** Built and live at **https://caseforge-rcdu.onrender.com** — website with accounts, pipeline, checker, review step, PDF export and designed report, all working on team-constructed samples. Real-input runs (BT-7) and the two-person claim check (BT-8) still to do (last updated 18 November 2026)
 
 > [!IMPORTANT]
 > **To try it:** see [Getting Started](#getting-started) — install, add a free Gemini key, run `streamlit run app.py`.
@@ -154,11 +154,15 @@ API keys are never committed. Keys live in `.env`, which is excluded by `.gitign
 | Human approves | Separate approval for the designed report, locked by a content hash | `report.approve_report` |
 | Huge messy input + brand rules | Notes read in parts and merged; guideline documents imported into a brand kit | `extract.chunks`, `brandkit.from_guidelines` |
 
-**Not done yet:** BT-2 real inputs and BT-7/BT-8 real-input runs with the two-person claim check; the planted-claim test **with Gemini** (the offline result is 20/20 but offline drafts are verbatim, so that number proves the rules, not the model pass); partner presentation format (Target).
+**Measured:** the planted-claim test has been run with Gemini as well as offline. On 31 October 2026, `gemini-3.5-flash-lite`, 3 team-constructed inputs × 3 repeats: **all 20 planted errors caught in every repeat (60 of 60 observations), and no false flags on 109 genuine sentences.** Full log: [`tests/results.md`](./tests/results.md); raw output in `eval/results/`.
 
-**Main risk:** the checker has only been measured offline. The Gemini run of `eval/planted_claims.py --repeats 3` is the next measurement that matters.
+**Live:** the website runs at **https://caseforge-rcdu.onrender.com** (Render + Neon Postgres). Setup in [docs/DEPLOY.md](./docs/DEPLOY.md).
 
-**Open questions:** tracked in the [Question Log](./docs/question-log.md). Q-012 (ReportLab) and Q-013 (Streamlit + CLI) are now decided.
+**Not done yet:** BT-2 three *real* project inputs, and the BT-7/BT-8 runs on them with the two-person claim check; the partner presentation format (Target); batch generation and multi-language output (Stretch).
+
+**Main risk:** every number above comes from notes we wrote ourselves, where the planted errors are short and obvious. Nothing has been run on a real client project, and the checker has not been tested against the subtle, inference-style claims a general model actually produces. That is the next measurement that matters.
+
+**Open questions:** tracked in the [Question Log](./docs/question-log.md). Q-012 (ReportLab), Q-013 (Streamlit, CLI and now a web app) and Q-015 (model pinned to `gemini-3.5-flash-lite`) are decided.
 
 ## Project Docs
 
