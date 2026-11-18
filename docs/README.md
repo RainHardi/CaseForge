@@ -3,10 +3,10 @@
 **Category:** Software / AI Workflow
 **One-liner:** Companies do excellent work and then fail to sell it, because writing it up is nobody's job.
 **Project tab:** [HBAI Capstone Project Pool](./docs/HBAI_Capstone_project_pools.pdf) — S1: Case Study & Portfolio Generator
-**Status:** Midterm draft — design complete, implementation not yet started (last updated 24 October 2026)
+**Status:** Built and live at **https://caseforge-rcdu.onrender.com** — website with accounts, pipeline, checker, review step, PDF export and designed report, all working on team-constructed samples. Real-input runs (BT-7) and the two-person claim check (BT-8) still to do (last updated 18 November 2026)
 
 > [!IMPORTANT]
-> **No code has been written yet.** This repository currently contains documentation only. The Baseline is designed but not implemented. See [Project Status](#project-status).
+> **To try it:** see [Getting Started](#getting-started) — install, add a free Gemini key, run `streamlit run app.py`.
 
 ## Team
 
@@ -103,35 +103,66 @@ Full details, usage conditions and open questions in [Data Sources](./docs/data-
 Per the course documentation guide, we record our use of AI tools:
 
 - **Documentation.** AI assistants were used to help draft and revise the documents in `docs/` and this README. Every document was read, edited and approved by a team member before being committed, and the content reflects the team's own decisions.
-- **Code.** No code has been written yet. When it is, any AI-assisted code will be noted here, and reviewed and understood by a team member before use.
+- **Code.** The first implementation (`caseforge/`, `app.py`, `tests/`, `eval/`) was written with help from an AI assistant (Claude). Under our ground rules it is reviewed and understood by a team member before it is merged, and the reviewer is named in the pull request.
 - **Verification.** Figures and sources cited in our documents — for example the Korean software industry statistics in our market analysis — were checked against the original sources by the team.
 
 ## Getting Started
 
-> [!NOTE]
-> There is nothing to run yet. These instructions describe the intended setup and will be completed once the first code lands.
+Needs Python 3.11+ and a free Gemini API key from Google AI Studio (aistudio.google.com/apikey).
 
 ```bash
 git clone https://github.com/RainHardi/CaseForge.git
 cd CaseForge
-cp .env.example .env   # then fill in your own GEMINI_API_KEY
+python -m venv .venv
+source .venv/bin/activate          # Windows: .venv\Scripts\activate
+pip install -r requirements.txt
+cp .env.example .env               # Windows: copy .env.example .env  — add GEMINI_API_KEY and SECRET_KEY
+python -m pytest                   # no API key needed
+playwright install chromium        # once: renders the designed report to PDF
+uvicorn web.main:app --reload      # website → http://localhost:8000
 ```
 
-`requirements.txt`, run instructions and expected outputs will be added with the first working script (task **BT-1** in the [Project Overview](./docs/project-overview.md#21-current-status-and-next-steps)). A clean-clone run has **not** been verified yet.
+- **Website** (`web/`): landing page, accounts and team workspaces, upload → draft → check → approve → download, plus LinkedIn post, proposal paragraph and elevator pitch formats.
+- **Designed report** (new): a 4–5 page branded report — big key numbers, process diagram, before/after chart — built only from the approved case study, checked again element by element, and locked until a person approves it. Brand kits (colours, fonts, logo, banned words) can be imported from a guidelines document. Two example kits: HumbleBeeAI and the fictional Northwind Digital Works.
+- **Share from your laptop** with Dev Tunnels, or **host for free** on Render + Neon: see [docs/DEPLOY.md](./docs/DEPLOY.md).
+- The first interface, `streamlit run app.py`, and the command line, `python -m caseforge --help`, still work and use the same pipeline.
 
-API keys are never committed. Keys live in `.env`, which is excluded by `.gitignore`; `.env.example` holds blank placeholders.
+Without a `GEMINI_API_KEY`, CaseForge runs in **offline mode**: no model is called and each sentence of the draft is a sentence from your notes.
+
+API keys are never committed. Keys live in `.env`, which is excluded by `.gitignore`.
 
 ## Project Status
 
-**Complete:** problem definition, target market and personas, Definition of Done, C4 Level 1 and Level 2 diagrams, data sources, test plan, demo script, team roles and ground rules.
+**Complete:** problem definition, target market and personas, Definition of Done, C4 diagrams, data sources, test plan, demo script, team roles and ground rules — and the Baseline implementation:
 
-**Not started:** all implementation. No tests have been run, and `tests/results.md` does not exist yet.
+| Task | What exists | Where |
+|---|---|---|
+| BT-1 | Code structure, `requirements.txt`, Gemini client with JSON-schema output and rate-limit retry | `caseforge/llm.py`, `caseforge/config.py` |
+| BT-3 | Fact extraction; every fact must quote the input, and facts whose quote is not found are dropped | `caseforge/extract.py` |
+| BT-4 | Two-layer faithfulness checker (deterministic rules + an independent model pass); planted-claim test | `caseforge/checker.py`, `eval/planted_claims.py` |
+| BT-5 | Review: edit, delete, add, add-to-source, gap acknowledgement, approve/reject; export locked until approved. Input by upload (PDF, Word, Excel, PowerPoint, text, images) or pasted notes | `caseforge/review.py`, `caseforge/ingest.py`, `app.py`, `caseforge/cli.py` |
+| BT-6 | PDF case study, one-page summary (always one page), portfolio web page | `caseforge/render/` |
 
-**Next step:** build the smallest end-to-end path first — project notes in, a draft out, and a list of which claims appear in the input — before any interface or PDF work. Remaining Baseline tasks, with owners and completion criteria, are in the [Project Overview](./docs/project-overview.md#21-current-status-and-next-steps).
+**Mentor feedback round (Nov 2026) — publishable reports:**
 
-**Main risk:** implementation has not begun, and the hardest part — the faithfulness check — is the part the whole project depends on.
+| What the mentor asked | What CaseForge does now | Where |
+|---|---|---|
+| Professional design, big numbers, real visuals, consistent brand | HTML/CSS report rendered by Chromium; brand kit drives colours, fonts (bundled, open licence), motif, logo; contrast rule keeps pale colours off text | `caseforge/report.py`, `caseforge/render/report_pdf.py`, `caseforge/brandkit.py`, `brands/` |
+| Layout that fits the content, not one template | The notes decide the story (impact, before→after, timeline, quote-led, method-led), the cover, the page order and each block's shape; the reasons are shown to the reviewer | `caseforge/layout.py` |
+| Short copy, 4–5 pages, each fact once | Length budgets per element, text shrinks to fit, warning when the same number appears twice | `report.report_warnings` |
+| Faithful; estimates stay labelled | Every report element re-checked; "estimate" wording in notes must survive; conflicting numbers become a blocking question; each fact shows file and line | `textutil.estimate_flags`, `extract.conflicts_from`, `gaps.py` |
+| Human approves | Separate approval for the designed report, locked by a content hash | `report.approve_report` |
+| Huge messy input + brand rules | Notes read in parts and merged; guideline documents imported into a brand kit | `extract.chunks`, `brandkit.from_guidelines` |
 
-**Open questions:** 17, tracked in the [Question Log](./docs/question-log.md). The three most urgent concern permission to use real project data and target dates for the Baseline tasks.
+**Measured:** the planted-claim test has been run with Gemini as well as offline. On 31 October 2026, `gemini-3.5-flash-lite`, 3 team-constructed inputs × 3 repeats: **all 20 planted errors caught in every repeat (60 of 60 observations), and no false flags on 109 genuine sentences.** Full log: [`tests/results.md`](./tests/results.md); raw output in `eval/results/`.
+
+**Live:** the website runs at **https://caseforge-rcdu.onrender.com** (Render + Neon Postgres). Setup in [docs/DEPLOY.md](./docs/DEPLOY.md).
+
+**Not done yet:** BT-2 three *real* project inputs, and the BT-7/BT-8 runs on them with the two-person claim check; the partner presentation format (Target); batch generation and multi-language output (Stretch).
+
+**Main risk:** every number above comes from notes we wrote ourselves, where the planted errors are short and obvious. Nothing has been run on a real client project, and the checker has not been tested against the subtle, inference-style claims a general model actually produces. That is the next measurement that matters.
+
+**Open questions:** tracked in the [Question Log](./docs/question-log.md). Q-012 (ReportLab), Q-013 (Streamlit, CLI and now a web app) and Q-015 (model pinned to `gemini-3.5-flash-lite`) are decided.
 
 ## Project Docs
 
