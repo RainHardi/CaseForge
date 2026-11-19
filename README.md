@@ -149,7 +149,7 @@ API keys are never committed. Keys live in `.env`, which is excluded by `.gitign
 |---|---|---|
 | Professional design, big numbers, real visuals, consistent brand | HTML/CSS report rendered by Chromium; brand kit drives colours, fonts (bundled, open licence), motif, logo; contrast rule keeps pale colours off text | `caseforge/report.py`, `caseforge/render/report_pdf.py`, `caseforge/brandkit.py`, `brands/` |
 | Layout that fits the content, not one template | The notes decide the story (impact, before→after, timeline, quote-led, method-led), the cover, the page order and each block's shape; the reasons are shown to the reviewer | `caseforge/layout.py` |
-| Short copy, 4–5 pages, each fact once | Length budgets per element, text shrinks to fit, warning when the same number appears twice | `report.report_warnings` |
+| Short copy, each fact once, nothing left out | Standard case-study structure; pages grow with the notes; every approved sentence is on a designed page or in the Project facts table (coverage shown); length budgets per element; warning when the same number appears twice | `report.check_report`, `layout.compose`, `report.report_warnings` |
 | Faithful; estimates stay labelled | Every report element re-checked; "estimate" wording in notes must survive; conflicting numbers become a blocking question; each fact shows file and line | `textutil.estimate_flags`, `extract.conflicts_from`, `gaps.py` |
 | Human approves | Separate approval for the designed report, locked by a content hash | `report.approve_report` |
 | Huge messy input + brand rules | Notes read in parts and merged; guideline documents imported into a brand kit | `extract.chunks`, `brandkit.from_guidelines` |

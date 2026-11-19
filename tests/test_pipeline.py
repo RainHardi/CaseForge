@@ -202,26 +202,28 @@ def test_slow_gemini_switches_model_then_gives_up():
     assert calls == []
 
 
-def test_writer_gets_a_sentence_budget_and_section_rules():
-    """Third live run: 51 facts came back as 50 sentences in the extractor's sections (contract dates and
-    team size under Results). Long notes are condensed; the [field] is only a first guess."""
+def test_writer_uses_every_fact_and_the_standard_sections():
+    """Feedback 19 Nov: big notes gave a thin case study. Every fact now ends up in a sentence: one the
+    writer skips comes back in its own words, in the right standard section."""
     from caseforge import prompts
-    from caseforge.generate import _write_llm, sentence_budget
+    from caseforge.generate import Written, WrittenSentence, write_claims
     from caseforge.llm import FakeLLM
-    from caseforge.models import Fact, ProjectInput
-    from caseforge.generate import Written
+    from caseforge.models import SECTION_KEYS, Fact, ProjectInput
 
-    assert sentence_budget(5)["budget"] == 5 and sentence_budget(51)["budget"] == 26
-    assert sentence_budget(200)["cap"] <= 36
+    assert {"introduction", "objectives", "implementation", "lessons"} <= set(SECTION_KEYS)
     seen = {}
+    facts = [Fact(id="F1", field="client_problem", statement="Dispatchers planned routes in a spreadsheet.", quote="x"),
+             Fact(id="F2", field="work_done", statement="The contract was signed on 9 February 2024.", quote="x"),
+             Fact(id="F3", field="results", statement="A follow-up contract for phase 2 was signed.", quote="x"),
+             Fact(id="F4", field="results", statement="Late deliveries fell from 14 percent to 6.1 percent.", quote="x")]
 
     def respond(system, prompt, schema):
         seen["system"], seen["prompt"] = system, prompt
-        return Written(sentences=[])
+        return Written(sentences=[WrittenSentence(section="results", text="Late deliveries fell from 14 percent to 6.1 percent.",
+                                                  fact_ids=["F4"])])
 
-    facts = [Fact(id=f"F{i}", field="results", statement=f"Fact number {i}.", quote=f"Fact number {i}.")
-             for i in range(1, 52)]
-    _write_llm(ProjectInput(raw_notes="x"), facts, FakeLLM(respond))
-    assert "about 26 sentences" in seen["prompt"] and "never more than 31" in seen["prompt"]
-    assert "A date, budget or team size is NOT a result" in seen["system"]
-    assert "{fields}" not in prompts.WRITE_SYSTEM
+    claims = write_claims(ProjectInput(raw_notes="x"), facts, FakeLLM(respond))
+    assert "USE EVERY FACT" in seen["system"] and "every one of them must be cited" in seen["prompt"]
+    assert "{sections}" not in prompts.WRITE_SYSTEM
+    where = {c.fact_ids[0]: c.section for c in claims}
+    assert where == {"F1": "client_problem", "F2": "implementation", "F3": "lessons", "F4": "results"}

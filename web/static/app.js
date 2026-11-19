@@ -365,7 +365,7 @@ function tabOutputs() {
       <div><div class="kicker">${rr ? "Ready to send" : "Almost there"}</div>
         <h2>${rr ? "Your report is ready" : "Approve the report to unlock it"}</h2>
         <p class="hint">${rr ? `Fact-checked against your notes and approved by ${esc(r.report.approved_by)}.` : "The case study files below are already approved and ready."}</p></div>
-      ${rr ? dl(`${P()}/report/pdf`, "Report PDF", `${esc(r.report.brand.name)} · 4–5 pages`, true) : `<a class="btn primary" href="#p/${esc(r.id)}/report">Go to report</a>`}
+      ${rr ? dl(`${P()}/report/pdf`, "Report PDF", `${esc(r.report.brand.name)} · ${(r.report.layout?.pages?.length || 4) + 1} pages`, true) : `<a class="btn primary" href="#p/${esc(r.id)}/report">Go to report</a>`}
     </div>
     <div class="dls">${docs.map(([k, t, d]) => dl(`${P()}/export/${k}`, t, d)).join("")}</div>`}
     <h2 style="margin:34px 0 4px;font-size:1.15rem">Short versions</h2>
@@ -434,9 +434,15 @@ async function regenerate() {
 /* ---------------------------------------------------------------- designed report */
 const PATH_NAME = { title: "Title", subtitle: "Subtitle", client_line: "Client line", challenge_intro: "Challenge intro",
   brief: "The brief", solution_intro: "Solution intro", tech: "Tools", conclusion: "Closing line", quote: "Quote",
-  challenges: "Challenge", pillars: "What we did", steps: "Process step", metrics: "Big number", comparisons: "Before / after",
-  outcomes: "Outcome", tags: "Tag", timeline: "Milestone" };
-const HEADLINE = { challenge: "Challenge headline", solution: "Solution headline", results: "Results headline", journey: "Timeline headline", close: "Closing headline" };
+  challenges: "Challenge", pillars: "What we did", steps: "Approach step", metrics: "Big number", comparisons: "Before / after",
+  outcomes: "Outcome", tags: "Tag", timeline: "Milestone", summary: "Executive summary", intro: "Introduction",
+  approach_intro: "Approach intro", implementation_intro: "Implementation intro", objectives: "Objective",
+  lessons: "Lesson / next step", team: "Team chart", budget: "Budget figure", architecture: "Architecture diagram",
+  facts: "Project fact" };
+const HEADLINE = { summary: "Summary headline", intro: "Introduction headline", challenge: "Challenge headline",
+  objectives: "Objectives headline", approach: "Approach headline", solution: "Solution headline",
+  implementation: "Delivery headline", technology: "Technology headline", results: "Results headline",
+  journey: "Timeline headline", close: "Closing headline", lessons: "Lessons headline" };
 const pathName = p => { const [h, i] = p.split("."); if (h === "headlines") return HEADLINE[i] || "Headline"; return (PATH_NAME[h] || h) + (i !== undefined ? ` ${+i + 1}` : ""); };
 async function brandOptions() {
   if (!S.brands) S.brands = await act(() => api("GET", "/api/brands"));
@@ -508,6 +514,7 @@ async function tabReport() {
         ${bad.length ? `<div class="next bad"><b>${bad.length} element${bad.length > 1 ? "s" : ""} not backed by your notes.</b> Edit or remove ${bad.length > 1 ? "them" : "it"} to approve.</div>
           <div class="doc">${bad.map(reportRow).join("")}</div>`
           : `<div class="next ok"><b>Every number and sentence is backed by your notes.</b> Check the preview, then approve.</div>`}
+        ${d.coverage && d.coverage.total ? `<div class="next ok"><b>Nothing from your notes is left out.</b> All ${d.coverage.total} approved sentences are in the report: ${d.coverage.designed} on the designed pages${d.coverage.facts ? `, ${d.coverage.facts} in the Project facts table at the end` : ""}. ${(d.layout?.pages?.length || 0) + 1} pages.</div>` : ""}
         ${d.layout && d.layout.notes.length ? `<details class="fold"><summary>Why this layout</summary><ul>${d.layout.notes.map(n => `<li>${esc(n)}</li>`).join("")}</ul></details>` : ""}
         ${d.warnings.length ? `<details class="fold"><summary>Layout &amp; brand notes (${d.warnings.length})</summary><ul>${d.warnings.map(w => `<li>${esc(w)}</li>`).join("")}</ul></details>` : ""}
         <details class="fold" ${S.openElems ? "open" : ""} id="allel"><summary>Edit text (${els.length - bad.length} checked elements)</summary>
@@ -561,13 +568,15 @@ async function tabReport() {
 function reportRow(e) {
   const blocking = !e.label || e.label === "unsupported" || e.label === "contradicted";
   const editing = S.editing === "r" + e.id, metric = e.id.startsWith("metrics.");
+  const head = e.id.split(".")[0], fixed = ["facts", "team", "budget", "architecture"].includes(head);  // drawn from approved text
   const est = metric && S.rec.report.plan.metrics[+e.id.split(".")[1]]?.estimate;
   return `<div class="claim ${blocking ? "bad" : e.label === "supported" ? "ok" : ""}">
     <div class="s"><span class="hint" style="display:block;font-family:var(--sans)">${esc(pathName(e.id))}${est ? " · ESTIMATED" : ""}</span>
       ${editing ? `<textarea data-red="${esc(e.id)}" aria-label="Edit">${esc(e.text)}</textarea>` : esc(e.text)}</div>
     <div class="m">${chip(e.label)}${blocking ? `<span class="why">${esc(e.reason)}</span>` : ""}
       <div class="acts">${editing ? `<button class="btn sm primary" data-rsave="${esc(e.id)}">Save and re-check</button><button class="btn sm ghost" data-rcancel="1">Cancel</button>`
-        : `<button class="btn sm" data-redit="${esc(e.id)}">Edit</button>
+        : head === "facts" ? `<span class="hint">From the approved case study — edit it there.</span>`
+        : `${fixed ? "" : `<button class="btn sm" data-redit="${esc(e.id)}">Edit</button>`}
            ${metric ? `<button class="btn sm ghost" data-rest="${esc(e.id)}" data-on="${est ? 0 : 1}">${est ? "Not an estimate" : "Mark estimate"}</button>` : ""}
            ${e.id === "title" ? "" : `<button class="btn sm ghost danger" data-rdel="${esc(e.id)}">Remove</button>`}`}</div></div></div>`;
 }

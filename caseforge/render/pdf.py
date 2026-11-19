@@ -231,14 +231,14 @@ def render_case_study(record: ProjectRecord, image_dir: Path, out: Path, draft: 
     for img in record.input.images:
         images_by_section.setdefault(img.section, []).append(img)
 
-    for key in ["client_problem", "work_done", "technical_approach", "tools", "challenges", "results"]:
+    for key in [k for k in SECTION_TITLES if k != "summary"]:
         texts = _section_texts(record, key)
         if not texts:
             continue  # a missing section is left out, never filled in
         heading = _section_heading(SECTION_TITLES[key], st)
         if key == "tools":
             body = _chips(texts, st, width)
-        elif key in ("challenges", "results"):
+        elif key in ("challenges", "results", "objectives", "lessons"):
             body = _bullets(texts, st)
         else:
             body = _p(" ".join(texts), st["body"])
@@ -253,7 +253,7 @@ def render_case_study(record: ProjectRecord, image_dir: Path, out: Path, draft: 
                 story.append(KeepTogether(parts))
 
     # images attached to a section that has no text still appear, at the end
-    placed = {"client_problem", "work_done", "technical_approach", "tools", "challenges", "results"}
+    placed = {k for k in SECTION_TITLES if k != "summary"}
     leftovers = [i for s, imgs in images_by_section.items() if s not in placed or not _section_texts(record, s) for i in imgs]
     for img in leftovers:
         flow = _image(record, image_dir, img.filename, width, 95 * mm)

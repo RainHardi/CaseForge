@@ -10,8 +10,10 @@ No two reports need the same template. The composer reads the checked report pla
    build           mostly method and approach          → the process diagram is the centrepiece
 2. the BLOCK VARIANT from how much content there is (1 metric = one hero number, 4 = a grid;
    a short process = horizontal flow, a long one = vertical steps; one challenge = a big statement …)
-3. the PAGES — sections are weighed and sparse neighbours share a page, so the report is 3–5 pages
-   with no half-empty ones.
+3. the PAGES — the standard case-study structure (summary, introduction, challenge, objectives, approach,
+   solution, implementation, technology, results, client voice, lessons, project facts). Sections are
+   weighed; sparse neighbours share a page and long ones continue on the next, so small notes give 4–5
+   pages and big notes as many as they need, with no half-empty ones.
 
 Every decision is written to `notes` in plain words, so a reviewer can see why the report looks as it does.
 The composer is deterministic: same content → same layout. Different content → a different layout.
@@ -22,7 +24,8 @@ from __future__ import annotations
 from pydantic import BaseModel, Field
 
 CAPACITY = 100        # content units that fit on one A4 page body
-MAX_PAGES = 4         # inner pages after the cover (so 5 pages at most)
+MAX_PAGES = 4         # inner pages for a small report; big notes get more (see compose)
+PAGE_CEILING = 16     # never more inner pages than this
 
 
 class Block(BaseModel):
@@ -51,13 +54,17 @@ THEMES = ("light", "dark", "bold", "editorial")
 FRAMES = ("stack", "sidebar", "magazine", "dashboard", "split")   # how a page is built, not just its colours
 DEFAULT_FRAME = {"impact": "dashboard", "transformation": "split", "journey": "sidebar", "people": "magazine",
                  "build": "sidebar"}
-SECTION_KEYS = ("challenge", "solution", "journey", "results", "close")
+SECTION_KEYS = ("summary", "intro", "challenge", "objectives", "approach", "solution", "implementation",
+                "technology", "results", "close", "lessons", "journey")
+ORDER = ["summary", "intro", "challenge", "objectives", "approach", "solution", "implementation", "technology",
+         "results", "close", "lessons"]
 VARIANTS = {"metrics": ("hero", "pair", "row", "grid", "band", "side", "rings"), "steps": ("flow", "vertical", "prose"),
             "challenges": ("statement", "numbered", "prose"), "pillars": ("cols1", "cols2", "cols3", "prose"),
-            "outcomes": ("list", "grid", "prose"), "timeline": ("horizontal", "vertical"),
+            "outcomes": ("list", "grid", "prose"), "timeline": ("horizontal", "vertical", "gantt"),
+            "objectives": ("list", "grid", "prose"), "lessons": ("list", "grid", "prose"),
             "comparison": ("bars", "from-to", "columns", "slope"), "quote": ("inline", "hero", "pull")}
 HIDEABLE = ("client", "brief", "pillars", "steps", "tech", "timeline", "comparison", "quote", "outcomes", "closing",
-            "challenges", "metrics", "brand")   # brand = the company name / logo in the corner and footer of every page
+            "challenges", "metrics", "brand", "objectives", "lessons", "team", "budget", "architecture", "facts")   # brand = the company name / logo in the corner and footer of every page
 DEFAULT_THEME = {"impact": "bold", "transformation": "light", "journey": "editorial", "people": "editorial",
                  "build": "light"}
 
@@ -192,12 +199,34 @@ def compose(plan, prefs: Prefs | None = None) -> Layout:
 
     # ---------------------------------------------------------------- 3. sections with block variants
     S: dict[str, Section] = {}
+    shown = [i for i in range(len(m)) if i != L.hero_metric]
+    n = len(shown)
+    txt = lambda f: getattr(plan, f, "") or ""  # noqa: E731
+
+    # executive summary: the short version, with the key numbers
+    s = Section(key="summary", label="At a glance")
+    if txt("summary"):
+        s.blocks.append(Block(kind="lede", field="summary"))
+    if n:
+        # the graph follows the numbers: percentages that are shares of a whole ("96 % of drivers") are rings
+        pct = [m[i] for i in shown if m[i].unit.strip() == "%" and 0 < _num(m[i].value) <= 100]
+        rings = 2 <= n <= 4 and len(pct) == n and all(_SHARE.search(x.label) for x in pct)
+        s.blocks.append(Block(kind="metrics", variant="rings" if rings else {1: "hero", 2: "pair", 3: "row"}.get(n, "grid")))
+    S["summary"] = s
+
+    # introduction: the client and the context
+    s = Section(key="intro", label="About the client")
+    if txt("intro"):
+        s.blocks.append(Block(kind="lede", field="intro"))
+        if plan.client_line:
+            s.blocks.append(Block(kind="client"))
+    S["intro"] = s
 
     # challenge
     s = Section(key="challenge", label="The challenge")
     if plan.challenge_intro:
         s.blocks.append(Block(kind="lede", field="challenge_intro"))
-    if plan.client_line:
+    if plan.client_line and not txt("intro"):
         s.blocks.append(Block(kind="client"))
     if len(plan.challenges) == 1:
         s.blocks.append(Block(kind="challenges", variant="statement"))
@@ -207,37 +236,59 @@ def compose(plan, prefs: Prefs | None = None) -> Layout:
         s.blocks.append(Block(kind="brief"))
     S["challenge"] = s
 
-    # solution
+    # objectives
+    obj = getattr(plan, "objectives", [])
+    S["objectives"] = Section(key="objectives", label="What we set out to do",
+                              blocks=[Block(kind="objectives", variant="list" if len(obj) <= 2 else "grid")] if obj else [])
+
+    # approach: how we worked
+    s = Section(key="approach", label="Our approach")
+    if txt("approach_intro"):
+        s.blocks.append(Block(kind="lede", field="approach_intro"))
+    if plan.steps:
+        longest = max(_len(x.text) for x in plan.steps)
+        vertical = len(plan.steps) >= 6 or longest > 75 or (L.story == "build" and len(plan.steps) >= 4)
+        s.blocks.append(Block(kind="steps", variant="vertical" if vertical else "flow", title=False))
+    S["approach"] = s
+
+    # solution: what we delivered
     s = Section(key="solution", label="The solution")
     if plan.solution_intro:
         s.blocks.append(Block(kind="lede", field="solution_intro"))
     if plan.pillars:
-        s.blocks.append(Block(kind="pillars", variant=f"cols{2 if len(plan.pillars) in (2, 4) else min(3, len(plan.pillars))}"))
-    if plan.steps:
-        longest = max(_len(x.text) for x in plan.steps)
-        vertical = len(plan.steps) >= 6 or longest > 75 or (L.story == "build" and len(plan.steps) >= 4)
-        s.blocks.append(Block(kind="steps", variant="vertical" if vertical else "flow"))
-    if plan.tech:
-        s.blocks.append(Block(kind="tech"))
+        s.blocks.append(Block(kind="pillars", variant=f"cols{2 if len(plan.pillars) in (2, 4) or len(plan.pillars) > 6 else min(3, len(plan.pillars))}"))
     S["solution"] = s
 
-    # journey (timeline gets its own section only when it is the story; otherwise it joins the solution)
+    # implementation: how the project ran — timeline as a Gantt when the dates allow, team, budget
+    s = Section(key="implementation", label="How it unfolded" if L.story == "journey" else "How it was delivered")
+    if txt("implementation_intro"):
+        s.blocks.append(Block(kind="lede", field="implementation_intro"))
     if tl:
-        tb = Block(kind="timeline", variant="vertical" if len(tl) > 5 else "horizontal")
-        if L.story == "journey":
-            S["journey"] = Section(key="journey", label="How it unfolded", blocks=[tb])
-        else:
-            S["solution"].blocks.insert(1 if plan.solution_intro else 0, tb)
+        dated = [month_index(e.when) for e in tl]
+        gantt = sum(x is not None for x in dated) >= 3 and len({round(x) for x in dated if x is not None}) >= 2
+        s.blocks.append(Block(kind="timeline", variant="gantt" if gantt else "vertical" if len(tl) > 5 else "horizontal"))
+        if gantt:
+            L.notes.append(f"The {len(tl)} dated milestones are drawn on a time axis (Gantt), "
+                           "with any delay against the plan shown.")
+    if len(getattr(plan, "team", [])) >= 2:
+        s.blocks.append(Block(kind="team"))
+        L.notes.append("Team size over time is drawn as a chart.")
+    if getattr(plan, "budget", []):
+        s.blocks.append(Block(kind="budget"))
+        L.notes.append("Budget figures are drawn as bars on one scale.")
+    S["implementation"] = s
+
+    # technology: an architecture diagram when there is a stack to draw, else the list of tools
+    s = Section(key="technology", label="The technology")
+    if getattr(plan, "architecture", []):
+        s.blocks.append(Block(kind="architecture"))
+        L.notes.append(f"The tools are drawn as a {len(plan.architecture)}-layer architecture diagram.")
+    elif plan.tech:
+        s.blocks.append(Block(kind="tech"))
+    S["technology"] = s
 
     # results
     s = Section(key="results", label="The results")
-    shown = [i for i in range(len(m)) if i != L.hero_metric]
-    n = len(shown)
-    if n:
-        # the graph follows the numbers: percentages that are shares of a whole ("96 % of drivers") are rings
-        pct = [m[i] for i in shown if m[i].unit.strip() == "%" and 0 < _num(m[i].value) <= 100]
-        rings = 2 <= n <= 4 and len(pct) == n and all(_SHARE.search(x.label) for x in pct)
-        s.blocks.append(Block(kind="metrics", variant="rings" if rings else {1: "hero", 2: "pair", 3: "row"}.get(n, "grid")))
     if comp:
         if L.cover == "from-to" and len(comp) == 1:
             pass  # already on the cover
@@ -252,35 +303,26 @@ def compose(plan, prefs: Prefs | None = None) -> Layout:
         s.blocks.append(Block(kind="outcomes", variant="list" if len(plan.outcomes) <= 2 else "grid"))
     S["results"] = s
 
-    # close
-    s = Section(key="close", label="What it delivered" if L.story != "people" else "In their words")
+    # close: the client's voice
+    s = Section(key="close", label="In their words")
     if quote and L.cover != "quote":
         s.blocks.append(Block(kind="quote", variant="hero" if L.story == "people" else "inline"))
     if plan.outcomes and L.story == "people":
         s.blocks.append(Block(kind="outcomes", variant="grid"))
     if plan.conclusion:
         s.blocks.append(Block(kind="closing"))
-    if not quote and L.story != "people":
-        # without a quote the close would be a lonely panel; the outcomes are what it delivered
-        moved = [b for b in S["results"].blocks if b.kind == "outcomes"]
-        S["results"].blocks = [b for b in S["results"].blocks if b.kind != "outcomes"]
-        s.blocks[0:0] = moved
-        if moved:
-            L.notes.append("Outcomes sit on the closing page — there is no quote to carry it.")
-    s.blocks.append(Block(kind="verify"))
     S["close"] = s
 
-    order = {"impact": ["results", "challenge", "solution", "close"],
-             "transformation": ["challenge", "results", "solution", "close"],
-             "journey": ["challenge", "journey", "solution", "results", "close"],
-             "people": ["challenge", "solution", "results", "close"],
-             "build": ["challenge", "solution", "results", "close"]}[L.story]
-    if L.story == "impact":
-        S["results"].label = "At a glance"
+    # lessons and what comes next
+    les = getattr(plan, "lessons", [])
+    S["lessons"] = Section(key="lessons", label="Lessons and next steps",
+                           blocks=[Block(kind="lessons", variant="list" if len(les) <= 2 else "grid")] if les else [])
+
+    order = list(ORDER)
     # the frame reshapes blocks: prose for magazines, side slots for the sidebar, tiles for dashboards
     frame_variants = {
         "magazine": {"challenges": "prose", "pillars": "prose", "outcomes": "prose", "steps": "prose",
-                     "metrics": "band", "quote": "pull"},
+                     "objectives": "prose", "lessons": "prose", "metrics": "band", "quote": "pull"},
         "sidebar": {"metrics": "side", "steps": "vertical", "challenges": "numbered", "timeline": "vertical",
                     "pillars": "cols1" if len(plan.pillars) <= 2 else "cols2"},
         "dashboard": {"steps": "flow", "outcomes": "grid", "pillars": "cols2"},
@@ -289,7 +331,7 @@ def compose(plan, prefs: Prefs | None = None) -> Layout:
     side_kinds = {"client", "metrics", "tech", "quote"} if L.frame == "sidebar" else set()
     for sec in S.values():
         for b in sec.blocks:
-            if b.kind in frame_variants and not (b.kind == "challenges" and b.variant == "statement" and L.frame != "magazine"):
+            if b.kind in frame_variants and not (b.kind == "challenges" and b.variant == "statement" and L.frame != "magazine")                     and not (b.kind == "timeline" and b.variant == "gantt"):
                 b.variant = frame_variants[b.kind]
             if b.kind in side_kinds:
                 b.slot = "side"
@@ -318,31 +360,31 @@ def compose(plan, prefs: Prefs | None = None) -> Layout:
                 b.variant = {1: "hero", 2: "pair", 3: "row"}.get(len(shown), "grid")
             if b.kind == "comparison" and b.variant == "from-to" and len(comp) > 1:
                 b.variant = "bars"   # one big pair cannot show three
-    if P.order:
-        wanted = [k for k in P.order if k in order]
-        order = wanted + [k for k in order if k not in wanted and k != "close"] + (["close"] if "close" not in wanted else [])
-    sections = [S[k] for k in order if k in S and any(b.kind != "verify" for b in S[k].blocks) or k == "close"]
+    if P.order:   # the reviewer reorders the middle; the summary and introduction always open the report
+        wanted = [k for k in P.order if k in order and k not in ("summary", "intro")]
+        order = ["summary", "intro"] + wanted + [k for k in order if k not in wanted and k not in ("summary", "intro")]
+    sections = [S[k] for k in order if k in S and S[k].blocks]
+    # every approved sentence that no designed element tells: the Project facts table, page by page
+    facts = getattr(plan, "facts", [])
+    if facts and "facts" not in P.hide:
+        sections += _fact_sections(facts, WIDTH.get(L.frame, 684) if L.frame != "sidebar" else 684)
+        L.notes.append(f"{len(facts)} approved sentence(s) not shown on the designed pages are listed under "
+                       "Project facts, so nothing from the notes is left out.")
+    if not sections:
+        sections = [Section(key="close", label="In their words")]
+    sections[-1].blocks.append(Block(kind="verify"))
+    cap = {"airy": 85, "compact": 118}.get(L.density, CAPACITY)
     for sec in sections:
         sec.weight = _weigh(sec, plan, L)
-    # a long solution is told in two parts, so its second half can share a page with a lighter neighbour
-    for i, sec in enumerate(sections):
-        tail = [b for b in sec.blocks if b.kind in ("steps", "tech") and b.slot == "main"]
-        head = [b for b in sec.blocks if b not in tail]
-        if sec.key == "solution" and sec.weight > 66 and any(b.kind == "steps" for b in tail) and \
-                any(b.kind != "lede" for b in head):
-            for b in tail:
-                b.title = b.kind != "steps"
-            how = Section(key="how", label="How it works", blocks=tail)
-            sec.blocks = head
-            sec.weight, how.weight = _weigh(sec, plan, L), _weigh(how, plan, L)
-            sections.insert(i + 1, how)
-            break
+    # a section too long for one page continues on the next ("The solution (continued)")
+    sections = [part for sec in sections for part in _split(sec, plan, L, cap)]
 
     # ---------------------------------------------------------------- 4. pack sections into pages
     # every way of cutting the section list into pages is scored: nothing may overflow, and the
     # pages should carry about the same load — so no page ends up half empty beside a crowded one
-    cap = {"airy": 85, "compact": 118}.get(L.density, CAPACITY)
-    groups = _paginate(sections, cap)
+    total = sum(x.weight for x in sections) + GAP * (len(sections) - 1)
+    max_pages = max(MAX_PAGES, min(PAGE_CEILING, -(-total // int(cap * 0.78)) + 1))
+    groups = _paginate(sections, cap, max_pages)
     # a closing page with almost nothing on it: the outcomes move there ("What it delivered" is where
     # they belong), which also takes weight off the results page
     last = groups[-1] if groups else []
@@ -353,7 +395,7 @@ def compose(plan, prefs: Prefs | None = None) -> Layout:
             res.blocks = [b for b in res.blocks if b not in moved]
             last[0].blocks = moved + last[0].blocks
             res.weight, last[0].weight = _weigh(res, plan, L), _weigh(last[0], plan, L)
-            groups = _paginate(sections, cap)
+            groups = _paginate(sections, cap, max_pages)
     pages = [LayoutPage(sections=g) for g in groups]
     for pg in pages:
         pg.side = any(b.slot == "side" for x in pg.sections for b in x.blocks)
@@ -384,13 +426,30 @@ def _load(group: list[Section]) -> int:
     return sum(x.weight for x in group) + GAP * (len(group) - 1)
 
 
-def _paginate(sections: list[Section], cap: int) -> list[list[Section]]:
+def _page_cost(load: int, cap: int) -> float:
+    return max(0, load - cap) * 6 + max(0, 58 - load) * 2 + 4
+
+
+def _paginate(sections: list[Section], cap: int, max_pages: int = MAX_PAGES) -> list[list[Section]]:
     n = len(sections)
     if n <= 1:
         return [sections] if sections else []
+    if n > 13:   # long reports: the best split by dynamic programming (every cut is a page break)
+        best = [0.0] + [float("inf")] * n
+        cut = [0] * (n + 1)
+        for j in range(1, n + 1):
+            for i in range(max(0, j - 6), j):
+                c = best[i] + _page_cost(_load(sections[i:j]), cap)
+                if c < best[j]:
+                    best[j], cut[j] = c, i
+        groups, j = [], n
+        while j > 0:
+            groups.insert(0, sections[cut[j]:j])
+            j = cut[j]
+        return groups
     best, best_score = None, None
     for mask in range(1 << (n - 1)):                      # bit i set = page break after section i
-        if bin(mask).count("1") + 1 > MAX_PAGES:
+        if bin(mask).count("1") + 1 > max_pages:
             continue
         groups, cur = [], [sections[0]]
         for i in range(1, n):
@@ -444,8 +503,7 @@ def _weigh(sec: Section, plan, L: Layout) -> int:
         elif k == "client":
             h = 46 + 20 * _rows(plan.client_line, W - 100, 15) + tile
         elif v == "prose":
-            items = {"challenges": plan.challenges, "pillars": plan.pillars, "outcomes": plan.outcomes,
-                     "steps": plan.steps}[k]
+            items = getattr(plan, k)
             lines = sum(_rows(f"{x.title} {x.text}", W / 2 - 30, 12.5) for x in items)
             h = (lines * 20 + len(items) * 10) / 2 + 12 + (22 if k == "steps" and b.title else 0)
         elif k == "challenges":
@@ -476,7 +534,9 @@ def _weigh(sec: Section, plan, L: Layout) -> int:
             h = 22 + 34 * max(1, -(-int(chars) // int(W - tile))) + tile
         elif k == "timeline":
             tl = plan.timeline
-            if v == "vertical":
+            if v == "gantt":
+                h = 46 + 31 * len(tl) + 30
+            elif v == "vertical":
                 h = sum(16 + 19 * _rows(e.text, W - 160, 13) for e in tl)
             else:
                 h = 50 + 16.5 * max(_rows(e.text, W / max(1, len(tl)) - 12, 11.5) for e in tl)
@@ -502,10 +562,11 @@ def _weigh(sec: Section, plan, L: Layout) -> int:
             nk = len(plan.comparisons)
             h = {"from-to": 170, "columns": 36 + 26 + 190 + 40 + 20, "slope": 36 + 26 + 84 * nk + 8}.get(
                 v, 36 + 26 + 74 * nk + 20)
-        elif k == "outcomes":
-            cols = 1 if v == "list" else (len(plan.outcomes) if fr == "dashboard" else 2)
-            cols = max(1, min(cols, len(plan.outcomes)))
-            per = [max(24, (19 if x.title else 0) + 19 * _rows(x.text, W / cols - 44, 13)) for x in plan.outcomes]
+        elif k in ("outcomes", "objectives", "lessons"):
+            its = getattr(plan, k)
+            cols = 1 if v == "list" else (min(3, len(its)) if fr == "dashboard" else 2)
+            cols = max(1, min(cols, len(its)))
+            per = [max(24, (19 if x.title else 0) + 19 * _rows(x.text, W / cols - 44, 13)) for x in its]
             rows = [max(per[i:i + cols]) for i in range(0, len(per), cols)]
             h = sum(rows) + 16 * (len(rows) - 1) + tile
         elif k == "quote":
@@ -517,7 +578,76 @@ def _weigh(sec: Section, plan, L: Layout) -> int:
                 h = 34 + size * 1.3 * _rows(q.text, W - tile, size) + (28 if q.who else 0) + tile
         elif k == "closing":
             h = 52 + 29.5 * _rows(plan.conclusion, W - 56, 24) + 47
+        elif k == "team":
+            h = 36 + 196 + 34 + tile
+        elif k == "budget":
+            h = 36 + 50 * len(plan.budget) + 10 + tile
+        elif k == "architecture":
+            nl = len(plan.architecture)
+            h = 26 + 66 * nl + 12 * (nl - 1) + tile
+        elif k == "facts":
+            a_, b_ = (int(x) for x in b.field.split(":"))
+            h = 8 + sum(12 + 15 * _rows(it.text, 684 - 196, 10.5) for it in plan.facts[a_:b_])
         elif k == "verify":
             h = 30 + 15 * _rows("x" * 300, W - 78, 10)
         px += h + 18
     return max(6, round(px / BODY_H * 100))
+
+
+def _fact_sections(facts, width: int) -> list[Section]:
+    """The Project facts table, cut into page-sized parts."""
+    out, start, px = [], 0, 0.0
+    room = BODY_H * 0.86
+    for i, it in enumerate(facts):
+        h = 12 + 15 * _rows(it.text, width - 196, 10.5)
+        if px + h > room and i > start:
+            out.append((start, i))
+            start, px = i, 0.0
+        px += h
+    out.append((start, len(facts)))
+    return [Section(key="facts" if j == 0 else "facts+", label="Project facts" if j == 0 else "Project facts (continued)",
+                    blocks=[Block(kind="facts", field=f"{a}:{b}")]) for j, (a, b) in enumerate(out)]
+
+
+def _split(sec: Section, plan, L: Layout, cap: int) -> list[Section]:
+    """A section that would overflow its page continues on the next one, block by block."""
+    main = [b for b in sec.blocks if b.slot != "side"]
+    if sec.weight <= cap * 1.05 or len(main) < 2 or sec.key.startswith("facts"):
+        return [sec]
+    parts, cur = [], []
+    for b in sec.blocks:
+        trial = Section(key=sec.key, label=sec.label, blocks=cur + [b])
+        if cur and _weigh(trial, plan, L) > cap and b.slot != "side":
+            parts.append(cur)
+            cur = [b]
+        else:
+            cur.append(b)
+    parts.append(cur)
+    out = []
+    for j, blocks in enumerate(parts):
+        x = Section(key=sec.key if j == 0 else sec.key + "+", label=sec.label if j == 0 else sec.label + " (continued)",
+                    blocks=blocks)
+        x.weight = _weigh(x, plan, L)
+        out.append(x)
+    return out
+
+
+_MONTHS = {m: i for i, m in enumerate(("january", "february", "march", "april", "may", "june", "july", "august",
+                                       "september", "october", "november", "december"))}
+_WHEN = re.compile(r"\b(?:(\d{1,2})\s+)?(january|february|march|april|may|june|july|august|september|october|november|"
+                   r"december|jan|feb|mar|apr|jun|jul|aug|sep|sept|oct|nov|dec)\.?\s+((?:19|20)\d\d)\b|\b(q[1-4])\s+((?:19|20)\d\d)\b"
+                   r"|^\s*((?:19|20)\d\d)\s*$", re.I)
+
+
+def month_index(when: str) -> float | None:
+    """'9 February 2024' → months since year 0 (fractional), for a time axis. None when it isn't a date."""
+    mt = _WHEN.search(when or "")
+    if not mt:
+        return None
+    if mt.group(2):
+        name = mt.group(2).lower()
+        mon = next(i for k, i in _MONTHS.items() if k.startswith(name[:3]))
+        return int(mt.group(3)) * 12 + mon + (int(mt.group(1)) - 1) / 31 if mt.group(1) else int(mt.group(3)) * 12 + mon
+    if mt.group(4):
+        return int(mt.group(5)) * 12 + (int(mt.group(4)[1]) - 1) * 3
+    return int(mt.group(6)) * 12

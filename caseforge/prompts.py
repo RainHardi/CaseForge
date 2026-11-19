@@ -61,29 +61,36 @@ Hard rules (breaking any of them makes the document unusable):
    "estimated" or "not verified" for a number, the sentence keeps that word next to the same number.
 8. Every sentence stands on its own: never start with "He", "She", "It", "They" or "This" — name the
    person or thing (a reader may see one sentence alone).
-Writing (this is a story for a client reader, not a list of facts):
-- SENTENCE BUDGET: the prompt gives a number of sentences. Stay at or under it. Reach it by combining
-  closely related facts into one sentence that cites all of them (contract date, kickoff and go-live
-  together; all tools of one component together; several numbers about one outcome together) and by
-  leaving facts out — never by dropping an estimate word or a qualifier.
-- You do NOT have to use every fact. Leave out internal trivia a client would not care about (an
-  unpublished draft, a button size, a conference talk, repository statistics, the delivery company's
-  offices) before you leave out anything about the problem, the solution or the results.
-- The [field] next to each fact is only a first guess. Put each sentence in the section where it belongs
-  by meaning:
-{fields}
+Writing (this is a full case study for a client reader — complete, but told as a story):
+- USE EVERY FACT. Each fact id must appear in at least one sentence's fact_ids. Nothing in the notes is
+  dropped; minor details go into a short sentence in the section where they belong.
+- Combine closely related facts into one sentence that cites all of them (contract date, kickoff and
+  go-live together; all tools of one component together; several numbers about one outcome together),
+  so the text reads as connected prose, not a list. Never drop an estimate word or a qualifier to combine.
+- The [field] next to each fact is only a first guess. Put each sentence in the section where it belongs:
+{sections}
 Style (brand rules): plain professional English; first person plural ("we") for the delivery team;
 "the client" if no client name is given; sentences under 30 words; no exclamation marks; no questions.
-Sections: summary (1–2 sentences: what we built for the client and the main measured result, each
-taken from a fact), client_problem, work_done,
-technical_approach, tools, challenges, results.
 """
 
-WRITE_SYSTEM = WRITE_SYSTEM.replace("{fields}", FIELDS_HELP)
+SECTIONS_HELP = """summary = executive summary: 2–3 sentences — who the client is, what we built, the main measured results
+introduction = who the client is (size, sector, locations) and the context; who we are and our role
+client_problem = what was wrong or needed before the project: pain points, old tools, complaints, risks
+objectives = goals or targets the project set out to reach (only if the facts state goals or targets)
+technical_approach = how we worked: research, method, design decisions and the reasons for them
+work_done = the solution we delivered: features, components, what users can now do
+implementation = how the project ran: contract and kickoff dates, go-live, scope and change requests,
+  budget and invoices, team size and who did what, testing, security review, training, rollout
+tools = named technologies, languages, frameworks, cloud services, hardware
+challenges = difficulties, delays, bugs, incidents during the project and how they were handled
+results = what changed BECAUSE of the work: measured outcomes, adoption, savings, client feedback and quotes
+lessons = lessons learned, recognition (awards, talks) and what comes next (follow-up phases, contracts)"""
+
+WRITE_SYSTEM = WRITE_SYSTEM.replace("{sections}", SECTIONS_HELP)
 
 WRITE_PROMPT = """Project title: {title}
 Client: {client}
-Sentence budget: about {budget} sentences in total ({n_facts} facts below), never more than {cap}.
+{n_facts} facts below — every one of them must be cited by at least one sentence.
 
 FACTS:
 {facts}

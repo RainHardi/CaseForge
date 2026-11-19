@@ -23,7 +23,7 @@ from .brandkit import BrandKit, text_warnings
 from .layout import COVERS, FRAMES, HIDEABLE, SECTION_KEYS, STORIES, THEMES, VARIANTS, Layout, Prefs, compose
 from .checker import label_claims
 from .llm import LLM, LLMError
-from .models import Claim, Label, ProjectRecord, now, worst
+from .models import SECTION_TITLES, Claim, Label, ProjectRecord, now, worst
 from .review import ReviewError, can_export
 from .textutil import (_NUM_RE, _spots, _unit, content_words, hedged_in_source, is_hedged, normalize, number_is_hedged,
                        numbers_in, quote_in_source, split_sentences, term_in_source, unwrap)
@@ -67,33 +67,82 @@ class Event(BaseModel):
 
 class Headlines(BaseModel):
     """Section headlines written from the facts ("Routes 4 % shorter in 12 weeks"), not generic labels."""
+    summary: str = ""
+    intro: str = ""
     challenge: str = ""
+    objectives: str = ""
+    approach: str = ""
     solution: str = ""
+    implementation: str = ""
+    technology: str = ""
     results: str = ""
     journey: str = ""
     close: str = ""
+    lessons: str = ""
 
 
-class ReportPlan(BaseModel):
+class TeamPoint(BaseModel):
+    when: str             # "Start", "August 2024", "Stabilization phase" — as in the notes
+    size: int
+    cites: list[str] = Field(default_factory=list)
+
+
+class Money(BaseModel):
+    label: str            # "Contract value"
+    value: float          # 412000
+    unit: str = ""        # "euros", "€", "USD" — as in the notes
+    estimate: bool = False
+    cites: list[str] = Field(default_factory=list)
+
+
+class Layer(BaseModel):
+    name: str             # "Apps & interfaces" — a generic layer label, not a fact
+    items: list[str] = Field(default_factory=list)   # tool names, each one in the notes
+
+
+class PlanCore(BaseModel):
+    """What the AI planner writes. The standard case-study structure: executive summary, introduction,
+    challenge, objectives, approach, solution, implementation, technology, results, client voice, lessons."""
     title: str
     subtitle: str = ""
     tags: list[str] = Field(default_factory=list)
     client_line: str = ""
+    summary: str = ""                 # executive summary, 2–3 sentences
+    intro: str = ""                   # introduction: who the client is, the context, our role
     challenge_intro: str = ""
     challenges: list[Item] = Field(default_factory=list)
     brief: str = ""
+    objectives: list[Item] = Field(default_factory=list)
+    approach_intro: str = ""
+    steps: list[Item] = Field(default_factory=list)
     solution_intro: str = ""
     pillars: list[Item] = Field(default_factory=list)
-    steps: list[Item] = Field(default_factory=list)
+    implementation_intro: str = ""
     tech: list[str] = Field(default_factory=list)
     metrics: list[Metric] = Field(default_factory=list)
     comparisons: list[Comparison] = Field(default_factory=list)
     outcomes: list[Item] = Field(default_factory=list)
     quote: Quote = Field(default_factory=Quote)
     conclusion: str = ""
+    lessons: list[Item] = Field(default_factory=list)
     timeline: list[Event] = Field(default_factory=list)
     headlines: Headlines = Field(default_factory=Headlines)
     cites: dict[str, list[str]] = Field(default_factory=dict)  # citations for the plain-string fields
+
+
+class ReportPlan(PlanCore):
+    """The full plan. The diagram data and the facts table are built by rules from the approved text
+    (never invented by the model): team size over time, budget figures, the architecture layers, and
+    every approved sentence that is not on a designed page."""
+    team: list[TeamPoint] = Field(default_factory=list)
+    budget: list[Money] = Field(default_factory=list)
+    architecture: list[Layer] = Field(default_factory=list)
+    facts: list[Item] = Field(default_factory=list)
+
+
+TEXT_FIELDS = ("title", "subtitle", "client_line", "summary", "intro", "challenge_intro", "brief",
+               "approach_intro", "solution_intro", "implementation_intro", "conclusion")
+GROUPS = ("challenges", "objectives", "steps", "pillars", "outcomes", "lessons")
 
 
 class FieldCite(BaseModel):
@@ -101,7 +150,7 @@ class FieldCite(BaseModel):
     ids: list[str] = Field(default_factory=list)
 
 
-class PlanOut(ReportPlan):
+class PlanOut(PlanCore):
     """What the model returns. The Gemini Developer API rejects free-form maps (open JSON objects),
     so citations come back as a list and are turned into the dict here."""
     cites: list[FieldCite] = Field(default_factory=list)  # type: ignore[assignment]
@@ -134,9 +183,11 @@ class ChatOut(BaseModel):
 BUDGET = {"title": 72, "subtitle": 140, "client_line": 90, "challenge_intro": 220, "brief": 140,
           "solution_intro": 220, "conclusion": 170, "item.title": 46, "item.text": 140,
           "step.title": 32, "step.text": 90, "metric.label": 70, "quote": 220, "tag": 26,
-          "headline": 60, "event.when": 18, "event.text": 90}
-LIMITS = {"tags": 5, "challenges": 3, "pillars": 4, "steps": 6, "tech": 10, "metrics": 4,
-          "comparisons": 3, "outcomes": 3, "timeline": 7}
+          "headline": 60, "event.when": 18, "event.text": 90, "summary": 420, "intro": 420,
+          "approach_intro": 220, "implementation_intro": 220}
+# big notes give a long report: the limits only stop a runaway list, the notes decide how much is shown
+LIMITS = {"tags": 5, "challenges": 6, "objectives": 5, "pillars": 8, "steps": 8, "tech": 24, "metrics": 6,
+          "comparisons": 5, "outcomes": 6, "lessons": 5, "timeline": 10}
 
 
 class ReportDesign(BaseModel):
@@ -150,6 +201,7 @@ class ReportDesign(BaseModel):
     notes: list[str] = Field(default_factory=list)       # how it was made (e.g. "AI was busy — rules were used")
     round: int = 0                                       # how many times this project has been (re)designed
     based_on_hash: str = ""                              # the case-study approval it was built from
+    coverage: dict[str, int] = Field(default_factory=dict)  # approved sentences: total / designed / facts
     created_at: str = Field(default_factory=now)
     approved_by: str = ""
     approved_at: str = ""
@@ -193,9 +245,22 @@ Rules:
 - tech: names of tools and technologies only — never people, companies, places or the client.
 - quote: only if a person is quoted or paraphrased in the sentences; say who.
 - tags: 3–5 short topic labels.
+- THE STRUCTURE is a full, standard case study. Fill every part the sentences support, and use as many of
+  the approved sentences as you can somewhere — a sentence you leave out is listed in a "Project facts"
+  table at the end, so completeness matters more than brevity:
+  summary = executive summary, 2–3 sentences: client, what was built, the main results (it may name them);
+  intro = introduction: who the client is (sector, size, locations) and the context, and our role;
+  challenge_intro + challenges = what was wrong before; brief = the assignment in one line;
+  objectives = goals or targets the sentences state (empty if none);
+  approach_intro + steps = how we worked (research, method, design decisions), in order;
+  solution_intro + pillars = what we delivered (features, components);
+  implementation_intro = how the project ran (dates, scope, team, budget, testing, training);
+  outcomes = results that are not big numbers; quote = the client's words; conclusion = closing line;
+  lessons = lessons learned, recognition and what comes next (follow-up phases).
 - timeline: only if the sentences give dates or periods (month, year, week); `when` exactly as written.
   Leave empty otherwise — never invent dates.
-- headlines: one per section, max 60 characters, sentence case, written FROM THE FACTS so a reader gets
+- headlines: one per section (summary, intro, challenge, objectives, approach, solution, implementation,
+  technology, results, close, lessons), max 60 characters, sentence case, written FROM THE FACTS so a reader gets
   the point from the headline alone (e.g. "Invoices approved in minutes instead of by email").
   NO numbers in headlines — neither digits nor numbers written as words; the numbers belong to the
   metrics. Leave a headline empty if nothing specific fits.
@@ -205,6 +270,7 @@ Rules:
   contract), kept close to its wording. No verdicts ("a success", "proved", "set a new standard"), no
   lessons learned, no promises about the future, no summary of several sentences.
 - Fill only what the sentences support. Empty fields are fine — the layout adapts to what exists.
+- Never judge the delivery ("on time", "within budget", "as planned", "successfully") unless a sentence says so.
 - art: you are also the art director. Choose a layout that fits THIS project's content and mood:
   story (impact | transformation | journey | people | build), cover (hero-number | from-to | quote |
   statement | motif), frame — how pages are BUILT (dashboard = tiles for number-heavy work, magazine = text
@@ -257,6 +323,8 @@ def build_report(record: ProjectRecord, brand: BrandKit, llm: LLM | None) -> Rep
                 if _parts(again) > _parts(out):
                     out = again
             art, plan = out.art, out.to_plan()
+            art.order = []   # the standard case-study structure is fixed; the reviewer can still reorder in the chat
+            art.variants = [v for v in art.variants if not v.startswith("timeline=")]
         except LLMError as e:
             notes.append("The AI designer was busy, so this report was laid out by rules from your approved "
                          f"sentences. Press Redesign to try the AI again. ({str(e)[:90]})")
@@ -269,6 +337,7 @@ def build_report(record: ProjectRecord, brand: BrandKit, llm: LLM | None) -> Rep
             notes.append("The AI left these parts empty, so they were filled by rules from your approved "
                          "sentences: " + ", ".join(filled) + ".")
     plan = _trim(polish(plan, record.input.source_text()))
+    graphics(plan, record)
     rnd = prev.round + 1 if prev else 0
     design = ReportDesign(brand=brand, plan=plan, based_on_hash=record.approved_hash, notes=notes, round=rnd,
                           prefs=vary(art, plan, prev, rnd))
@@ -302,7 +371,7 @@ def _backfill(plan: ReportPlan, rules: ReportPlan) -> list[str]:
     """A small model sometimes returns a thin plan — a title and two lines — although the approved text
     is full of results. Every part the model left EMPTY is filled from the rule-based plan (whole
     approved sentences), skipping anything the model already used. Nothing the model wrote is changed."""
-    cited = {x for g in ("challenges", "pillars", "steps", "outcomes", "metrics", "comparisons", "timeline")
+    cited = {x for g in GROUPS + ("metrics", "comparisons", "timeline")
              for it in getattr(plan, g) for x in it.cites} | {x for ids in plan.cites.values() for x in ids} \
         | set(plan.quote.cites)
     shown = {q for p, t, _ in elements_of(plan) if p != "subtitle" for q in _quantities(t)}
@@ -311,7 +380,17 @@ def _backfill(plan: ReportPlan, rules: ReportPlan) -> list[str]:
     def fresh(items):
         return [it for it in items if not set(it.cites) & cited]
 
-    for g, name in (("challenges", "challenges"), ("pillars", "what was built"), ("outcomes", "outcomes"),
+    for f, name in (("summary", "executive summary"), ("intro", "introduction"), ("approach_intro", "approach"),
+                    ("implementation_intro", "implementation")):
+        said = {normalize(t) for _, t, _ in elements_of(plan)} | {normalize(it.text) for g in GROUPS for it in getattr(plan, g)}
+        if not getattr(plan, f).strip() and getattr(rules, f) and not set(rules.cites.get(f, [])) & cited \
+                and normalize(getattr(rules, f)) not in said:
+            setattr(plan, f, getattr(rules, f))
+            plan.cites[f] = rules.cites.get(f, [])
+            cited.update(plan.cites[f])
+            filled.append(name)
+    for g, name in (("challenges", "challenges"), ("objectives", "objectives"), ("pillars", "what was built"),
+                    ("steps", "how we worked"), ("outcomes", "outcomes"), ("lessons", "lessons and next steps"),
                     ("timeline", "milestones")):
         if not getattr(plan, g) and fresh(getattr(rules, g)):
             setattr(plan, g, fresh(getattr(rules, g)))
@@ -421,21 +500,22 @@ def polish(plan: ReportPlan, source: str) -> ReportPlan:
     - each fact once: an item that repeats another element word for word is dropped, and a big number
       that is already one side of a before/after pair is dropped (the chart shows it)
     - degree words the notes never use ("significantly") are taken out"""
-    for f in ("title", "subtitle", "client_line", "challenge_intro", "brief", "solution_intro", "conclusion"):
+    for f in TEXT_FIELDS:
         setattr(plan, f, " ".join(getattr(plan, f).split()))
     plan.title = plan.title or "Case study"
     src_words = set(normalize(source).split())
     calm = lambda t: _calm(t, src_words)  # noqa: E731
-    for f in ("title", "subtitle", "challenge_intro", "brief", "solution_intro", "conclusion"):
-        setattr(plan, f, calm(getattr(plan, f)))
+    for f in TEXT_FIELDS:
+        if f != "client_line":
+            setattr(plan, f, calm(getattr(plan, f)))
     for k, v in plan.headlines.model_dump().items():
         setattr(plan.headlines, k, calm(v))
-    for g in ("challenges", "pillars", "steps", "outcomes"):
+    for g in GROUPS:
         for it in getattr(plan, g):
             it.title, it.text = calm(it.title), calm(it.text)
     for m in plan.metrics:
         m.label = calm(m.label)
-    for g in ("challenges", "pillars", "steps", "outcomes"):
+    for g in GROUPS:
         items = getattr(plan, g)
         for it in items:
             it.title, it.text = " ".join(it.title.split()).rstrip(".:"), " ".join(it.text.split())
@@ -455,9 +535,10 @@ def polish(plan: ReportPlan, source: str) -> ReportPlan:
     plan.tech = [t for t in names if not any(t != o and re.search(rf"(?<![\w-]){re.escape(t)}(?![\w-])", o) for o in names)]
     # each fact once
     # (the cover subtitle is a summary line and may restate one item)
-    said = {normalize(getattr(plan, f)) for f in ("challenge_intro", "brief", "solution_intro", "conclusion")}
+    said = {normalize(getattr(plan, f)) for f in ("summary", "intro", "challenge_intro", "brief", "approach_intro",
+                                                  "solution_intro", "implementation_intro", "conclusion")}
     said.discard("")
-    for g in ("challenges", "pillars", "steps", "outcomes"):
+    for g in GROUPS:
         keep = []
         for it in getattr(plan, g):
             key = normalize(it.text or it.title)
@@ -521,9 +602,10 @@ def _drop_repeats(plan: ReportPlan) -> None:
         if q and not q - _repeats(q, shown | cover):
             setattr(plan, f, "")
             plan.cites.pop(f, None)
-    for f in ("challenge_intro", "solution_intro", "brief", "conclusion"):
+    for f in ("intro", "challenge_intro", "approach_intro", "solution_intro", "implementation_intro", "brief",
+              "conclusion"):
         shown |= _quantities(getattr(plan, f))
-    for g in ("challenges", "pillars", "outcomes"):
+    for g in ("challenges", "objectives", "pillars", "outcomes", "lessons"):
         keep = []
         for it in getattr(plan, g):
             if _repeats(_quantities(it.text), shown):
@@ -553,12 +635,118 @@ def _undated(text: str, when: str) -> str:
     return out[0].upper() + out[1:] + "."
 
 
+# ------------------------------------------------------------------ diagram data (rules only)
+def graphics(plan: ReportPlan, record: ProjectRecord) -> None:
+    """Team size over time, budget figures and the architecture layers, read from the approved sentences.
+    The model never writes these: a chart drawn from an invented number would be worse than no chart."""
+    approved = record.active_claims()
+    plan.team = team_points(approved)
+    plan.budget = budget_items(approved)
+    plan.architecture = architecture(plan.tech, approved)
+
+
+_TEAMW = re.compile(r"\b(headcount|team size|team of|team (?:began|grew|reached|started|peaked)|people on the team)\b", re.I)
+_TEAM_UNIT = ("peop", "pers", "engi", "deve", "memb", "staf")
+
+
+def team_points(claims: list[Claim]) -> list[TeamPoint]:
+    """"Team headcount began at 6 people and reached 11 in August 2024, then dropped to 7 for the
+    stabilization phase" → Start 6, August 2024 11, Stabilization phase 7."""
+    for c in claims:
+        if not _TEAMW.search(c.text):
+            continue
+        pts: list[TeamPoint] = []
+        for clause in re.split(r"[,;]\s+(?:then\s+)?|\s+and\s+(?:then\s+)?|\s+then\s+", c.text):
+            for m in _NUM_RE.finditer(clause):
+                n = m.group(1).replace(",", "")
+                if m.group(2) or m.group(3) or _unit(clause, m) == "date" or re.fullmatch(r"(19|20)\d\d", n):
+                    continue
+                if not (_unit(clause, m).startswith(_TEAM_UNIT) or re.search(r"\b(at|to|reached|of)\s*$", clause[:m.start()])):
+                    continue
+                d = _DATE.search(clause)
+                ph = re.search(r"\b(?:for|during|in) the ([a-z][a-z\- ]{2,30}?) phase\b", clause, re.I)
+                when = d.group(0) if d else (ph.group(1).capitalize() + " phase" if ph else ("Start" if not pts else ""))
+                if when and 0 < int(n) <= 5000:
+                    pts.append(TeamPoint(when=when, size=int(n), cites=[c.id]))
+        if len(pts) >= 2:
+            return pts
+    return []
+
+
+_MONEY = re.compile(r"(?:(€|\$|£|₩)\s?)?(\d{1,3}(?:,\d{3})+|\d+(?:\.\d+)?)\s*(million|thousand|billion)?\s*"
+                    r"(euros?|eur|usd|dollars?|gbp|pounds?|krw|won)?(?![\w])", re.I)
+_MONEY_TAIL = re.compile(r"(?:\s+\b(?:was|were|is|are|of|at|near|about|around|roughly|approximately|ended|came|to|"
+                         r"totall?ed|reached|worth|with|an|a|the|estimated|given|by)\b)+\s*$", re.I)
+_GENERIC = {"value", "amount", "cost", "price", "total", "budget", "fee", "estimated value"}
+
+
+def budget_items(claims: list[Claim]) -> list[Money]:
+    """Money amounts with what they are ("Contract value: 412,000 euros"). Savings are results, not budget."""
+    out: list[Money] = []
+    for c in claims:
+        if re.search(r"\bsav(?:ing|ings|ed|es)\b", c.text, re.I):
+            continue
+        head = re.split(r"\s+(?:was|were|is|are|has|had)\b|\s*\(|,", c.text, maxsplit=1)[0]
+        head = re.sub(r"^(?:the|a|an|our)\s+", "", head.strip(), flags=re.I)
+        head = re.split(r"\s+\w+ing\b", head, maxsplit=1)[0]   # "…for phase 2 extending to 9 warehouses" → "…for phase 2"
+        for clause in re.split(r";\s+|,?\s+and\s+(?=the\b|our\b|a\b|an\b)|,?\s+(?=with\s+(?:an?|the)\b)", c.text):
+            for m in _MONEY.finditer(clause):
+                sym, num, scale, word = m.groups()
+                if not (sym or word):
+                    continue
+                before = _MONEY_TAIL.sub("", clause[:m.start()]).strip(" ,")
+                words = re.findall(r"[A-Za-z0-9][\w\-/]*", before)
+                while words and words[0].lower() in ("the", "a", "an", "our", "with", "estimated", "and"):
+                    words.pop(0)
+                label = " ".join(words[-5:])
+                if not label or label.lower() in _GENERIC:
+                    label = " ".join(head.split()[:6])
+                if not label:
+                    continue
+                unit = " ".join(x for x in (scale, word) if x) or ""
+                out.append(Money(label=label[0].upper() + label[1:], value=float(num.replace(",", "")),
+                                 unit=(sym or "") + (" " if sym and unit else "") + unit if sym else unit,
+                                 estimate=number_is_hedged(clause, num.replace(",", "")), cites=[c.id]))
+    units = {re.sub(r"^(million|thousand|billion)\s+", "", m.unit.lower()).rstrip("s") for m in out}
+    return out[:6] if len(out) >= 2 and len(units) == 1 else []
+
+
+LAYERS = [
+    ("Apps & interfaces", {"React Native", "React", "Vue", "Vue.js", "Angular", "Svelte", "Next.js", "Flutter", "Swift",
+                           "Kotlin", "iOS", "Android", "TypeScript", "JavaScript", "HTMX", "Tailwind", "Streamlit"}),
+    ("Application & logic", {"Python", "Java", "Golang", "Rust", "PHP", "Ruby", "C#", "C++", "Node.js", "Django", "Flask",
+                             "FastAPI", "Spring", "Rails", "Laravel", "Google OR-Tools", "OR-Tools", "OpenAI", "Gemini",
+                             "LangChain", "PyTorch", "TensorFlow", "scikit-learn", "pandas", "NumPy", "OpenCV", "GraphQL"}),
+    ("Data & messaging", {"PostgreSQL", "Postgres", "PostGIS", "MySQL", "SQLite", "MongoDB", "Redis", "Elasticsearch",
+                          "Kafka", "RabbitMQ", "Firebase", "Supabase", "Airtable", "SQL", "Excel", "Tableau", "Power BI"}),
+    ("Cloud & delivery", {"AWS", "Azure", "GCP", "Google Cloud", "ECS Fargate", "Docker", "Kubernetes", "Terraform",
+                          "GitHub Actions", "GitHub", "GitLab", "Jenkins", "Nginx"}),
+    ("Quality & operations", {"Grafana", "Prometheus", "PagerDuty", "Playwright", "Selenium", "pytest", "Figma"}),
+    ("Integrations", {"SAP S/4HANA", "Twilio", "Stripe", "Slack", "WhatsApp", "Zapier", "Notion"}),
+]
+
+
+def architecture(tech: list[str], claims: list[Claim]) -> list[Layer]:
+    """Tools sorted into the layers of a system diagram. Every name is one the notes use; the layer
+    labels are generic headings, not claims. Drawn only when there is a real stack to draw."""
+    names = list(dict.fromkeys(list(tech) + tools_in([c.text for c in claims])))
+    lower = {n.lower(): n for n in names}
+    layers = []
+    for title, members in LAYERS:
+        items = [lower[m.lower()] for m in sorted(members, key=lambda m: names.index(lower[m.lower()]) if m.lower() in lower else 0)
+                 if m.lower() in lower]
+        items = [t for t in items if not any(t != o and t in o for o in items)]   # "OR-Tools" inside "Google OR-Tools"
+        if items:
+            layers.append(Layer(name=title, items=items))
+    return layers if len(layers) >= 2 and sum(len(x.items) for x in layers) >= 4 else []
+
+
 # ------------------------------------------------------------------ checking
 def elements_of(plan: ReportPlan) -> list[tuple[str, str, list[str]]]:
     """(path, text, cites) for every piece of text that will be printed."""
     c = plan.cites
     out: list[tuple[str, str, list[str]]] = []
-    for f in ("title", "subtitle", "client_line", "challenge_intro", "brief", "solution_intro", "conclusion"):
+    for f in TEXT_FIELDS:
         v = getattr(plan, f)
         if v.strip():
             out.append((f, v, c.get(f, [])))
@@ -567,7 +755,7 @@ def elements_of(plan: ReportPlan) -> list[tuple[str, str, list[str]]]:
             out.append((f"headlines.{k}", v, c.get(f"headlines.{k}", [])))
     for i, e in enumerate(plan.timeline):
         out.append((f"timeline.{i}", f"{e.when}: {e.text}", e.cites))
-    for group in ("challenges", "pillars", "steps", "outcomes"):
+    for group in GROUPS:
         for i, it in enumerate(getattr(plan, group)):
             out.append((f"{group}.{i}", f"{it.title}. {it.text}".strip(". "), it.cites))
     for i, m in enumerate(plan.metrics):
@@ -581,7 +769,22 @@ def elements_of(plan: ReportPlan) -> list[tuple[str, str, list[str]]]:
         out.append(("quote", f"{plan.quote.text} — {plan.quote.who}".strip(" —"), plan.quote.cites))
     if plan.tech:
         out.append(("tech", ", ".join(plan.tech), c.get("tech", [])))
+    if len(plan.team) >= 2:
+        out.append(("team", "Team size: " + ", ".join(f"{t.size} ({t.when})" for t in plan.team),
+                    [x for t in plan.team for x in t.cites]))
+    for i, mo in enumerate(plan.budget):
+        out.append((f"budget.{i}", f"{mo.label}: {_money(mo.value)} {mo.unit}".strip()
+                    + (" (estimated)" if mo.estimate else ""), mo.cites))
+    if plan.architecture:
+        out.append(("architecture", " | ".join(f"{la.name}: {', '.join(la.items)}" for la in plan.architecture),
+                    c.get("tech", [])))
+    for i, it in enumerate(plan.facts):
+        out.append((f"facts.{i}", it.text, it.cites))
     return out
+
+
+def _money(v: float) -> str:
+    return f"{v:,.0f}" if v >= 1000 or v == int(v) else f"{v:,.2f}".rstrip("0").rstrip(".")
 
 
 def _clip(text: str, n: int) -> str:
@@ -615,17 +818,30 @@ def check_report(record: ProjectRecord, design: ReportDesign, llm: LLM | None) -
         els.append(cl)
     src = record.input.source_text()
     _auto_cite(els, record)
+    # every approved sentence somewhere: what no designed element tells goes into the Project facts table
+    approved = record.active_claims()
+    used = {i for cl in els for i in cl.fact_ids}
+    left = [c for c in approved if c.id not in used]
+    plan.facts = [Item(title=SECTION_TITLES.get(c.section, ""), text=c.text, cites=[c.id]) for c in left]
+    for i, it in enumerate(plan.facts):
+        els.append(Claim(id=f"facts.{i}", section="summary", text=it.text, fact_ids=list(it.cites)))
+    design.coverage = {"total": len(approved), "designed": len(approved) - len(left), "facts": len(left)}
     for cl in els:
         # Every element is checked against the NOTES by the rules and the model. The citation only says
         # which approved sentence it came from; a missing one must not fail a line the notes back.
         if not cl.fact_ids:
             cl.manual = True
     todo = []
+    checked = {c.text: c for c in approved if c.label is not None}
     for cl in els:
         old = prev.get(cl.text)
+        same = checked.get(cl.text)
         if old is not None:
             for f in ("label", "model_label", "reason", "evidence", "rule_flags", "fact_ids"):
                 setattr(cl, f, getattr(old, f))
+        elif same is not None:   # an approved sentence word for word: it was checked in the case study
+            cl.label, cl.model_label, cl.evidence = same.label, same.model_label, same.evidence
+            cl.reason, cl.rule_flags = "an approved sentence of the case study, checked there", list(same.rule_flags)
         else:
             todo.append(cl)
     try:
@@ -641,8 +857,9 @@ def check_report(record: ProjectRecord, design: ReportDesign, llm: LLM | None) -
     _estimate_tag_is_right(todo, plan, src)
     norm = normalize(src)
     for cl in els:  # a tech list is a set of names: each name must be in the notes, wherever it is
-        if cl.id == "tech":
-            missing = [t for t in plan.tech if not term_in_source(t, norm)]
+        if cl.id in ("tech", "architecture"):
+            names = plan.tech if cl.id == "tech" else [t for la in plan.architecture for t in la.items]
+            missing = [t for t in names if not term_in_source(t, norm)]
             cl.label = Label.unsupported if missing else Label.supported
             cl.reason = (f"not in your notes: {', '.join(missing)}" if missing
                          else "every tool name appears in your notes")
@@ -704,6 +921,10 @@ def _estimate_tag_is_right(els: list[Claim], plan: ReportPlan, source: str) -> N
             cl.reason = "the notes give this number as an estimate, so the ESTIMATED tag is right"
 
 
+FRAMING = ("subtitle", "summary", "intro", "brief", "challenge_intro", "approach_intro", "solution_intro",
+           "implementation_intro", "conclusion")
+
+
 def repair_framing(record: ProjectRecord, design: "ReportDesign", rules: ReportPlan, llm: LLM | None) -> None:
     """Right after a report is designed: framing lines the checker rejected are not left for the reviewer.
     A rejected headline gives way to the plain section label; a rejected subtitle or brief is replaced by
@@ -712,7 +933,7 @@ def repair_framing(record: ProjectRecord, design: "ReportDesign", rules: ReportP
     plan, changed = design.plan, []
     for e in list(design.blocking):
         head, _, key = e.id.partition(".")
-        if head == "headlines" or e.id in ("subtitle", "brief", "challenge_intro", "solution_intro", "conclusion"):
+        if head == "headlines" or e.id in FRAMING:
             record.log("report framing rejected", f"{e.id}: \"{e.text}\" — {e.reason[:200]}")  # to tune the prompts
         if head == "headlines":
             setattr(plan.headlines, key, "")
@@ -721,7 +942,7 @@ def repair_framing(record: ProjectRecord, design: "ReportDesign", rules: ReportP
             plan.subtitle = rules.subtitle if rules.subtitle and rules.subtitle != plan.subtitle else ""
             plan.cites["subtitle"] = rules.cites.get("subtitle", []) if plan.subtitle else []
             changed.append("the subtitle")
-        elif e.id in ("brief", "challenge_intro", "solution_intro", "conclusion"):
+        elif e.id in FRAMING:
             setattr(plan, e.id, "")          # an intro line restates the items under it; the items stay
             changed.append("the " + e.id.replace("_", " "))
     if changed:
@@ -761,7 +982,7 @@ def _forgive_title_case(els: list[Claim], plan: ReportPlan) -> None:
     dropped for plain Capitalised words that appear only in a heading; the model check still applies."""
     heads: dict[str, str] = {"title": plan.title}
     heads.update({f"headlines.{k}": v for k, v in plan.headlines.model_dump().items()})
-    for g in ("challenges", "pillars", "steps", "outcomes"):
+    for g in GROUPS:
         for i, it in enumerate(getattr(plan, g)):
             heads[f"{g}.{i}"] = it.title
     for cl in els:
@@ -803,9 +1024,9 @@ def report_warnings(plan: ReportPlan, brand: BrandKit, source: str) -> list[str]
     def over(path: str, text: str, key: str):
         if len(text) > BUDGET[key]:
             w.append(f"{path}: {len(text)} characters (budget {BUDGET[key]}) — the layout will shrink it")
-    for f in ("title", "subtitle", "client_line", "challenge_intro", "brief", "solution_intro", "conclusion"):
+    for f in TEXT_FIELDS:
         over(f, getattr(plan, f), f)
-    for g in ("challenges", "pillars", "outcomes"):
+    for g in ("challenges", "objectives", "pillars", "outcomes", "lessons"):
         for i, it in enumerate(getattr(plan, g)):
             over(f"{g}.{i}", it.text, "item.text")
     for i, s in enumerate(plan.steps):
@@ -833,9 +1054,9 @@ def edit_element(record: ProjectRecord, path: str, text: str, llm: LLM | None, b
 
 def _set_text(plan: ReportPlan, path: str, text: str) -> None:
     head, _, idx = path.partition(".")
-    if head in ("title", "subtitle", "client_line", "challenge_intro", "brief", "solution_intro", "conclusion"):
+    if head in TEXT_FIELDS:
         setattr(plan, head, text)
-    elif head in ("challenges", "pillars", "steps", "outcomes"):
+    elif head in GROUPS:
         it = getattr(plan, head)[int(idx)]
         t, sep, rest = text.partition(". ")
         it.title, it.text = (t, rest) if sep else ("", text)
@@ -863,15 +1084,17 @@ def remove_element(record: ProjectRecord, path: str, by: str = "") -> None:
 
 def _remove(d: ReportDesign, path: str) -> None:
     head, _, idx = path.partition(".")
-    if head in ("challenges", "pillars", "steps", "outcomes", "metrics", "comparisons", "timeline"):
+    if head in GROUPS + ("metrics", "comparisons", "timeline", "budget"):
         getattr(d.plan, head).pop(int(idx))
+    elif head in ("team", "architecture"):
+        setattr(d.plan, head, [])
     elif head == "headlines":
         setattr(d.plan.headlines, idx, "")
     elif head == "quote":
         d.plan.quote = Quote()
     elif head == "tech":
         d.plan.tech = []
-    elif head in ("subtitle", "client_line", "challenge_intro", "brief", "solution_intro", "conclusion"):
+    elif head in TEXT_FIELDS and head != "title":
         setattr(d.plan, head, "")
     else:
         raise ReviewError(f"Can't remove {path!r}")
@@ -895,8 +1118,8 @@ You return a short friendly reply and a list of operations. Operations:
 - {{"op":"layout","target":"story|cover|frame|theme|density|order|variant|hide|show|hero","value":"..."}}
   story: impact, transformation, journey, people, build · cover: hero-number, from-to, quote, statement, motif
   frame (page structure): dashboard, magazine, sidebar, split, stack
-  theme: light, dark, bold, editorial · density: airy, compact · order: comma list of challenge, solution,
-  journey, results, close · variant: e.g. metrics=row, metrics=hero, steps=vertical, steps=flow,
+  theme: light, dark, bold, editorial · density: airy, compact · order: comma list of summary, intro,
+  challenge, objectives, approach, solution, implementation, technology, results, close, lessons · variant: e.g. metrics=row, metrics=hero, steps=vertical, steps=flow,
   pillars=cols3, outcomes=list, timeline=vertical, comparison=bars, quote=hero · hide/show: one of
   {hideable} · hero: index of the metric to put on the cover
 - {{"op":"color","target":"primary|accent|ink|paper|surface|muted|dark","value":"#RRGGBB"}}
@@ -1401,6 +1624,40 @@ def _offline_plan(record: ProjectRecord) -> ReportPlan:
     if len(p.outcomes) < LIMITS["outcomes"]:
         p.outcomes += pick([c for c in claims if c.section != "results"], _GOOD_ANYWHERE,
                            LIMITS["outcomes"] - len(p.outcomes), BUDGET["item.text"])
+
+    # ---- the standard sections, in the case study's own sentences
+    def joined(cs, budget):
+        out, ids = "", []
+        for c in cs:
+            if c.id in used or len(out) + len(c.text) + 1 > budget:
+                continue
+            out, ids = (out + " " + c.text).strip(), ids + [c.id]
+        return out, ids
+
+    for field, keys in (("summary", ("summary",)), ("intro", ("introduction",)),
+                        ("approach_intro", ("technical_approach",)), ("implementation_intro", ("implementation",))):
+        pool = [c for c in record.active_claims() if c.section in keys]
+        text, ids = joined(pool[:3] if field in ("summary", "intro") else pool[:1], BUDGET[field])
+        if text:
+            setattr(p, field, text)
+            p.cites[field] = ids
+            used.update(ids)
+    for g, keys in (("objectives", ("objectives",)), ("lessons", ("lessons",))):
+        items = []
+        for c in sec(*keys):
+            if c.id not in used and len(items) < LIMITS[g]:
+                t = shorten(c.text, BUDGET["item.text"]) or (c.text if len(c.text) <= BUDGET["item.text"] + 60 else "")
+                if t:
+                    items.append(Item(text=t, cites=[c.id]))
+                    used.add(c.id)
+        setattr(p, g, items)
+    steps = []
+    for c in sec("technical_approach"):
+        t = shorten(c.text, BUDGET["step.text"]) if c.id not in used else ""
+        if t and len(steps) < 6:
+            steps.append(Item(text=t, cites=[c.id]))
+            used.add(c.id)
+    p.steps = steps if len(steps) >= 2 else []
 
     # ---- tools: known names only, never people
     people = people_in(src)

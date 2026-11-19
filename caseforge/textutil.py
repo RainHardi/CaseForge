@@ -179,7 +179,22 @@ INFLATED_WORDS = {
     "substantially", "outstanding", "remarkable", "remarkably", "game-changing",
     "groundbreaking", "flawless", "flawlessly", "perfect", "perfectly", "always", "never",
     "guaranteed", "fully", "completely", "entirely",
+    # quality judgements the writer adds on its own ("a robust app", "strict testing")
+    "robust", "strict", "rigorous", "comprehensive", "innovative", "powerful", "high-quality", "sophisticated",
 }
+
+
+# judgements about delivery that must come from the notes, never from the writer ("on time", "within budget")
+VERDICT_PHRASES = re.compile(
+    r"\b(on time|on schedule|ahead of schedule|on budget|under budget|within (?:the |an |a |our )?(?:agreed |planned |original )?"
+    r"(?:time ?frame|timeline|schedule|budget|time and budget|timeframe and budget|scope)|as planned|"
+    r"successfully delivered|delivered successfully|without (?:any )?(?:delays?|issues|problems))\b", re.I)
+
+
+def verdict_phrases(text: str, source: str) -> list[str]:
+    """Phrases like "within the agreed timeframe and budget" that the notes don't use."""
+    src = " ".join(source.lower().split())
+    return [m.group(0) for m in VERDICT_PHRASES.finditer(text) if m.group(0).lower() not in src]
 
 
 def inflated_words(text: str) -> set[str]:

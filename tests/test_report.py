@@ -173,7 +173,8 @@ def test_layout_follows_the_content():
     from caseforge.layout import compose
     impact = compose(_plan())
     assert impact.story == "impact" and impact.cover == "hero-number"
-    assert impact.pages[0].sections[0].key == "results"            # results lead
+    assert impact.pages[0].sections[0].key == "summary"            # the executive summary leads, with the numbers
+    assert any(b.kind == "metrics" for b in impact.pages[0].sections[0].blocks)
     assert impact.hero_metric >= 0 and not FIXTURE["metrics"][impact.hero_metric].get("estimate")
     assert impact.notes
 
@@ -183,7 +184,8 @@ def test_layout_follows_the_content():
     events = [{"when": w, "text": "x"} for w in ("Feb 2024", "Mar 2024", "June 2024", "Nov 2024")]
     journey = compose(_plan(metrics=[], comparisons=[], timeline=events))
     assert journey.story == "journey"
-    assert any(s.key == "journey" for p in journey.pages for s in p.sections)
+    impl = next(s for p in journey.pages for s in p.sections if s.key == "implementation")
+    assert impl.label == "How it unfolded" and any(b.kind == "timeline" and b.variant == "gantt" for b in impl.blocks)
 
     people = compose(_plan(metrics=[], comparisons=[]))
     assert people.story == "people" and people.cover == "quote"
@@ -193,7 +195,7 @@ def test_layout_follows_the_content():
     kinds = {(b.kind, b.variant) for p in one.pages for s in p.sections for b in s.blocks}
     assert ("challenges", "statement") in kinds
     assert len({impact.story, change.story, journey.story, people.story}) == 4
-    assert all(2 <= len(x.pages) <= 4 for x in (impact, change, journey, people))
+    assert all(2 <= len(x.pages) <= 6 for x in (impact, change, journey, people))
 
 
 def test_hero_number_is_not_repeated_inside():
@@ -246,7 +248,8 @@ def test_art_direction_and_reviewer_prefs_change_the_layout():
     alt = compose(plan, Prefs(story="people", cover="quote", theme="editorial", order=["challenge", "solution"],
                               variants=["metrics=row"], hide=["tech"], reason="Story-led client"))
     assert (alt.story, alt.cover, alt.theme) == ("people", "quote", "editorial")
-    assert alt.pages[0].sections[0].key == "challenge"
+    keys = [s.key for pg in alt.pages for s in pg.sections]
+    assert [k for k in keys if k not in ("summary", "intro")][0] == "challenge"   # the summary always opens
     blocks = [b for p in alt.pages for s in p.sections for b in s.blocks]
     assert not any(b.kind == "tech" for b in blocks)
     assert any("Story-led client" in n for n in alt.notes)
@@ -375,12 +378,17 @@ def test_pages_are_balanced_and_a_long_solution_is_split():
     for frame in ("stack", "sidebar", "magazine", "dashboard", "split"):
         L = compose(big, Prefs(frame=frame))
         loads = [sum(s.weight for s in p.sections) for p in L.pages]
-        assert 2 <= len(L.pages) <= 4 and max(loads) <= 112, (frame, loads)
-        assert min(loads) >= 40, (frame, loads)                              # no half-empty page
+        assert 2 <= len(L.pages) <= 7 and max(loads) <= 112, (frame, loads)
+        assert min(loads) >= 35, (frame, loads)                              # no half-empty page
         for p in L.pages:                                                    # a heading always has content under it
             for s in p.sections:
                 assert s.key == "close" or any(b.slot == "main" for b in s.blocks), (frame, s.key)
-    assert any(s.key == "how" for p in compose(big, Prefs(frame="stack")).pages for s in p.sections)
+    # a section too long for one page continues on the next
+    huge = _plan(pillars=[{"title": f"Part {i}", "text": "A part of the work described in one long sentence that runs on "
+                                                          "for a while so the card is tall. " * 3} for i in range(8)],
+                 solution_intro="We built it. " * 16)
+    keys = [s.key for p in compose(huge, Prefs(frame="stack")).pages for s in p.sections]
+    assert "solution" in keys and "solution+" in keys
 
 
 # ------------------------------------------------------------------ real-model failure modes (seen on a live Gemini run)
@@ -414,7 +422,10 @@ def test_thin_model_plan_is_filled_and_bad_citations_do_not_block(northwind):
     assert p.subtitle.startswith("Meridian case study")                       # the model's own words are kept
     assert p.comparisons and p.metrics and p.timeline and p.tech and p.challenges and p.quote.text   # the rest is filled
     assert any("filled by rules" in w for w in d.warnings)
-    assert len(d.elements) > 15 and 2 <= len(d.layout.pages) <= 4
+    assert len(d.elements) > 15 and 2 <= len(d.layout.pages) <= 12
+    cov = d.coverage                                                          # every approved sentence somewhere
+    assert cov["total"] == cov["designed"] + cov["facts"] == len(northwind.active_claims())
+    assert len(d.plan.facts) == cov["facts"]
 
 
 def test_second_live_run_three_flags_are_settled_without_the_reviewer(northwind):
@@ -616,3 +627,17 @@ def test_a_date_is_never_flagged_as_an_estimate_and_milestones_do_not_repeat_res
                       timeline=[{"when": "February 2025", "text": "The client reported fuel consumption down 9.4 percent."},
                                 {"when": "4 March 2024", "text": "Kickoff."}])
     assert [e.when for e in report.polish(plan, NOTES).timeline] == ["4 March 2024"]
+
+
+def test_delivery_judgements_need_the_notes_and_misfiled_sentences_move():
+    """Live 19 Nov: "delivered within an agreed timeframe and budget" passed although the project went live
+    late and was invoiced above the contract; team size and testing were filed under The Solution."""
+    from caseforge.checker import rule_flags
+    from caseforge.generate import tidy_section
+    from caseforge.models import Claim
+    c = Claim(id="x", section="summary", text="The project was delivered within an agreed timeframe and budget.", manual=True)
+    assert any("judgement" in f for f in rule_flags(c, NOTES, set()))
+    assert tidy_section("work_done", "Team headcount began at 6 people and reached 11 in August 2024.") == "implementation"
+    assert tidy_section("results", "The project received an internal Northwind Excellence Award in April 2025.") == "lessons"
+    assert tidy_section("results", "Late deliveries fell from 14 percent to 6.1 percent.") == "results"
+    assert tidy_section("work_done", "The dispatcher dashboard uses a map-first layout.") == "work_done"

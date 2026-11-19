@@ -328,6 +328,69 @@ ol.run{padding-left:1.2em} ol.run li::marker{font-family:var(--hf);font-weight:8
 .cover-statement .ttl h1{font-size:66px;line-height:1;max-width:11em}
 .cover-statement .ttl .sub{font-size:20px;max-width:26em}
 .cover-statement .rule{position:absolute;left:58px;width:120px;height:8px;top:268px;background:var(--pri)}
+/* ------------ standard structure: objectives, lessons, implementation charts, architecture, facts */
+.objs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:calc(12px*var(--s))}
+.objs.list{grid-template-columns:1fr}
+.obj{display:grid;grid-template-columns:calc(34px*var(--s)) 1fr;gap:12px;align-items:start;background:var(--surface);border-radius:12px;padding:calc(14px*var(--s)) calc(16px*var(--s))}
+.obj .n{width:calc(34px*var(--s));height:calc(34px*var(--s));border-radius:50%;border:2.5px solid var(--pri-ink);color:var(--pri-ink);display:flex;align-items:center;justify-content:center;font-family:var(--hf);font-weight:800;font-size:calc(13px*var(--s))}
+.obj h3,.les h3{font-size:calc(14.5px*var(--s));font-weight:700;margin-bottom:3px}
+.obj p,.les p{font-size:calc(13px*var(--s));line-height:1.45;color:var(--muted)}
+.lesl{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:calc(16px*var(--s))}
+.lesl.list{grid-template-columns:1fr}
+.les{display:grid;grid-template-columns:26px 1fr;gap:12px}
+.les .ar{width:26px;height:26px;border-radius:7px;background:var(--pri);color:var(--on-pri);display:flex;align-items:center;justify-content:center}
+.t-dark .les .ar{background:var(--pri-on-dark);color:var(--dark)}
+/* gantt: milestones on a real time axis */
+.gantt{position:relative}
+.gantt .gr{display:grid;grid-template-columns:calc(190px*var(--s)) 1fr;gap:14px;align-items:center;min-height:calc(31px*var(--s))}
+.gantt .gl{font-size:calc(11.5px*var(--s));line-height:1.3}
+.gantt .gl b{display:block;font-family:var(--hf);font-size:calc(10.5px*var(--s));color:var(--pri-ink);font-weight:800}
+.gantt .gt{position:relative;height:calc(22px*var(--s))}
+.gantt .gt::before{content:"";position:absolute;left:0;right:0;top:50%;height:1px;background:color-mix(in srgb,var(--ink) 10%,transparent)}
+.gantt .bar{position:absolute;top:22%;height:56%;border-radius:4px;background:color-mix(in srgb,var(--pri) 40%,transparent)}
+.gantt .dm{position:absolute;top:50%;width:calc(13px*var(--s));height:calc(13px*var(--s));background:var(--pri);transform:translate(-50%,-50%) rotate(45deg);border-radius:2px}
+.t-dark .gantt .dm{background:var(--pri-on-dark)}
+.gantt .dm.plan{background:var(--paper);border:2px dashed var(--muted)}
+.gantt .delay{position:absolute;top:22%;height:56%;border-radius:4px;background:repeating-linear-gradient(135deg,color-mix(in srgb,var(--acc) 55%,transparent) 0 5px,transparent 5px 9px);border:1px solid color-mix(in srgb,var(--acc) 70%,transparent)}
+.gantt .ax{display:grid;grid-template-columns:calc(190px*var(--s)) 1fr;gap:14px;margin-top:6px}
+.gantt .ticks{position:relative;height:18px;border-top:1.5px solid color-mix(in srgb,var(--ink) 30%,transparent)}
+.gantt .ticks span{position:absolute;top:4px;transform:translateX(-50%);font-size:calc(9.5px*var(--s));color:var(--muted);white-space:nowrap}
+.gantt .lg{display:flex;gap:16px;font-size:calc(10px*var(--s));color:var(--muted);margin-top:8px}
+.gantt .lg i{display:inline-block;width:12px;height:9px;border-radius:2px;margin-right:5px;vertical-align:-1px}
+.undated{font-size:calc(11.5px*var(--s));color:var(--muted);margin-top:8px}
+/* team size over time */
+.team .cols{display:flex;align-items:flex-end;gap:calc(26px*var(--s));height:calc(170px*var(--s));border-bottom:2px solid color-mix(in srgb,var(--ink) 22%,transparent);padding:0 8px;column-count:auto;column-rule:none}
+.team .tc{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%}
+.team .tc b{font-family:var(--hf);font-weight:800;font-size:calc(20px*var(--s));margin-bottom:6px}
+.team .tc i{display:block;width:70%;max-width:84px;border-radius:6px 6px 0 0;background:var(--pri)}
+.t-dark .team .tc i{background:var(--pri-on-dark)}
+.team .tl{display:flex;gap:calc(26px*var(--s));padding:0 8px;margin-top:8px}
+.team .tl span{flex:1;text-align:center;font-size:calc(11.5px*var(--s));line-height:1.3;color:var(--muted)}
+/* budget bars on one scale */
+.money{display:flex;flex-direction:column;gap:calc(12px*var(--s))}
+.money .ml{display:flex;justify-content:space-between;font-size:calc(12.5px*var(--s));margin-bottom:5px;gap:10px}
+.money .ml b{font-family:var(--hf);font-weight:800}
+.money .mt{height:calc(14px*var(--s));border-radius:4px;background:color-mix(in srgb,var(--ink) 8%,transparent)}
+.money .mt i{display:block;height:100%;border-radius:4px;background:var(--pri)}
+.t-dark .money .mt i{background:var(--pri-on-dark)}
+.money .mt i.est{background:repeating-linear-gradient(135deg,var(--pri) 0 6px,color-mix(in srgb,var(--pri) 45%,transparent) 6px 10px)}
+/* architecture: the stack, layer by layer */
+.arch{display:flex;flex-direction:column;gap:0}
+.arch .ly{display:grid;grid-template-columns:calc(150px*var(--s)) 1fr;gap:14px;align-items:center;background:var(--surface);border-radius:12px;padding:calc(12px*var(--s)) calc(16px*var(--s));border-left:4px solid var(--pri)}
+.arch .ly .kicker{color:var(--ink);font-size:calc(11.5px*var(--s))}
+.arch .ly .chips span{background:var(--paper);border:1px solid color-mix(in srgb,var(--ink) 14%,transparent)}
+.arch .lk{display:flex;justify-content:center;height:calc(14px*var(--s));color:var(--pri-ink)}
+.arch .lk svg{height:100%}
+.arch .aside{display:grid;grid-template-columns:repeat(auto-fit,minmax(0,1fr));gap:10px;margin-top:calc(12px*var(--s))}
+.arch .aside .ly{border-left:0;border:1.5px dashed color-mix(in srgb,var(--ink) 25%,transparent);background:transparent;grid-template-columns:1fr;gap:8px}
+/* project facts: the approved sentences not shown on the designed pages */
+.facts{width:100%;border-collapse:collapse}
+.facts td{padding:calc(6px*var(--s)) 8px;vertical-align:top;font-size:calc(10.5px*var(--s));line-height:1.45;border-bottom:1px solid color-mix(in srgb,var(--ink) 9%,transparent)}
+.facts td.fk{width:170px;font-family:var(--hf);font-weight:700;font-size:calc(10px*var(--s));color:var(--pri-ink)}
+.factnote{font-size:calc(10.5px*var(--s));color:var(--muted);margin-top:-6px}
+.tile.k-objectives,.tile.k-lessons,.tile.k-team,.tile.k-budget,.tile.k-architecture,.tile.k-facts{grid-column:span 6}
+.tile.k-architecture,.tile.k-facts{background:transparent;padding:0}
+.f-dashboard .tile .obj{background:var(--paper)}
 /* density */
 .d-compact .page{--s:1}
 .draft{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none;z-index:9}
@@ -342,7 +405,7 @@ ol.run{padding-left:1.2em} ol.run li::marker{font-family:var(--hf);font-weight:8
 {% endmacro %}
 
 {% macro heading(sec, first) %}
-  {% set hl = p.headlines[sec.key] if sec.key in ['challenge','solution','results','journey','close'] else '' %}
+  {% set hl = p.headlines[sec.key] if sec.key in hl_keys else '' %}
   {% if hl %}<div class="kicker sec-k">{{ sec.label }}</div><h2 class="hl">{{ hl }}</h2>
   {% else %}{% set w = sec.label.rsplit(' ', 1) %}<h2>{{ w[0] }} <em>{{ w[1] }}</em></h2>{% endif %}
 {% endmacro %}
@@ -350,7 +413,7 @@ ol.run{padding-left:1.2em} ol.run li::marker{font-family:var(--hf);font-weight:8
 {% macro block(bk) %}{% set k = bk.kind %}{% set v = bk.variant %}
 {% if k == 'lede' %}<p class="lede">{{ p[bk.field] }}</p>
 {% elif k == 'client' %}<div class="card client-card"><span class="dot"></span><div><div class="kicker">The client</div><b>{{ p.client_line }}</b></div></div>
-{% elif k in ['challenges', 'pillars', 'outcomes'] and v == 'prose' %}<div class="cols">{% for it in p[k] %}<p>{% if it.title %}<b>{{ it.title }}.</b> {% endif %}{{ it.text }}</p>{% endfor %}</div>
+{% elif k in ['challenges', 'pillars', 'outcomes', 'objectives', 'lessons'] and v == 'prose' %}<div class="cols">{% for it in p[k] %}<p>{% if it.title %}<b>{{ it.title }}.</b> {% endif %}{{ it.text }}</p>{% endfor %}</div>
 {% elif k == 'steps' and v == 'prose' %}<div>{% if bk.title %}<div class="kicker" style="margin-bottom:10px">How it works</div>{% endif %}<ol class="cols run">{% for st in p.steps %}<li>{% if st.title %}<b>{{ st.title }}.</b> {% endif %}{{ st.text }}</li>{% endfor %}</ol></div>
 {% elif k == 'metrics' and v in ['band', 'side'] %}<div class="mband {{ v }}">{% for m in shown_metrics %}<div class="mb"><div class="v">{{ m.value }}<small>{{ m.unit|trim }}</small>{% if m.estimate %}<span class="est">ESTIMATED</span>{% endif %}</div><p>{{ m.label }}</p></div>{% endfor %}</div>
 {% elif k == 'challenges' %}
@@ -363,7 +426,15 @@ ol.run{padding-left:1.2em} ol.run li::marker{font-family:var(--hf);font-weight:8
   {% else %}<div class="flow" style="--n:{{ p.steps|length }}">{% for st in p.steps %}<div class="step"><div class="n">{{ loop.index }}</div>{% if st.title %}<h3>{{ st.title }}</h3>{% endif %}<p>{{ st.text }}</p></div>{% endfor %}</div>{% endif %}</div>
 {% elif k == 'tech' %}<div class="push"><div class="kicker" style="margin-bottom:8px">Built with</div><div class="chips">{% for t in p.tech %}<span>{{ t }}</span>{% endfor %}</div></div>
 {% elif k == 'timeline' %}
-  {% if v == 'horizontal' %}<div class="tl-h" style="--n:{{ p.timeline|length }}">{% for e in p.timeline %}<div class="ev"><div class="when">{{ e.when }}</div><i></i><p>{{ e.text }}</p></div>{% endfor %}</div>
+  {% if v == 'gantt' and gantt.rows %}<div class="chart gantt"><div class="kicker" style="margin-bottom:10px">Project timeline</div>
+    {% for r in gantt.rows %}<div class="gr"><div class="gl"><b>{{ r.when }}</b>{{ r.text }}</div><div class="gt">
+      {% if r.bar %}<i class="bar" style="left:{{ r.x0 }}%;width:{{ r.w }}%"></i>{% endif %}
+      {% if r.delay %}<i class="delay" style="left:{{ r.dx }}%;width:{{ r.dw }}%"></i>{% endif %}
+      <i class="dm{{ ' plan' if r.plan }}" style="left:{{ r.x }}%"></i></div></div>{% endfor %}
+    <div class="ax"><span></span><div class="ticks">{% for t in gantt.ticks %}<span style="left:{{ t.x }}%">{{ t.label }}</span>{% endfor %}</div></div>
+    <div class="lg"><span><i style="background:var(--pri)"></i>Milestone</span>{% if gantt.has_plan %}<span><i style="border:1.5px dashed var(--muted)"></i>Original plan</span>{% endif %}{% if gantt.has_delay %}<span><i style="background:repeating-linear-gradient(135deg,var(--acc) 0 3px,transparent 3px 6px)"></i>Delay against the plan</span>{% endif %}</div>
+    {% if gantt.undated %}<p class="undated">{% for e in gantt.undated %}{{ e.when }}: {{ e.text }}{% if not loop.last %} · {% endif %}{% endfor %}</p>{% endif %}</div>
+  {% elif v == 'horizontal' %}<div class="tl-h" style="--n:{{ p.timeline|length }}">{% for e in p.timeline %}<div class="ev"><div class="when">{{ e.when }}</div><i></i><p>{{ e.text }}</p></div>{% endfor %}</div>
   {% else %}<div class="tl-v">{% for e in p.timeline %}<div class="ev"><div class="when">{{ e.when }}</div><i></i><p>{{ e.text }}</p></div>{% endfor %}</div>{% endif %}
 {% elif k == 'metrics' and v == 'rings' %}<div class="rings" style="--n:{{ shown_metrics|length }}">{% for m in shown_metrics %}<div class="ring">
     <div class="dial"><svg viewBox="0 0 120 120" aria-hidden="true"><circle class="tr" cx="60" cy="60" r="52"/><circle class="fg" cx="60" cy="60" r="52" stroke-dasharray="{{ ring_arc[loop.index0] }} 327" transform="rotate(-90 60 60)"/></svg>
@@ -389,6 +460,18 @@ ol.run{padding-left:1.2em} ol.run li::marker{font-family:var(--hf);font-weight:8
 {% elif k == 'outcomes' %}<div class="outcomes {{ v }}">{% for it in p.outcomes %}<div class="outcome"><span class="ck"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></span><div>{% if it.title %}<h3>{{ it.title }}</h3>{% endif %}<p>{{ it.text }}</p></div></div>{% endfor %}</div>
 {% elif k == 'quote' %}<div class="quote {{ v }}">{{ qmark|safe }}<p>{{ p.quote.text }}</p>{% if p.quote.who %}<cite>{{ p.quote.who }}</cite>{% endif %}</div>
 {% elif k == 'closing' %}<div class="closing"><p class="big">{{ p.conclusion }}</p>{% if b.cta_text %}<span class="cta">{{ b.cta_text }}</span>{% endif %}</div>
+{% elif k == 'objectives' %}<div class="objs {{ v }}">{% for it in p.objectives %}<div class="obj"><span class="n">{{ loop.index }}</span><div>{% if it.title %}<h3>{{ it.title }}</h3>{% endif %}<p>{{ it.text }}</p></div></div>{% endfor %}</div>
+{% elif k == 'lessons' %}<div class="lesl {{ v }}">{% for it in p.lessons %}<div class="les"><span class="ar"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h13M13 6l6 6-6 6"/></svg></span><div>{% if it.title %}<h3>{{ it.title }}</h3>{% endif %}<p>{{ it.text }}</p></div></div>{% endfor %}</div>
+{% elif k == 'team' %}<div class="chart team"><div class="kicker" style="margin-bottom:12px">Team size over time</div>
+    <div class="cols">{% for t in team %}<div class="tc"><b>{{ t.size }}</b><i style="height:{{ t.h }}%"></i></div>{% endfor %}</div>
+    <div class="tl">{% for t in team %}<span>{{ t.when }}</span>{% endfor %}</div></div>
+{% elif k == 'budget' %}<div class="chart"><div class="kicker" style="margin-bottom:12px">Budget</div><div class="money">{% for mo in money %}<div>
+    <div class="ml"><span>{{ mo.label }}{% if mo.estimate %}<span class="est">ESTIMATED</span>{% endif %}</span><b>{{ mo.text }}</b></div>
+    <div class="mt"><i class="{{ 'est' if mo.estimate }}" style="width:{{ mo.w }}%"></i></div></div>{% endfor %}</div></div>
+{% elif k == 'architecture' %}<div class="arch">{% for la in arch.core %}{% if not loop.first %}<div class="lk"><svg viewBox="0 0 24 14" aria-hidden="true"><path d="M4 3l8 8 8-8" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg></div>{% endif %}
+    <div class="ly"><div class="kicker">{{ la.name }}</div><div class="chips">{% for t in la.items %}<span>{{ t }}</span>{% endfor %}</div></div>{% endfor %}
+    {% if arch.aside %}<div class="aside">{% for la in arch.aside %}<div class="ly"><div class="kicker">{{ la.name }}</div><div class="chips">{% for t in la.items %}<span>{{ t }}</span>{% endfor %}</div></div>{% endfor %}</div>{% endif %}</div>
+{% elif k == 'facts' %}{% set ab = bk.field.split(':') %}{% if ab[0] == '0' %}<p class="factnote">Every statement below is from the approved case study and checked against the notes.</p>{% endif %}<table class="facts">{% for it in p.facts[ab[0]|int:ab[1]|int] %}<tr><td class="fk">{% if loop.first or it.title != p.facts[ab[0]|int + loop.index0 - 1].title %}{{ it.title }}{% endif %}</td><td>{{ it.text }}</td></tr>{% endfor %}</table>
 {% elif k == 'verify' %}<div class="verify"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l7 3v6c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V6z"/><path d="M8.5 12l2.5 2.5 4.5-5"/></svg>
       <div><b>How this report was checked.</b> CaseForge matched every statement in this report — {{ n_checked }} in total — against the original project notes{% if n_sources %} ({{ n_sources }} source{{ 's' if n_sources != 1 }}){% endif %}. Numbers marked ESTIMATED are estimates in the source. {% if approved_by %}Approved for publication by {{ approved_by }} on {{ approved_on }}.{% else %}Not yet approved for publication.{% endif %}</div></div>
 {% endif %}{% endmacro %}
@@ -527,6 +610,75 @@ def _bars(plan) -> list[dict]:
     return out
 
 
+_PLANNED = re.compile(r"\b(original|originally|planned|scheduled|target(?:ed)?|was due|initial)\b", re.I)
+_ACTUAL = re.compile(r"\b(went live|go-?live|launch\w*|deliver\w*|released?|live)\b", re.I)
+
+
+def _gantt(plan) -> dict:
+    """Milestones on a real time axis: each row is a milestone, its bar runs from the one before; an
+    original date that was missed is drawn as a hollow marker with the delay hatched up to the real date."""
+    from ..layout import month_index
+    dated = [(month_index(e.when), e) for e in plan.timeline]
+    rows = sorted([(x, e) for x, e in dated if x is not None], key=lambda t: t[0])
+    undated = [e for x, e in dated if x is None]
+    if len(rows) < 2:
+        return {"rows": [], "ticks": [], "undated": undated}
+    lo, hi = rows[0][0], rows[-1][0]
+    pad = max(0.6, (hi - lo) * 0.04)
+    lo, hi = lo - pad, hi + pad
+    pos = lambda x: round(100 * (x - lo) / (hi - lo), 1)  # noqa: E731
+    plan_x = {i: x for i, (x, e) in enumerate(rows) if _PLANNED.search(e.text)}
+    out, prev = [], None
+    for i, (x, e) in enumerate(rows):
+        r = {"when": e.when, "text": e.text, "x": pos(x), "plan": i in plan_x, "bar": False, "delay": False}
+        if prev is not None and i not in plan_x:
+            r.update(bar=True, x0=pos(prev), w=round(pos(x) - pos(prev), 1))
+        if i not in plan_x and _ACTUAL.search(e.text):
+            missed = [px for j, px in plan_x.items() if j < i and _ACTUAL.search(rows[j][1].text)]
+            if missed:
+                r.update(delay=True, dx=pos(missed[-1]), dw=round(pos(x) - pos(missed[-1]), 1))
+        out.append(r)
+        if i not in plan_x:
+            prev = x
+    names = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
+    span = hi - lo
+    step = 1 if span <= 8 else 2 if span <= 16 else 3 if span <= 30 else 6 if span <= 60 else 12
+    ticks, t = [], int(lo) + 1
+    while t < hi:
+        if t % step == 0:
+            ticks.append({"x": pos(t), "label": f"{names[t % 12]} {t // 12}" if t % 12 == 0 or not ticks else names[t % 12]})
+        t += 1
+    return {"rows": out, "ticks": ticks, "undated": undated, "has_plan": bool(plan_x),
+            "has_delay": any(r["delay"] for r in out)}
+
+
+def _team(plan) -> list[dict]:
+    hi = max((t.size for t in plan.team), default=1) or 1
+    return [{"when": t.when, "size": t.size, "h": max(4, round(100 * t.size / hi))} for t in plan.team]
+
+
+_SCALE = {"thousand": 1e3, "million": 1e6, "billion": 1e9}
+
+
+def _money_bars(plan) -> list[dict]:
+    from ..report import _money
+    def mag(mo):
+        first = mo.unit.split()[0].lower() if mo.unit.split() else ""
+        return mo.value * _SCALE.get(first, 1)
+    hi = max((mag(mo) for mo in plan.budget), default=1) or 1
+    return [{"label": mo.label, "estimate": mo.estimate, "text": f"{_money(mo.value)} {mo.unit}".strip(),
+             "w": max(2, round(100 * mag(mo) / hi, 1))} for mo in plan.budget]
+
+
+def _arch(plan) -> dict:
+    side = {"Quality & operations", "Integrations"}
+    core = [la for la in plan.architecture if la.name not in side]
+    aside = [la for la in plan.architecture if la.name in side]
+    if not core:
+        core, aside = aside, []
+    return {"core": core, "aside": aside}
+
+
 def _family(name: str) -> str:
     """CSS font stack; the name is sanitised because it is written into a <style> block."""
     clean = re.sub(r"[^A-Za-z0-9 \-]", "", name)[:60] or "Inter"
@@ -593,6 +745,7 @@ def report_html(record: ProjectRecord, design: ReportDesign, logo_dir: Path | No
         approved_by=design.approved_by if not draft else "", approved_on=design.approved_at[:10],
         n_checked=len(design.elements), n_sources=sources, draft=draft, L=L, shown_metrics=shown,
         motif_small=_motif(b).replace('class="motif"', 'class="motif-small"'), arrow=ARROW, qmark=QMARK,
+        hl_keys=list(type(p.headlines).model_fields), gantt=_gantt(p), team=_team(p), money=_money_bars(p), arch=_arch(p),
         footer_note="Fact-checked case study" if not draft else "Draft for review",
     )
 

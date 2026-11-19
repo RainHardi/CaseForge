@@ -18,6 +18,7 @@ from .llm import LLM
 from .models import Claim, Label, ProjectRecord, worst
 from .textutil import (
     estimate_flags,
+    verdict_phrases,
     best_overlap,
     inflated_words,
     named_terms,
@@ -52,6 +53,7 @@ def rule_flags(claim: Claim, source: str, known_fact_ids: set[str]) -> list[str]
         if word not in src_norm.split():
             flags.append(f"inflated wording '{word}' is not in the input")
     flags += estimate_flags(claim.text, source)
+    flags += [f"'{v}' is a judgement your notes don't make" for v in verdict_phrases(claim.text, source)]
     if not claim.manual:
         if not claim.fact_ids:
             flags.append("cites no source fact")

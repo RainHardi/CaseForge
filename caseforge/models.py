@@ -20,14 +20,20 @@ INPUT_FIELDS: list[tuple[str, str]] = [
     ("results", "Results"),
 ]
 
+# The standard case-study structure. Old keys are kept, so earlier drafts still open; a section with
+# nothing in the notes is simply left out of every document.
 SECTIONS: list[tuple[str, str]] = [
-    ("summary", "Summary"),
+    ("summary", "Executive Summary"),
+    ("introduction", "Introduction"),
     ("client_problem", "The Challenge"),
-    ("work_done", "What We Did"),
-    ("technical_approach", "Technical Approach"),
-    ("tools", "Tools & Technologies"),
+    ("objectives", "Objectives"),
+    ("technical_approach", "Our Approach"),
+    ("work_done", "The Solution"),
+    ("implementation", "Implementation"),
+    ("tools", "Technology"),
     ("challenges", "Obstacles We Worked Through"),
-    ("results", "Results"),
+    ("results", "Results & Impact"),
+    ("lessons", "Lessons & What's Next"),
 ]
 SECTION_KEYS = [k for k, _ in SECTIONS]
 SECTION_TITLES = dict(SECTIONS)

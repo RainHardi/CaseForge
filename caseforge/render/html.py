@@ -41,7 +41,7 @@ footer{color:var(--muted);font-size:13px;border-top:1px solid var(--line);margin
 {% for s in sections %}
 <section><h2>{{ s.title }}</h2>
 {% if s.key == 'tools' %}<ul class="chips">{% for t in s.texts %}<li>{{ t }}</li>{% endfor %}</ul>
-{% elif s.key in ('challenges','results') %}<ul>{% for t in s.texts %}<li>{{ t }}</li>{% endfor %}</ul>
+{% elif s.key in ('challenges','results','objectives','lessons') %}<ul>{% for t in s.texts %}<li>{{ t }}</li>{% endfor %}</ul>
 {% else %}<p>{{ s.texts|join(' ') }}</p>{% endif %}
 {% for img in s.images %}<figure><img src="{{ img.src }}" alt="{{ img.caption or 'Project image' }}">
 {% if img.caption %}<figcaption>{{ img.caption }}</figcaption>{% endif %}</figure>{% endfor %}
@@ -59,7 +59,7 @@ def _data_uri(path: Path) -> str | None:
 def render_portfolio_page(record: ProjectRecord, image_dir: Path, out: Path, draft: bool = False) -> Path:
     require_approved(record, draft)
     sections = []
-    for key in ["client_problem", "work_done", "technical_approach", "tools", "challenges", "results"]:
+    for key in [k for k in SECTION_TITLES if k != "summary"]:
         texts = [c.text for c in record.active_claims(key)]
         if not texts:
             continue
