@@ -99,7 +99,7 @@ Full details, usage conditions and open questions in [Data Sources](./docs/data-
 
 ## Tools & Models
 
-- **LLM:** Google Gemini (free tier via Google AI Studio) — no cost, no HBAI budget required. Pinned to `gemini-3.5-flash-lite` (**Q-015**).
+- **LLM:** Google Gemini (free tier via Google AI Studio) — no cost, no HBAI budget required. Pinned to `gemini-3.5-flash-lite` (**Q-015**). After the course we plan to move to paid Claude (**Q-025**); see [docs/business-model.md](docs/business-model.md) for the price, market and cost estimate.
 - **PDF generation:** ReportLab for the PDF case study and one-pager (**Q-012**); headless Chromium for the designed report and proof sheet; `segno` for QR codes
 - **Interface:** FastAPI website; Streamlit and a command-line tool still work (**Q-013**)
 - **Integrations:** Notion API, read only, with the user's own integration secret
