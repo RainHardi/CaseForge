@@ -88,7 +88,7 @@ Free plan limits:
 | Name | What it does | Default |
 |---|---|---|
 | `GEMINI_API_KEY` | Gemini key. Empty = offline mode (no AI, sentences copied from notes) | — |
-| `GEMINI_MODEL` | Pinned model id | `gemini-flash-latest` |
+| `GEMINI_MODEL` | Pinned model id | `gemini-3.5-flash-lite` |
 | `DATABASE_URL` | Postgres connection string (Neon). Empty = local SQLite file | `data/caseforge.db` |
 | `SECRET_KEY` | Signs login cookies. Must stay the same between restarts | random each start |
 | `DAILY_AI_LIMIT` | Drafts, formats, report designs and guideline imports each user can run per day | `30` |

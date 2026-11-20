@@ -262,7 +262,7 @@ These are the official Baseline items from the project tab, and how we plan to m
 | # | Baseline Item | Our Plan |
 |---|---|---|
 | B1 | Accepts structured input about a project: client problem, work done, technical approach, tools and technologies used, challenges, results, and supporting images | Input form covering each field, with image upload |
-| B2 | Produces a one-page summary and a downloadable PDF case study following a fixed template | Fixed case-study template; PDF generation with ReportLab or WeasyPrint (choice TBD) |
+| B2 | Produces a one-page summary and a downloadable PDF case study following a fixed template | Fixed case-study template; PDF generation with ReportLab (decided 31 Oct 2026, Q-012) |
 | B3 | A human review and edit step before anything is final; nothing publishes without approval | Review screen where the user edits and approves the draft; export only works after approval |
 | B4 | Works end to end on three real project inputs | Test with real inputs from our own projects, classmates' projects, and HumbleBeeAI projects if cleared |
 | B5 | Generates no claim that was not in the input, verified by checking output against input on every test case | Fact extraction + automated faithfulness check + manual claim check on every test case (see [Test Plan](test-plan.md)) |
@@ -466,7 +466,7 @@ Details that are still undecided are marked **TBD** and tracked in the [Question
 - HumbleBeeAI, *HBAI Capstone Project Pool*, S1: Case Study & Portfolio Generator ([project tab](HBAI_Capstone_project_pools.pdf))
 - Victoria Kim and Seunghyun Ko, *Inha Capstone Project Documentation Guide*, Capstone Design Course, Inha University, Fall 2026
 - Google AI Studio / Gemini API documentation (link TBD)
-- ReportLab and WeasyPrint documentation (link TBD, once the library is chosen)
+- ReportLab documentation (https://docs.reportlab.com/); WeasyPrint was considered and rejected (Q-012)
 
 ---
 
