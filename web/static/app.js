@@ -400,6 +400,11 @@ function tabOutputs() {
       ${rr ? dl(`${P()}/report/pdf`, "Report PDF", `${esc(r.report.brand.name)} · ${(r.report.layout?.pages?.length || 4) + 1} pages`, true) : `<a class="btn primary" href="#p/${esc(r.id)}/report">Go to report</a>`}
     </div>
     <div class="dls">${docs.map(([k, t, d]) => dl(`${P()}/export/${k}`, t, d)).join("")}</div>
+    <div class="panel verified" id="anon">
+      <div class="head"><div><h3>Anonymized version</h3>
+        <span class="hint">For clients who won't be named. Choose which names to swap; only those words change, so every number and fact stays exactly as approved.</span></div></div>
+      <div id="anonbox"><p class="hint">Loading…</p></div>
+    </div>
     <div class="panel verified" id="signoff">
       <div class="head"><div><h3>Client sign-off</h3>
         <span class="hint">Send the client one link. They confirm, fix or remove each number, quote and mention of them, from a phone, with no account. Confirmed sentences show on the Verified link.</span></div></div>
@@ -417,8 +422,11 @@ function tabOutputs() {
           <select id="vev"><option value="full">Quotes from the notes, with file and line</option>
             <option value="masked">Quotes, with details the sentence doesn't mention hidden</option>
             <option value="labels">Check results only, no quotes</option></select></div>
-        ${r.client_signoff?.decision === "anonymous" ? `<span class="chk hint">The client asked to stay anonymous: their name is hidden.</span><input type="checkbox" id="vclient" hidden>`
-          : `<label class="chk"><input type="checkbox" id="vclient" ${r.input.client_name ? "checked" : "disabled"}> Show the client's name</label>`}
+        <div class="field"><label for="vname">Names</label>
+          <select id="vname">${r.client_signoff?.decision === "anonymous" ? "" : `<option value="show">Show the client's name</option>`}
+            <option value="hide">Replace the client's name with "the client"</option>
+            <option value="anon" ${r.anon_map?.length ? "" : "disabled"}>Anonymized version (your name swaps)${r.anon_map?.length ? "" : ": set it up above"}</option></select>
+          ${r.client_signoff?.decision === "anonymous" ? `<span class="hint">The client asked to stay anonymous.</span>` : ""}</div>
         <button class="btn primary" data-publish="1">Publish verified link</button>
       </div>
       <div id="vlinks"><p class="hint">Loading links…</p></div>
@@ -433,10 +441,19 @@ function tabOutputs() {
         ${out ? `${f.stale ? `<p class="hint" style="color:var(--bad)">The case study changed since this was written — write it again.</p>` : ""}
           <div class="doc" style="margin-top:12px">${out.sentences.filter(s => !s.deleted).map(s => fmtRow(k, s)).join("")}</div>` : ""}</div>`;
     }).join("")}`;
-  if (ok) { loadLinks(); loadSignoffs(); }
+  if (ok) { loadLinks(); loadSignoffs(); loadAnon(); }
   el.onclick = async e => {
     const t = e.target.closest("button"); if (!t) return;
     const d = t.dataset;
+    if (d.anonsave || d.anonadd || d.anonrm) {
+      const rows = [...document.querySelectorAll("#anonbox .swap")].map(x => ({
+        term: x.querySelector(".st").value, replace: x.querySelector(".swr").value, on: x.querySelector(".so-on").checked }));
+      if (d.anonadd) { rows.push({ term: "", replace: "", on: true, kind: "new" }); showAnon({ ...S.anon, swaps: rows }); return; }
+      if (d.anonrm) { rows.splice(+d.anonrm, 1); showAnon({ ...S.anon, swaps: rows }); return; }
+      const v = await act(() => api("POST", `${P()}/anon`, { swaps: rows.filter(x => x.term.trim()) }), "Name swaps saved.");
+      if (v) { S.rec.anon_map = v.swaps.filter(x => x.kind === "saved").map(x => [x.term, x.replace]); showAnon(v); refreshNameChoice(); }
+      return;
+    }
     if (d.askclient) {
       t.disabled = true;
       const list = await act(() => api("POST", `${P()}/signoff`, { contact: $("#socontact").value }), "Sign-off link ready. Copy it and send it to the client.");
@@ -451,7 +468,8 @@ function tabOutputs() {
       const done = busy(["Applying the client's answer", "Checking the sentence against your notes"]);
       try { await update(api("POST", `${P()}/signoffs/${tok}/use/${cid}`), "Applied. Review and approve the case study again."); } finally { done(); }
     } else if (d.publish) {
-      const body = { evidence: $("#vev").value, show_client: $("#vclient").checked };
+      const nm = $("#vname").value;
+      const body = { evidence: $("#vev").value, show_client: nm === "show", anonymized: nm === "anon" };
       t.disabled = true;
       const links = await act(() => api("POST", `${P()}/publish`, body), "Published. Copy the link or download the PDF with its QR code.");
       t.disabled = false;
@@ -473,6 +491,45 @@ function tabOutputs() {
     else if (d.fsave) { const v = $(`textarea[data-fed="${d.k}${d.fsave}"]`).value; S.editing = null; update(api("POST", `${P()}/formats/${d.k}/${d.fsave}`, { text: v }), "Saved and re-checked."); }
     else if (d.cancel) { S.editing = null; tabOutputs(); }
   };
+}
+async function loadAnon() {
+  const v = await act(() => api("GET", `${P()}/anon`));
+  if (v) showAnon(v);
+}
+function refreshNameChoice() {
+  const o = $("#vname option[value=anon]"); if (!o) return;
+  const on = !!S.rec.anon_map?.length;
+  o.disabled = !on; o.textContent = "Anonymized version (your name swaps)" + (on ? "" : ": set it up above");
+}
+function showAnon(v) {
+  S.anon = v;
+  const box = $("#anonbox"); if (!box) return;
+  const r = S.rec, P2 = P(), rr = r.report_ready && r.report && r.report.based_on_hash === r.approved_hash;
+  const KIND = { client: "client", name: "maybe a name", email: "email", link: "link", phone: "phone", saved: "", new: "" };
+  const mark = (a, b) => esc(b);
+  box.innerHTML = `
+    ${v.client_wants_anonymous ? `<div class="next warn" style="margin:10px 0"><b>The client asked to stay anonymous.</b> Use these versions when you publish or send it.</div>` : ""}
+    <div class="swaps">${v.swaps.map((x, i) => `<div class="swap">
+        <input type="checkbox" class="so-on" ${x.on ? "checked" : ""} aria-label="Swap this name">
+        <input type="text" class="st" value="${esc(x.term)}" placeholder="Name in the case study" aria-label="Name">
+        <span aria-hidden="true">→</span>
+        <input type="text" class="swr" value="${esc(x.replace)}" placeholder="${x.kind === "name" ? "e.g. the operations manager" : "what to call it"}" aria-label="Replace with">
+        <span class="kind">${KIND[x.kind] || ""}</span>
+        <button class="btn sm ghost" data-anonrm="${i}" aria-label="Remove">×</button></div>`).join("") || `<p class="hint">No names found. Add any you want swapped.</p>`}</div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin:10px 0 4px">
+      <button class="btn sm" data-anonadd="1">+ Add a name</button>
+      <button class="btn sm primary" data-anonsave="1">Save swaps</button></div>
+    ${v.saved ? `
+      ${v.left.length ? `<p class="hint" style="color:var(--bad)">Still in the text: ${v.left.map(esc).join(", ")}.</p>` : ""}
+      ${v.has_images ? `<p class="hint">Images and the logo aren't changed. Check they don't show the client. The anonymized report hides an uploaded logo.</p>` : ""}
+      <details class="fold"><summary>${v.preview.length} sentence${v.preview.length === 1 ? "" : "s"} change</summary>
+        <ul>${v.preview.map(x => `<li><s>${esc(x.before)}</s><br>${mark(x.before, x.after)}</li>`).join("")}</ul></details>
+      <div class="dls" style="margin-top:12px">
+        ${rr ? `<a class="dl" href="${P2}/report/pdf?anonymized=1"><span><b>Report PDF, anonymized</b><small>Same design, names swapped</small></span></a>` : ""}
+        <a class="dl" href="${P2}/export/case-study?anonymized=1"><span><b>Case study, anonymized</b><small>PDF</small></span></a>
+        <a class="dl" href="${P2}/export/one-pager?anonymized=1"><span><b>One-pager, anonymized</b><small>PDF</small></span></a>
+        <a class="dl" href="${P2}/export/portfolio?anonymized=1"><span><b>Portfolio page, anonymized</b><small>HTML</small></span></a>
+      </div>` : ""}`;
 }
 async function loadSignoffs() {
   const list = await act(() => api("GET", `${P()}/signoffs`));
@@ -514,7 +571,7 @@ function showLinks(links) {
     <li class="${l.current ? "" : "old"}">
       <img src="/v/${esc(l.token)}/qr.svg" alt="QR code for the link" width="56" height="56">
       <div class="vmeta"><a href="${esc(l.url)}" target="_blank" rel="noopener">${esc(l.url.replace(/^https?:\/\//, ""))}</a>
-        <small>${esc(new Date(l.created_at).toLocaleDateString())} · ${ev[l.evidence] || l.evidence}${l.show_client ? "" : " · client hidden"}
+        <small>${esc(new Date(l.created_at).toLocaleDateString())} · ${ev[l.evidence] || l.evidence}${l.anonymized ? " · anonymized" : l.show_client ? "" : " · client hidden"}
           · ${l.views} view${l.views === 1 ? "" : "s"} · ${l.checks} sentence${l.checks === 1 ? "" : "s"} checked
           ${l.current ? "" : `<b class="tag">older version</b>`}</small></div>
       <div class="vbtn"><button class="btn sm" data-vcopy="${esc(l.url)}">Copy</button>

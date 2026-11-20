@@ -85,7 +85,7 @@ footer{border-top:1px solid var(--line);color:var(--muted);font-size:13.5px;padd
     {% if v.client %}<div class="client">Client: {{ v.client }}</div>{% endif %}
     <p class="how"><b>Click any sentence to see where it comes from.</b> Each of the {{ v.n_sentences }} sentences was matched
       against the original project notes{% if v.n_sources %} ({{ v.n_sources }} source{{ 's' if v.n_sources != 1 }}){% endif %}
-      and approved by {{ v.approved_by }} on {{ v.approved_on }}.{% if v.signoff.by %} The client confirmed {{ v.n_confirmed }} of them.{% endif %}{% if v.evidence == 'masked' %} Details the sentence doesn't mention are hidden as ███.{% endif %}</p>
+      and approved by {{ v.approved_by }} on {{ v.approved_on }}.{% if v.signoff.by %} The client confirmed {{ v.n_confirmed }} of them.{% endif %}{% if v.evidence == 'masked' %} Details the sentence doesn't mention are hidden as ███.{% endif %}{% if v.anonymized %} This is the anonymized version: names of the client and people are replaced, and every number and fact is exactly as approved.{% endif %}</p>
   </div>
 </div>
 <div class="wrap grid">

@@ -194,6 +194,7 @@ class ProjectRecord(BaseModel):
     engine: str = ""  # "gemini:<model>" or "offline"
     llm_calls: int = 0
     outputs: dict[str, DerivedOutput] = Field(default_factory=dict)
+    anon_map: list[list[str]] = Field(default_factory=list)  # name swaps for the anonymized version
     client_signoff: dict = Field(default_factory=dict)  # by, company, on, decision ('named' / 'anonymous')
     report: "ReportDesign | None" = None  # the designed, branded report (caseforge.report)
     workspace_id: str = ""

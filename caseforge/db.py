@@ -414,7 +414,8 @@ class DB:
             cp = json.loads(r.copy)
             out.append({"token": r.token, "created_at": r.created_at.isoformat(), "revoked": bool(r.revoked),
                         "views": r.views, "checks": r.checks, "evidence": cp.get("evidence", "full"),
-                        "show_client": bool(cp.get("client")), "hash": cp.get("hash", "")})
+                        "show_client": bool(cp.get("client")), "anonymized": bool(cp.get("anon")),
+                        "hash": cp.get("hash", "")})
         return out
 
     def published_copy(self, token: str) -> tuple[dict, str, str] | None:

@@ -14,6 +14,7 @@ import re
 import secrets
 
 from .models import SECTION_TITLES, ProjectRecord, now
+from .anonymize import apply as swap_names
 from .review import can_export
 
 EVIDENCE = ("full", "masked", "labels")  # quotes · quotes with unrelated details hidden · check results only
@@ -69,17 +70,28 @@ def fingerprint(payload: dict) -> str:
     return hashlib.sha256(json.dumps(payload, sort_keys=True).encode()).hexdigest()
 
 
-def snapshot(record: ProjectRecord, evidence: str = "full", show_client: bool = True) -> dict:
+def snapshot(record: ProjectRecord, evidence: str = "full", show_client: bool = True, anonymize: bool = False) -> dict:
     """The frozen copy published under a token. Raises unless the project is approved and unchanged."""
     if not can_export(record):
         raise VerifyError("Approve the case study first. Only an approved, unchanged case study can be published.")
+    swaps = record.anon_map if anonymize else []
+    if anonymize and not swaps:
+        raise VerifyError("Set up the anonymized version first: choose which names to swap.")
+    show_client = show_client and not anonymize
     if show_client and record.client_signoff.get("decision") == "anonymous" and record.input.client_name.strip():
         raise VerifyError("The client asked to stay anonymous. Publish with the client's name hidden.")
     if evidence not in EVIDENCE:
         raise VerifyError(f"Evidence must be one of {', '.join(EVIDENCE)}.")
     facts = {f.id: f for f in record.facts}
     client = record.input.client_name.strip()
-    hidden = "" if show_client else client
+    hidden = "" if show_client or anonymize else client
+
+    def tx(text: str) -> str:
+        if anonymize:
+            return swap_names(text, swaps)
+        if not show_client and client:
+            return re.sub(re.escape(client), "the client", text, flags=re.I)
+        return text
     sections, sources = [], set()
     for key, title in SECTION_TITLES.items():
         rows = []
@@ -91,9 +103,11 @@ def snapshot(record: ProjectRecord, evidence: str = "full", show_client: bool = 
                     sources.add(f.source_ref.split(",")[0].strip())
                 if evidence == "labels":
                     continue
-                quote = f.quote if evidence == "full" else mask_quote(f.quote, c.text, hidden)
-                ev.append({"quote": quote, "source": f.source_ref if evidence == "full" else ""})
-            text = c.text if show_client or not client else re.sub(re.escape(client), "the client", c.text, flags=re.I)
+                quote = swap_names(f.quote, swaps) if anonymize else f.quote
+                if evidence == "masked":
+                    quote = mask_quote(quote, tx(c.text), hidden)
+                ev.append({"quote": quote, "source": f.source_ref if evidence == "full" and not anonymize else ""})
+            text = tx(c.text)
             rows.append({"id": c.id, "text": text, "label": (c.label.value if c.label else "supported"),
                          "estimate": any(f.estimate for f in used), "n_facts": len(used), "evidence": ev,
                          "manual": c.manual, "client_confirmed": bool(c.client_confirmed)})
@@ -102,7 +116,7 @@ def snapshot(record: ProjectRecord, evidence: str = "full", show_client: bool = 
     return {
         "v": 1,
         "project_id": record.id,
-        "title": record.input.title or "Untitled project",
+        "title": tx(record.input.title) or "Untitled project",
         "client": client if show_client else "",
         "evidence": evidence,
         "approved_by": record.approved_by,
@@ -111,7 +125,8 @@ def snapshot(record: ProjectRecord, evidence: str = "full", show_client: bool = 
         "hash": record.approved_hash,
         "n_sources": len(sources),
         "sections": sections,
-        "client_signoff": ({"by": record.client_signoff.get("by", ""), "on": record.client_signoff.get("on", "")}
+        "anon": swaps,
+        "client_signoff": ({"by": "the client" if anonymize else record.client_signoff.get("by", ""), "on": record.client_signoff.get("on", "")}
                            if record.client_signoff and any(c.client_confirmed for c in record.active_claims()) else {}),
         # exactly what the approval fingerprint covers: kept so the page can recompute it
         "signed": {
@@ -134,9 +149,14 @@ def intact(copy: dict) -> bool:
     if set(shown) != set(approved):
         return False
     client = signed.get("client") or ""
-    for cid, text in shown.items():  # what is shown is what was approved (client name may be swapped out)
-        if text != approved[cid] and not (client and not copy.get("client")
-                                          and re.sub(re.escape(client), "the client", approved[cid], flags=re.I) == text):
+    swaps = copy.get("anon") or []
+    for cid, text in shown.items():  # what is shown is what was approved, with only names swapped
+        expected = approved[cid]
+        if swaps:
+            expected = swap_names(expected, swaps)
+        elif client and not copy.get("client"):
+            expected = re.sub(re.escape(client), "the client", expected, flags=re.I)
+        if text != expected:
             return False
     return True
 
@@ -157,6 +177,7 @@ def public_view(copy: dict, live_hash: str | None) -> dict:
         "n_sentences": sum(len(s["sentences"]) for s in copy["sections"]),
         "n_sources": copy.get("n_sources", 0),
         "signoff": copy.get("client_signoff") or {},
+        "anonymized": bool(copy.get("anon")),
         "n_confirmed": sum(1 for s in copy["sections"] for x in s["sentences"] if x.get("client_confirmed")),
         "sections": [{"key": s["key"], "title": s["title"],
                       "sentences": [{**x, "label_text": LABEL_TEXT.get(x["label"], x["label"])} for x in s["sentences"]]}

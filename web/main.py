@@ -21,6 +21,7 @@ from fastapi.staticfiles import StaticFiles
 from itsdangerous import BadSignature, SignatureExpired, URLSafeTimedSerializer
 from pydantic import BaseModel
 
+from caseforge import anonymize as anon
 from caseforge import formats as fmt
 from caseforge import report as rpt
 from caseforge import review
@@ -498,15 +499,18 @@ RENDERERS = {
 
 
 @app.get("/api/projects/{project_id}/export/{kind}")
-def export(kind: str, draft: bool = False, rec: ProjectRecord = Depends(get_project),
+def export(kind: str, draft: bool = False, anonymized: bool = False, rec: ProjectRecord = Depends(get_project),
            user: dict = Depends(current_user)):
     if kind not in RENDERERS:
         raise HTTPException(404)
     fn, mime, ext = RENDERERS[kind]
+    target = anon.anonymized(rec) if anonymized else rec
     with tempfile.TemporaryDirectory() as tmp:
         imgs = db().write_images(rec.id, Path(tmp) / "images")
-        name = export_name(rec, kind, draft).replace(".pdf", ext)
-        path = fn(rec, imgs, Path(tmp) / name, draft=draft)
+        name = export_name(target, kind, draft).replace(".pdf", ext)
+        if anonymized:
+            name = name.replace(ext, "_anonymized" + ext)
+        path = fn(target, imgs, Path(tmp) / name, draft=draft)
         data = path.read_bytes()
     if not draft:
         rec.log("exported", name, user["name"])
@@ -650,10 +654,57 @@ def _resolve_brand(user: dict, brand_id: str, rec: ProjectRecord) -> BrandKit:
     return kit
 
 
+# ------------------------------------------------------------------ anonymized version
+class SwapsBody(BaseModel):
+    swaps: list[dict] = []
+
+
+def _anon_view(rec: ProjectRecord) -> dict:
+    saved = {t.lower() for t, _ in rec.anon_map}
+    rows = [{"term": t, "replace": r, "kind": "saved", "on": True} for t, r in rec.anon_map]
+    rows += [s for s in anon.suggest(rec) if s["term"].lower() not in saved] if review.can_export(rec) else []
+    preview = []
+    if rec.anon_map:
+        for c in rec.active_claims():
+            new = anon.apply(c.text, rec.anon_map)
+            if new != c.text:
+                preview.append({"id": c.id, "before": c.text, "after": new})
+    texts = [anon.apply(x, rec.anon_map) for x in [rec.input.title] + [c.text for c in rec.active_claims()]]
+    return {"swaps": rows, "preview": preview, "saved": bool(rec.anon_map),
+            "left": anon.leftovers(texts, rec.anon_map) if rec.anon_map else [],
+            "client_wants_anonymous": rec.client_signoff.get("decision") == "anonymous",
+            "has_images": bool(rec.input.images or rec.input.logo)}
+
+
+@app.get("/api/projects/{project_id}/anon")
+def get_anon(rec: ProjectRecord = Depends(get_project), user: dict = Depends(current_user)):
+    return _anon_view(rec)
+
+
+@app.post("/api/projects/{project_id}/anon")
+def save_anon(body: SwapsBody, rec: ProjectRecord = Depends(get_project), user: dict = Depends(current_user)):
+    rec.anon_map = anon.clean([s for s in body.swaps if s.get("on", True)])
+    rec.log("anonymized version set", f"{len(rec.anon_map)} name swaps", user["name"])
+    db().save(rec)
+    return _anon_view(rec)
+
+
+def _anon_link(request: Request, rec: ProjectRecord) -> str:
+    """The newest live anonymized Verified link for the approved version (for the anonymized PDF's QR)."""
+    if not review.can_export(rec):
+        return ""
+    for token, copy_ in ((x["token"], db().published_copy(x["token"])) for x in db().published_for(rec.workspace_id, rec.id)
+                         if not x["revoked"] and x["hash"] == rec.approved_hash):
+        if copy_ and copy_[0].get("anon"):
+            return _public_url(request, token)
+    return ""
+
+
 # ------------------------------------------------------------------ verified links
 class PublishBody(BaseModel):
     evidence: str = "full"     # full · masked · labels
     show_client: bool = True
+    anonymized: bool = False   # swap the client and people's names (anonymized version)
 
 
 def _public_url(request: Request, token: str) -> str:
@@ -678,11 +729,11 @@ def list_published(request: Request, rec: ProjectRecord = Depends(get_project), 
 @app.post("/api/projects/{project_id}/publish")
 def publish(body: PublishBody, request: Request, rec: ProjectRecord = Depends(get_project),
             user: dict = Depends(current_user)):
-    copy = vf.snapshot(rec, body.evidence, body.show_client)
+    copy = vf.snapshot(rec, body.evidence, body.show_client, body.anonymized)
     token = vf.new_token()
     db().publish(user["workspace_id"], rec.id, token, copy)
     rec.log("verified link published", f"{token} · evidence {body.evidence}"
-            + ("" if body.show_client else " · client hidden"), user["name"])
+            + (" · anonymized" if body.anonymized else "" if body.show_client else " · client hidden"), user["name"])
     db().save(rec)
     return _links(request, rec, user)
 
@@ -710,7 +761,7 @@ def _current_link(request: Request, rec: ProjectRecord) -> str:
     if not review.can_export(rec):
         return ""
     for x in db().published_for(rec.workspace_id, rec.id):
-        if not x["revoked"] and x["hash"] == rec.approved_hash:
+        if not x["revoked"] and x["hash"] == rec.approved_hash and not x.get("anonymized"):
             return _public_url(request, x["token"])
     return ""
 
@@ -922,13 +973,15 @@ def approve_report(rec: ProjectRecord = Depends(get_project), user: dict = Depen
 
 
 @app.get("/api/projects/{project_id}/report/preview")
-def report_preview(request: Request, rec: ProjectRecord = Depends(get_project)):
+def report_preview(request: Request, anonymized: bool = False, rec: ProjectRecord = Depends(get_project)):
     from caseforge.render.report_pdf import report_html
     if rec.report is None:
         raise HTTPException(404, "Design the report first.")
     with tempfile.TemporaryDirectory() as tmp:
         imgs = db().write_images(rec.id, Path(tmp))
-        html = report_html(rec, rec.report, imgs, draft=not rpt.report_ready(rec), verify_url=_current_link(request, rec))
+        target = anon.anonymized(rec) if anonymized else rec
+        html = report_html(target, target.report, imgs, draft=not rpt.report_ready(target),
+                           verify_url="" if anonymized else _current_link(request, rec))
     # on screen: grey desk, pages scaled to the frame width (print/PDF untouched)
     fit = ("<style>@media screen{html{background:#e9e9e6}body{margin:0}.page{margin:0 auto 18px;"
            "box-shadow:0 6px 24px rgba(0,0,0,.18)}}</style><script>(function(){function z(){"
@@ -939,13 +992,15 @@ def report_preview(request: Request, rec: ProjectRecord = Depends(get_project)):
 
 
 @app.get("/api/projects/{project_id}/report/pdf")
-def report_pdf(request: Request, draft: bool = False, rec: ProjectRecord = Depends(get_project),
-               user: dict = Depends(current_user)):
+def report_pdf(request: Request, draft: bool = False, anonymized: bool = False,
+               rec: ProjectRecord = Depends(get_project), user: dict = Depends(current_user)):
     from caseforge.render.report_pdf import render_report
     with tempfile.TemporaryDirectory() as tmp:
         imgs = db().write_images(rec.id, Path(tmp) / "img")
-        name = f"{rec.id}_report{'_DRAFT' if draft else ''}.pdf"
-        data = render_report(rec, Path(tmp) / name, imgs, draft=draft, verify_url=_current_link(request, rec)).read_bytes()
+        name = f"{rec.id}_report{'_anonymized' if anonymized else ''}{'_DRAFT' if draft else ''}.pdf"
+        target = anon.anonymized(rec) if anonymized else rec
+        data = render_report(target, Path(tmp) / name, imgs, draft=draft,
+                             verify_url=_anon_link(request, rec) if anonymized else _current_link(request, rec)).read_bytes()
     if not draft:
         rec.log("report exported", name, user["name"])
         db().save(rec)
