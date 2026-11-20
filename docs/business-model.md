@@ -22,7 +22,7 @@
 
 | Step | Number | How |
 |---|---|---|
-| Software companies in Korea | 66,403 | Source to be added by whoever did the market research |
+| Software companies in Korea | 66,403 | Source to be added by Odina and Dilshodjon |
 | Fit our first market (serviceable market) | ≈ 6,000 | 66,403 × 60% × 30% × 50% = 5,976. **TBD: what each percentage stands for** |
 | Total addressable market (TAM) | ≈ ₩5.0 B per year | 6,000 × ₩70,000 × 12 = ₩5.04 B, with one paying user per company |
 
@@ -83,12 +83,12 @@ The Batch API is 50% cheaper. Prompt caching also lowers the cost of repeated te
 
 | # | Assumption | Who confirms |
 |---|---|---|
-| 1 | What each of the 60%, 30% and 50% filters means, and the source for 66,403 | Whoever did the market research |
-| 2 | One paying user per company | Team |
-| 3 | Growth of 30 → 100 → 250 paying companies | Team |
+| 1 | What each of the 60%, 30% and 50% filters means, and the source for 66,403 | Odina and Dilshodjon |
+| 2 | One paying user per company | Mukhammadkodir |
+| 3 | Growth of 30 → 100 → 250 paying companies | Anvarbek |
 | 4 | Hosting costs after the free tiers (Render and Neon paid plans) | Abdulaziz |
-| 5 | Payment fees of 3% | Team |
-| 6 | ₩1,400 per dollar | Team |
+| 5 | Payment fees of 3% | Anvarbek |
+| 6 | ₩1,400 per dollar | Mukhammadkodir |
 | 7 | Token use per project: measure it by logging input and output tokens for one real run | Abdulaziz |
 
 ## 8. Limits of this estimate

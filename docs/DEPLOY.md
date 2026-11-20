@@ -20,7 +20,7 @@ uvicorn web.main:app --reload
 
 On Windows run `playwright install chromium` (no `--with-deps`). Without Chromium everything works except **Download PDF** on the *Designed report* tab.
 
-Open **http://localhost:8000** → landing page. **Start free** → create an account → you're in the app.
+Open **http://localhost:8000** → landing page. **Start free** → create an account → you're in.
 
 - With no `DATABASE_URL`, data is saved in `data/caseforge.db` (git-ignored).
 - Set `SECRET_KEY` in `.env`, otherwise everyone is logged out each time the server restarts.
