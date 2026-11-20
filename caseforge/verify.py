@@ -73,6 +73,8 @@ def snapshot(record: ProjectRecord, evidence: str = "full", show_client: bool = 
     """The frozen copy published under a token. Raises unless the project is approved and unchanged."""
     if not can_export(record):
         raise VerifyError("Approve the case study first. Only an approved, unchanged case study can be published.")
+    if show_client and record.client_signoff.get("decision") == "anonymous" and record.input.client_name.strip():
+        raise VerifyError("The client asked to stay anonymous. Publish with the client's name hidden.")
     if evidence not in EVIDENCE:
         raise VerifyError(f"Evidence must be one of {', '.join(EVIDENCE)}.")
     facts = {f.id: f for f in record.facts}
@@ -94,7 +96,7 @@ def snapshot(record: ProjectRecord, evidence: str = "full", show_client: bool = 
             text = c.text if show_client or not client else re.sub(re.escape(client), "the client", c.text, flags=re.I)
             rows.append({"id": c.id, "text": text, "label": (c.label.value if c.label else "supported"),
                          "estimate": any(f.estimate for f in used), "n_facts": len(used), "evidence": ev,
-                         "manual": c.manual})
+                         "manual": c.manual, "client_confirmed": bool(c.client_confirmed)})
         if rows:
             sections.append({"key": key, "title": title, "sentences": rows})
     return {
@@ -109,6 +111,8 @@ def snapshot(record: ProjectRecord, evidence: str = "full", show_client: bool = 
         "hash": record.approved_hash,
         "n_sources": len(sources),
         "sections": sections,
+        "client_signoff": ({"by": record.client_signoff.get("by", ""), "on": record.client_signoff.get("on", "")}
+                           if record.client_signoff and any(c.client_confirmed for c in record.active_claims()) else {}),
         # exactly what the approval fingerprint covers: kept so the page can recompute it
         "signed": {
             "title": record.input.title,
@@ -152,6 +156,8 @@ def public_view(copy: dict, live_hash: str | None) -> dict:
         "newer_version": ok and live_hash is not None and live_hash != copy["hash"],
         "n_sentences": sum(len(s["sentences"]) for s in copy["sections"]),
         "n_sources": copy.get("n_sources", 0),
+        "signoff": copy.get("client_signoff") or {},
+        "n_confirmed": sum(1 for s in copy["sections"] for x in s["sentences"] if x.get("client_confirmed")),
         "sections": [{"key": s["key"], "title": s["title"],
                       "sentences": [{**x, "label_text": LABEL_TEXT.get(x["label"], x["label"])} for x in s["sentences"]]}
                      for s in copy["sections"]],

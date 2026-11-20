@@ -400,6 +400,15 @@ function tabOutputs() {
       ${rr ? dl(`${P()}/report/pdf`, "Report PDF", `${esc(r.report.brand.name)} · ${(r.report.layout?.pages?.length || 4) + 1} pages`, true) : `<a class="btn primary" href="#p/${esc(r.id)}/report">Go to report</a>`}
     </div>
     <div class="dls">${docs.map(([k, t, d]) => dl(`${P()}/export/${k}`, t, d)).join("")}</div>
+    <div class="panel verified" id="signoff">
+      <div class="head"><div><h3>Client sign-off</h3>
+        <span class="hint">Send the client one link. They confirm, fix or remove each number, quote and mention of them, from a phone, with no account. Confirmed sentences show on the Verified link.</span></div></div>
+      <div class="vset">
+        <div class="field"><label for="socontact">Client contact (optional)</label><input id="socontact" type="text" placeholder="e.g. Dana Lee"></div>
+        <button class="btn primary" data-askclient="1">Create sign-off link</button>
+      </div>
+      <div id="solinks"><p class="hint">Loading…</p></div>
+    </div>
     <div class="panel verified" id="verified">
       <div class="head"><div><h3>Verified link</h3>
         <span class="hint">A public page where anyone can click a sentence and see the quote from your notes behind it. The report PDF gets its QR code.</span></div></div>
@@ -408,7 +417,8 @@ function tabOutputs() {
           <select id="vev"><option value="full">Quotes from the notes, with file and line</option>
             <option value="masked">Quotes, with details the sentence doesn't mention hidden</option>
             <option value="labels">Check results only, no quotes</option></select></div>
-        <label class="chk"><input type="checkbox" id="vclient" ${r.input.client_name ? "checked" : "disabled"}> Show the client's name</label>
+        ${r.client_signoff?.decision === "anonymous" ? `<span class="chk hint">The client asked to stay anonymous: their name is hidden.</span><input type="checkbox" id="vclient" hidden>`
+          : `<label class="chk"><input type="checkbox" id="vclient" ${r.input.client_name ? "checked" : "disabled"}> Show the client's name</label>`}
         <button class="btn primary" data-publish="1">Publish verified link</button>
       </div>
       <div id="vlinks"><p class="hint">Loading links…</p></div>
@@ -423,11 +433,24 @@ function tabOutputs() {
         ${out ? `${f.stale ? `<p class="hint" style="color:var(--bad)">The case study changed since this was written — write it again.</p>` : ""}
           <div class="doc" style="margin-top:12px">${out.sentences.filter(s => !s.deleted).map(s => fmtRow(k, s)).join("")}</div>` : ""}</div>`;
     }).join("")}`;
-  if (ok) loadLinks();
+  if (ok) { loadLinks(); loadSignoffs(); }
   el.onclick = async e => {
     const t = e.target.closest("button"); if (!t) return;
     const d = t.dataset;
-    if (d.publish) {
+    if (d.askclient) {
+      t.disabled = true;
+      const list = await act(() => api("POST", `${P()}/signoff`, { contact: $("#socontact").value }), "Sign-off link ready. Copy it and send it to the client.");
+      t.disabled = false;
+      if (list) showSignoffs(list);
+    } else if (d.socancel) {
+      if (!confirm("Cancel this sign-off link? The client won't be able to open it.")) return;
+      const list = await act(() => api("DELETE", `${P()}/signoffs/${d.socancel}`), "Sign-off link cancelled.");
+      if (list) showSignoffs(list);
+    } else if (d.use) {
+      const [tok, cid] = d.use.split(":");
+      const done = busy(["Applying the client's answer", "Checking the sentence against your notes"]);
+      try { await update(api("POST", `${P()}/signoffs/${tok}/use/${cid}`), "Applied. Review and approve the case study again."); } finally { done(); }
+    } else if (d.publish) {
       const body = { evidence: $("#vev").value, show_client: $("#vclient").checked };
       t.disabled = true;
       const links = await act(() => api("POST", `${P()}/publish`, body), "Published. Copy the link or download the PDF with its QR code.");
@@ -450,6 +473,34 @@ function tabOutputs() {
     else if (d.fsave) { const v = $(`textarea[data-fed="${d.k}${d.fsave}"]`).value; S.editing = null; update(api("POST", `${P()}/formats/${d.k}/${d.fsave}`, { text: v }), "Saved and re-checked."); }
     else if (d.cancel) { S.editing = null; tabOutputs(); }
   };
+}
+async function loadSignoffs() {
+  const list = await act(() => api("GET", `${P()}/signoffs`));
+  if (list) showSignoffs(list);
+}
+function showSignoffs(list) {
+  const box = $("#solinks"); if (!box) return;
+  const ST = { open: ["Waiting for the client", ""], answered: ["Answered", "ok"], expired: ["Expired", "bad"],
+               changed: ["Case study changed since: send a new link", "bad"] };
+  const day = v => v ? new Date(v).toLocaleDateString() : "";
+  box.innerHTML = !list.length ? `<p class="hint">No sign-off links yet.</p>` : `<ul class="vlist">${list.map(x => {
+    const [label, cls] = ST[x.state] || [x.state, ""];
+    const answers = x.state !== "answered" ? "" : `<ul class="soans">${x.items.map(it => {
+      const act = it.action === "confirm" ? `<span class="so ok">Confirmed</span>`
+        : it.action === "fix" ? `<span class="so warn">Fix suggested</span>` : `<span class="so bad">Remove</span>`;
+      const btn = it.action === "confirm" ? "" : it.applied ? `<span class="hint">applied</span>`
+        : `<button class="btn sm" data-use="${esc(x.token)}:${esc(it.id)}">${it.action === "fix" ? "Use this wording" : "Remove sentence"}</button>`;
+      return `<li>${act}<div class="sotext">${esc(it.text)}${it.action === "fix" ? `<div class="sofix">→ ${esc(it.suggestion)}</div>` : ""}</div>${btn}</li>`;
+    }).join("")}</ul>`;
+    return `<li class="sorow"><div class="vmeta" style="width:100%">
+        <div class="sohead"><a href="${esc(x.url)}" target="_blank" rel="noopener">${esc(x.url.replace(/^https?:\/\//, ""))}</a>
+          <span class="so ${cls}">${label}</span></div>
+        <small>${x.contact ? esc(x.contact) + " · " : ""}${x.items.length} sentences · sent ${day(x.created_at)}
+          ${x.state === "answered" ? ` · answered by ${esc(x.signed_by)} on ${day(x.submitted_at)} · ${x.decision === "named" ? "name may be published" : "<b>keep anonymous</b>"}` : ` · expires ${day(x.expires_at)}`}</small>
+        ${answers}</div>
+      ${x.state === "answered" ? "" : `<div class="vbtn"><button class="btn sm" data-vcopy="${esc(x.url)}">Copy</button>
+        <button class="btn sm ghost" data-socancel="${esc(x.token)}">Cancel</button></div>`}
+    </li>`; }).join("")}</ul>`;
 }
 async function loadLinks() {
   const links = await act(() => api("GET", `${P()}/published`));

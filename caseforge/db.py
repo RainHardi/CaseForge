@@ -81,6 +81,14 @@ published = Table(
     Column("views", Integer, nullable=False, default=0),
     Column("checks", Integer, nullable=False, default=0),  # sentences readers opened the evidence for
 )
+signoffs = Table(
+    "signoffs", meta,
+    Column("token", String(24), primary_key=True),
+    Column("project_id", String(80), nullable=False, index=True),
+    Column("workspace_id", String(40), ForeignKey("workspaces.id"), nullable=False, index=True),
+    Column("data", Text, nullable=False),  # the request and the client's answers (caseforge.signoff)
+    Column("created_at", DateTime(timezone=True), nullable=False),
+)
 usage = Table(
     "ai_usage", meta,
     Column("user_id", String(40), primary_key=True),
@@ -267,6 +275,7 @@ class DB:
                     c.execute(delete(projects).where(projects.c.id.in_(ids)))
                 c.execute(delete(brand_kits).where(brand_kits.c.workspace_id == ws))
                 c.execute(delete(published).where(published.c.workspace_id == ws))
+                c.execute(delete(signoffs).where(signoffs.c.workspace_id == ws))
                 c.execute(delete(workspaces).where(workspaces.c.id == ws))
 
     # -------------------------------------------------------------- usage limit
@@ -326,6 +335,7 @@ class DB:
                                                      projects.c.workspace_id == workspace_id)).first():
                 c.execute(delete(images).where(images.c.project_id == project_id))
                 c.execute(delete(published).where(published.c.project_id == project_id))
+                c.execute(delete(signoffs).where(signoffs.c.project_id == project_id))
                 c.execute(delete(projects).where(projects.c.id == project_id))
 
     # -------------------------------------------------------------- images
@@ -423,6 +433,34 @@ class DB:
             res = c.execute(update(published).where(published.c.token == token, published.c.workspace_id == workspace_id)
                             .values(revoked=1))
         return res.rowcount > 0
+
+    # -------------------------------------------------------------- client sign-off
+    def add_signoff(self, workspace_id: str, project_id: str, token: str, data: dict) -> None:
+        with self.engine.begin() as c:
+            c.execute(insert(signoffs).values(token=token, project_id=project_id, workspace_id=workspace_id,
+                                              data=json.dumps(data), created_at=_now()))
+
+    def signoffs_for(self, workspace_id: str, project_id: str) -> list[tuple[str, dict]]:
+        with self.engine.connect() as c:
+            rows = c.execute(select(signoffs.c.token, signoffs.c.data).where(
+                signoffs.c.workspace_id == workspace_id, signoffs.c.project_id == project_id)
+                .order_by(signoffs.c.created_at.desc())).all()
+        return [(r.token, json.loads(r.data)) for r in rows]
+
+    def signoff(self, token: str) -> tuple[dict, str, str] | None:
+        """(request, workspace_id, project_id), else None."""
+        with self.engine.connect() as c:
+            r = c.execute(select(signoffs).where(signoffs.c.token == token)).first()
+        return (json.loads(r.data), r.workspace_id, r.project_id) if r else None
+
+    def save_signoff(self, token: str, data: dict) -> None:
+        with self.engine.begin() as c:
+            c.execute(update(signoffs).where(signoffs.c.token == token).values(data=json.dumps(data)))
+
+    def delete_signoff(self, workspace_id: str, token: str) -> bool:
+        with self.engine.begin() as c:
+            return c.execute(delete(signoffs).where(signoffs.c.token == token,
+                                                    signoffs.c.workspace_id == workspace_id)).rowcount > 0
 
     def stats(self) -> dict:
         with self.engine.connect() as c:

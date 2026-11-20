@@ -55,6 +55,8 @@ aside{position:sticky;top:16px}
 .chip{display:inline-block;font-size:12.5px;font-weight:700;padding:3px 9px;border-radius:999px;background:var(--ok-soft);color:var(--ok);margin:0 6px 10px 0}
 .chip.est{background:var(--warn-soft);color:var(--warn)}
 .chip.man{background:var(--bg);color:var(--ink2)}
+.chip.cli{background:color-mix(in srgb,var(--accent) 22%,transparent);color:var(--ink)}
+.cliseal{display:block;margin-top:6px}
 .close{all:unset;display:none;position:absolute;right:14px;top:8px;cursor:pointer;font-size:24px;line-height:1;color:var(--muted);padding:4px 8px}
 .panel{position:relative}
 .seal{margin-top:14px;font-size:13.5px;color:var(--ink2);border-top:1px solid var(--line);padding-top:12px}
@@ -83,7 +85,7 @@ footer{border-top:1px solid var(--line);color:var(--muted);font-size:13.5px;padd
     {% if v.client %}<div class="client">Client: {{ v.client }}</div>{% endif %}
     <p class="how"><b>Click any sentence to see where it comes from.</b> Each of the {{ v.n_sentences }} sentences was matched
       against the original project notes{% if v.n_sources %} ({{ v.n_sources }} source{{ 's' if v.n_sources != 1 }}){% endif %}
-      and approved by {{ v.approved_by }} on {{ v.approved_on }}.{% if v.evidence == 'masked' %} Details the sentence doesn't mention are hidden as ███.{% endif %}</p>
+      and approved by {{ v.approved_by }} on {{ v.approved_on }}.{% if v.signoff.by %} The client confirmed {{ v.n_confirmed }} of them.{% endif %}{% if v.evidence == 'masked' %} Details the sentence doesn't mention are hidden as ███.{% endif %}</p>
   </div>
 </div>
 <div class="wrap grid">
@@ -99,13 +101,13 @@ footer{border-top:1px solid var(--line);color:var(--muted);font-size:13.5px;padd
   <button class="close" id="x" aria-label="Close">×</button>
   <div id="show"><h3>Evidence</h3><p class="empty"><span class="hint-desk">Click a sentence on the left.</span> The quote from the project notes behind it appears here.</p></div>
   <div class="seal">{% if v.intact %}Approved by <b>{{ v.approved_by }}</b> on {{ v.approved_on }}. Unchanged since approval:
-    fingerprint <code title="SHA-256 of the approved text">{{ v.hash_short }}…</code>{% else %}Fingerprint check failed.{% endif %}</div>
+    fingerprint <code title="SHA-256 of the approved text">{{ v.hash_short }}…</code>{% if v.signoff.by %}<span class="cliseal">{{ v.n_confirmed }} sentence{{ 's' if v.n_confirmed != 1 }} confirmed by the client ({{ v.signoff.by }}) on {{ v.signoff.on }}.</span>{% endif %}{% else %}Fingerprint check failed.{% endif %}</div>
 </div></aside>
 </div>
 {% for sec in v.sections %}{% for s in sec.sentences %}<template id="e-{{ s.id }}">
   <h3>Evidence</h3><p class="said">{{ s.text }}</p>
   {% if s.manual and not s.n_facts %}<span class="chip man">Added by the reviewer</span>
-  {% else %}<span class="chip">{{ s.label_text }}</span>{% if s.estimate %}<span class="chip est">Estimate in the notes</span>{% endif %}{% endif %}
+  {% else %}<span class="chip">{{ s.label_text }}</span>{% if s.estimate %}<span class="chip est">Estimate in the notes</span>{% endif %}{% endif %}{% if s.client_confirmed %}<span class="chip cli">Confirmed by the client</span>{% endif %}
   {% for e in s.evidence %}<div class="ev">“{{ e.quote }}”{% if e.source %}<span class="src">{{ e.source }}</span>{% endif %}</div>{% endfor %}
   {% if v.evidence == 'labels' and s.n_facts %}<p class="empty">Checked against {{ s.n_facts }} fact{{ 's' if s.n_facts != 1 }} in the notes. The owner chose not to show the quotes.</p>{% endif %}
 </template>{% endfor %}{% endfor %}

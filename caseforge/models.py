@@ -134,6 +134,7 @@ class Claim(BaseModel):
     deleted: bool = False
     edited: bool = False
     manual: bool = False  # added by the reviewer
+    client_confirmed: str = ""  # date the client confirmed this exact wording (caseforge.signoff)
 
     @property
     def blocking(self) -> bool:
@@ -193,6 +194,7 @@ class ProjectRecord(BaseModel):
     engine: str = ""  # "gemini:<model>" or "offline"
     llm_calls: int = 0
     outputs: dict[str, DerivedOutput] = Field(default_factory=dict)
+    client_signoff: dict = Field(default_factory=dict)  # by, company, on, decision ('named' / 'anonymous')
     report: "ReportDesign | None" = None  # the designed, branded report (caseforge.report)
     workspace_id: str = ""
     created_by: str = ""

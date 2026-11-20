@@ -34,6 +34,7 @@ def edit_claim(record: ProjectRecord, claim_id: str, new_text: str, llm: LLM | N
     if new_text == old and not c.deleted:
         return c  # nothing changed, approval stands
     c.text, c.edited, c.deleted = new_text, True, False
+    c.client_confirmed = ""  # the client confirmed the old wording, not this one
     check_claims(record, llm, only_ids={c.id})
     _touch(record)
     record.log("edited", f"{c.id}: '{old}' -> '{new_text}' (now {c.label.value if c.label else '?'})", by)

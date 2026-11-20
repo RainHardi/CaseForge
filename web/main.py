@@ -24,6 +24,7 @@ from pydantic import BaseModel
 from caseforge import formats as fmt
 from caseforge import report as rpt
 from caseforge import review
+from caseforge import signoff as so
 from caseforge import verify as vf
 from caseforge.brandkit import BUNDLED_FONTS, BrandKit, auto_brand, from_guidelines, from_logo, kit_warnings, presets, publisher
 from caseforge.config import ROOT, get_settings
@@ -35,6 +36,7 @@ from caseforge.notion import import_page as notion_import
 from caseforge.pipeline import generate
 from caseforge.render import ExportBlocked
 from caseforge.render.html import render_portfolio_page
+from caseforge.render.signoff_page import signoff_page
 from caseforge.render.verified import GONE, qr_svg, verified_page
 from caseforge.render.pdf import export_name, render_case_study, render_one_pager
 
@@ -84,6 +86,7 @@ def llm():
 @app.exception_handler(IngestError)
 @app.exception_handler(ExportBlocked)
 @app.exception_handler(vf.VerifyError)
+@app.exception_handler(so.SignoffError)
 async def _bad_request(request: Request, exc: Exception):
     return JSONResponse({"detail": str(exc)}, status_code=400)
 
@@ -733,6 +736,118 @@ def verified_qr(token: str, request: Request):
     if not db().published_copy(token):
         raise HTTPException(404)
     return Response(qr_svg(_public_url(request, token), standalone=True), media_type="image/svg+xml")
+
+
+# ------------------------------------------------------------------ client sign-off
+class SignoffBody(BaseModel):
+    contact: str = ""
+
+
+class ClientAnswers(BaseModel):
+    answers: dict = {}
+    decision: str = ""
+    signed_by: str = ""
+
+
+def _signoff_url(request: Request, token: str) -> str:
+    base = os.getenv("PUBLIC_URL", "").rstrip("/") or str(request.base_url).rstrip("/")
+    return f"{base}/s/{token}"
+
+
+def _signoffs(request: Request, rec: ProjectRecord, user: dict) -> list[dict]:
+    live = rec.content_hash() if review.can_export(rec) else None
+    out = []
+    for token, req in db().signoffs_for(user["workspace_id"], rec.id):
+        claims = {c.id: c for c in rec.claims}
+        rows = []
+        for it in req["items"]:
+            a = req["answers"].get(it["id"], {})
+            c = claims.get(it["id"])
+            applied = bool(c and ((a.get("action") == "remove" and c.deleted)
+                                  or (a.get("action") == "fix" and c.text == a.get("text"))))
+            rows.append({"id": it["id"], "text": it["text"], "action": a.get("action", ""),
+                         "suggestion": a.get("text", ""), "applied": applied})
+        out.append({"token": token, "url": _signoff_url(request, token), "state": so.state(req, live),
+                    "contact": req.get("contact", ""), "created_at": req["created_at"], "expires_at": req["expires_at"],
+                    "signed_by": req.get("signed_by", ""), "decision": req.get("decision", ""),
+                    "submitted_at": req.get("submitted_at", ""), "items": rows})
+    return out
+
+
+@app.get("/api/projects/{project_id}/signoffs")
+def list_signoffs(request: Request, rec: ProjectRecord = Depends(get_project), user: dict = Depends(current_user)):
+    return _signoffs(request, rec, user)
+
+
+@app.post("/api/projects/{project_id}/signoff")
+def ask_client(body: SignoffBody, request: Request, rec: ProjectRecord = Depends(get_project),
+               user: dict = Depends(current_user)):
+    req = so.request(rec, body.contact)
+    token = so.new_token()
+    db().add_signoff(user["workspace_id"], rec.id, token, req)
+    rec.log("client sign-off requested", f"{len(req['items'])} items" + (f" · {req['contact']}" if req["contact"] else ""),
+            user["name"])
+    db().save(rec)
+    return _signoffs(request, rec, user)
+
+
+@app.delete("/api/projects/{project_id}/signoffs/{token}")
+def cancel_signoff(token: str, request: Request, rec: ProjectRecord = Depends(get_project),
+                   user: dict = Depends(current_user)):
+    if not db().delete_signoff(user["workspace_id"], token):
+        raise HTTPException(404, "Sign-off link not found.")
+    return _signoffs(request, rec, user)
+
+
+@app.post("/api/projects/{project_id}/signoffs/{token}/use/{claim_id}")
+def use_client_suggestion(token: str, claim_id: str, rec: ProjectRecord = Depends(get_project),
+                          user: dict = Depends(current_user)):
+    found = db().signoff(token)
+    if not found or found[2] != rec.id or found[1] != user["workspace_id"]:
+        raise HTTPException(404, "Sign-off not found.")
+    model = llm()
+    if model and found[0]["answers"].get(claim_id, {}).get("action") == "fix":
+        db().use_quota(user["id"], DAILY_LIMIT)
+    so.use_suggestion(rec, found[0], claim_id, model, user["name"])
+    return _done(rec, user)
+
+
+def _client_request(token: str):
+    found = db().signoff(token) if len(token) <= 24 else None
+    if not found:
+        return None
+    req, ws, pid = found
+    rec = db().load(ws, pid)
+    live = rec.content_hash() if rec and review.can_export(rec) else None
+    return req, rec, so.state(req, live)
+
+
+@app.get("/s/{token}", include_in_schema=False)
+def client_page(token: str):
+    found = _client_request(token)
+    if not found:
+        return Response(GONE, status_code=404, media_type="text/html")
+    req, _, st = found
+    return Response(signoff_page(req, st), media_type="text/html",
+                    headers={"Cache-Control": "no-store", "X-Robots-Tag": "noindex"})
+
+
+@app.post("/s/{token}", include_in_schema=False)
+def client_submit(token: str, body: ClientAnswers):
+    found = _client_request(token)
+    if not found:
+        raise HTTPException(404, "This link isn't available.")
+    req, rec, st = found
+    if st != "open":
+        raise HTTPException(409, {"answered": "These answers were already sent. Thank you.",
+                                  "expired": "This link has expired. Ask the team for a new one.",
+                                  "changed": "The team changed the case study since sending this link. Ask them for a new one."}[st])
+    req = so.submit(req, body.answers, body.decision, body.signed_by)
+    db().save_signoff(token, req)
+    if rec:
+        so.apply_answers(rec, req)
+        db().save(rec)
+    return {"ok": True}
 
 
 # ------------------------------------------------------------------ designed report
