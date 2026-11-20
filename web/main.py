@@ -23,6 +23,7 @@ from pydantic import BaseModel
 
 from caseforge import anonymize as anon
 from caseforge import formats as fmt
+from caseforge import library as lib
 from caseforge import report as rpt
 from caseforge import review
 from caseforge import signoff as so
@@ -37,6 +38,7 @@ from caseforge.notion import import_page as notion_import
 from caseforge.pipeline import generate
 from caseforge.render import ExportBlocked
 from caseforge.render.html import render_portfolio_page
+from caseforge.render.proof_sheet import proof_sheet_html
 from caseforge.render.signoff_page import signoff_page
 from caseforge.render.verified import GONE, qr_svg, verified_page
 from caseforge.render.pdf import export_name, render_case_study, render_one_pager
@@ -652,6 +654,73 @@ def _resolve_brand(user: dict, brand_id: str, rec: ProjectRecord) -> BrandKit:
     if b["logo_data"]:  # the logo travels with the project so the report renders on its own
         kit.logo = db().add_image(rec.id, f"logo-{b['id']}-{b['logo']}", b["logo_data"])
     return kit
+
+
+# ------------------------------------------------------------------ proof library
+class SheetBody(BaseModel):
+    q: str = ""
+    picks: dict[str, list[str]] = {}
+    anonymized: bool = False
+
+
+def _workspace_records(user: dict) -> list[ProjectRecord]:
+    out = []
+    for p in db().list_projects(user["workspace_id"]):
+        if p["status"] == "approved":
+            r = db().load(user["workspace_id"], p["id"])
+            if r:
+                out.append(r)
+    return out
+
+
+def _sheet_links(request: Request, recs: list[ProjectRecord], anonymized: bool) -> dict[str, str]:
+    """Each case study's live Verified link for the approved version, named or anonymized to match the sheet."""
+    out = {}
+    for r in recs:
+        hide = anonymized or r.client_signoff.get("decision") == "anonymous"
+        for x in db().published_for(r.workspace_id, r.id):
+            if x["revoked"] or x["hash"] != r.approved_hash:
+                continue
+            if (hide and (x["anonymized"] or (not x["show_client"] and not r.anon_map))) or (not hide and not x["anonymized"]):
+                out[r.id] = _public_url(request, x["token"])
+                break
+    return out
+
+
+def _sheet(request: Request, body: SheetBody, user: dict) -> dict:
+    recs = _workspace_records(user)
+    s = lib.sheet(recs, body.q, body.picks or None, body.anonymized, _sheet_links(request, recs, body.anonymized))
+    if not s["projects"]:
+        raise review.ReviewError("Nothing to put on the sheet. Search for something your approved case studies cover.")
+    return s
+
+
+@app.get("/api/library")
+def library(q: str = "", user: dict = Depends(current_user)):
+    recs = _workspace_records(user)
+    return {"q": q, "results": lib.search(recs, q[:300]), "n_approved": len(recs)}
+
+
+@app.post("/api/library/sheet")
+def library_sheet(body: SheetBody, request: Request, user: dict = Depends(current_user)):
+    s = _sheet(request, body, user)
+    return {**s, "text": lib.sheet_text(s)}
+
+
+@app.post("/api/library/sheet/view")
+def library_sheet_view(body: SheetBody, request: Request, user: dict = Depends(current_user)):
+    return Response(proof_sheet_html(_sheet(request, body, user), publisher(user.get("workspace_name", ""))), media_type="text/html")
+
+
+@app.post("/api/library/sheet/pdf")
+def library_sheet_pdf(body: SheetBody, request: Request, user: dict = Depends(current_user)):
+    from caseforge.render.report_pdf import html_to_pdf
+    html = proof_sheet_html(_sheet(request, body, user), publisher(user.get("workspace_name", "")))
+    with tempfile.TemporaryDirectory() as tmp:
+        out = html_to_pdf(html, Path(tmp) / "proof-sheet.pdf")
+        data = out.read_bytes()
+    return Response(data, media_type="application/pdf",
+                    headers={"Content-Disposition": 'attachment; filename="proof-sheet.pdf"'})
 
 
 # ------------------------------------------------------------------ anonymized version

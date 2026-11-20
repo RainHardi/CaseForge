@@ -86,6 +86,7 @@ function renderChrome() {
   side.hidden = false;
   const cur = (location.hash.match(/^#p\/([^/]+)/) || [])[1];
   side.innerHTML = `<a class="btn primary" href="#new">New case study</a>
+    <a class="btn ghost" href="#library" style="margin-top:8px">Proof library</a>
     <a class="btn ghost" href="#brands" style="margin-top:8px">Brand kits</a>
     <h4>Your workspace</h4>
     ${S.projects.length ? `<ul>${S.projects.map(p => `<li><a href="#p/${esc(p.id)}" class="${p.id === cur ? "on" : ""}" title="${esc(p.title || "Untitled")}">
@@ -767,6 +768,93 @@ function reportRow(e) {
 }
 
 /* ---------------------------------------------------------------- brand kits */
+/* ---------------------------------------------------------------- proof library */
+const LIB_EXAMPLES = ["logistics company, lower costs", "clinic, fewer no-shows", "replace spreadsheets with a dashboard", "mobile app for field staff"];
+async function viewLibrary() {
+  S.lib = S.lib || { q: "", results: null, picks: {}, anon: false };
+  view.innerHTML = `
+    <h1 class="page">Proof library</h1>
+    <p class="sub">Search every approved case study in your workspace. Pick the sentences that fit a prospect and get a proof sheet: every line is quoted from an approved, fact-checked case study.</p>
+    <form class="libsearch" id="libform" role="search">
+      <input id="libq" type="text" enterkeyhint="search" placeholder="Who are you pitching? e.g. logistics company, wants lower costs" value="${esc(S.lib.q)}" aria-label="Describe the prospect">
+      <button class="btn primary" type="submit">Search</button></form>
+    <div class="samples"><span class="hint">Try:</span> ${LIB_EXAMPLES.map(x => `<button class="btn sm" type="button" data-ex="${esc(x)}">${esc(x)}</button>`).join(" ")}</div>
+    <div id="libres"></div>
+    <div class="libbar" id="libbar" hidden>
+      <span id="libcount"></span>
+      <label class="chk"><input type="checkbox" id="libanon" ${S.lib.anon ? "checked" : ""}> Hide all client names</label>
+      <button class="btn sm" data-sheet="copy">Copy text</button>
+      <button class="btn sm" data-sheet="view">Preview</button>
+      <button class="btn sm primary" data-sheet="pdf">Download PDF</button>
+    </div>`;
+  $("#libform").onsubmit = e => { e.preventDefault(); libSearch($("#libq").value); };
+  view.querySelector(".samples").onclick = e => { const x = e.target.dataset.ex; if (x) { $("#libq").value = x; libSearch(x); } };
+  $("#libanon").onchange = e => { S.lib.anon = e.target.checked; };
+  $("#libbar").onclick = e => { const k = e.target.dataset.sheet; if (k) libSheet(k); };
+  if (S.lib.results) showLib(); else libSearch(S.lib.q);
+}
+async function libSearch(q) {
+  S.lib.q = q.trim();
+  const r = await act(() => api("GET", "/api/library?q=" + encodeURIComponent(S.lib.q)));
+  if (!r) return;
+  S.lib.results = r.results; S.lib.n = r.n_approved; S.lib.picks = {};
+  if (S.lib.q) r.results.slice(0, 3).forEach(p => {   // the best matches start ticked, as the sheet would pick them
+    const ids = p.matches.slice(0, 4).map(m => m.id);
+    const metric = p.metrics.find(m => !ids.includes(m.id)); if (metric) ids.push(metric.id);
+    S.lib.picks[p.id] = new Set(ids);
+  });
+  showLib();
+}
+function libPicked() { return Object.values(S.lib.picks).reduce((n, s) => n + s.size, 0); }
+function showLib() {
+  const box = $("#libres"); if (!box) return;
+  const res = S.lib.results || [];
+  const plural = n => `case stud${n === 1 ? "y" : "ies"}`;
+  if (!S.lib.n) box.innerHTML = `<div class="next warn"><b>No approved case studies yet.</b> Approve one and it shows up here.</div>`;
+  else if (!res.length) box.innerHTML = `<p class="hint">Nothing matches “${esc(S.lib.q)}” in your ${S.lib.n} approved ${plural(S.lib.n)}. Try other words.</p>`;
+  else box.innerHTML = `<p class="hint">${S.lib.q ? `${res.length} of ${S.lib.n} approved ${plural(S.lib.n)} match.` : `${S.lib.n} approved ${plural(S.lib.n)}. Search to rank them for a prospect.`} Tick the sentences you want on the sheet.</p>
+    ${res.map(p => {
+      const picked = S.lib.picks[p.id] || new Set();
+      const rows = [...p.matches, ...p.metrics.filter(m => !p.matches.some(x => x.id === m.id)).map(m => ({ ...m, metric: true }))];
+      return `<div class="panel libcard"><div class="head"><div>
+          <h3><a href="#p/${esc(p.id)}">${esc(p.title)}</a></h3>
+          <span class="hint">${p.client ? esc(p.client) + " · " : ""}${p.anonymous ? `<b class="tag">client stays anonymous</b> · ` : ""}approved by ${esc(p.approved_by)} on ${esc(p.approved_on)} · ${p.n_sentences} sentences</span></div></div>
+        ${rows.length ? `<ul class="libpick">${rows.map(m => `<li><label><input type="checkbox" data-pid="${esc(p.id)}" data-cid="${esc(m.id)}" ${picked.has(m.id) ? "checked" : ""}>
+          <span>${esc(m.text)}${m.metric ? ` <span class="so ok">result</span>` : ""}</span></label></li>`).join("")}</ul>` : `<p class="hint">No sentence matches the search. Open it to see everything.</p>`}
+      </div>`; }).join("")}`;
+  box.onchange = e => {
+    const t = e.target; if (!t.dataset.cid) return;
+    const set = S.lib.picks[t.dataset.pid] = S.lib.picks[t.dataset.pid] || new Set();
+    if (t.checked) set.add(t.dataset.cid); else set.delete(t.dataset.cid);
+    libBar();
+  };
+  libBar();
+}
+function libBar() {
+  const n = libPicked(), bar = $("#libbar"); if (!bar) return;
+  const k = Object.values(S.lib.picks).filter(s => s.size).length;
+  bar.hidden = !n;
+  $("#libcount").textContent = `${n} sentence${n === 1 ? "" : "s"} from ${k} case stud${k === 1 ? "y" : "ies"}`;
+}
+async function libSheet(kind) {
+  const picks = Object.fromEntries(Object.entries(S.lib.picks).filter(([, s]) => s.size).map(([k, s]) => [k, [...s]]));
+  const body = { q: S.lib.q, picks, anonymized: S.lib.anon };
+  if (kind === "copy") {
+    const r = await act(() => api("POST", "/api/library/sheet", body)); if (!r) return;
+    await navigator.clipboard.writeText(r.text).then(() => toast("Proof sheet copied."), () => toast("Couldn't copy.", true));
+    return;
+  }
+  const done = kind === "pdf" ? busy(["Laying out the proof sheet", "Making the PDF"]) : () => {};
+  try {
+    const res = await fetch(`/api/library/sheet/${kind}`, { method: "POST", credentials: "same-origin",
+      headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
+    if (!res.ok) { const d = await res.json().catch(() => ({})); throw new Error(d.detail || "Couldn't make the sheet."); }
+    const url = URL.createObjectURL(await res.blob());
+    if (kind === "pdf") { const a = document.createElement("a"); a.href = url; a.download = "proof-sheet.pdf"; document.body.appendChild(a); a.click(); a.remove(); }
+    else window.open(url, "_blank", "noopener");
+    setTimeout(() => URL.revokeObjectURL(url), 60000);
+  } catch (e) { toast(e.message, true); } finally { done(); }
+}
 async function viewBrands() {
   S.brands = await act(() => api("GET", "/api/brands"));
   if (!S.brands) return;
@@ -920,6 +1008,7 @@ async function route() {
   if (m) await viewProject(m[1], m[2] || "review");
   else if (h === "#settings" || h === "#team") viewSettings();
   else if (h === "#brands") await viewBrands();
+  else if (h === "#library") await viewLibrary();
   else viewNew();
   renderChrome();
 }
