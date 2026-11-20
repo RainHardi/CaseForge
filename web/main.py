@@ -24,15 +24,18 @@ from pydantic import BaseModel
 from caseforge import formats as fmt
 from caseforge import report as rpt
 from caseforge import review
+from caseforge import verify as vf
 from caseforge.brandkit import BUNDLED_FONTS, BrandKit, auto_brand, from_guidelines, from_logo, kit_warnings, presets, publisher
 from caseforge.config import ROOT, get_settings
 from caseforge.db import DB, AuthError
 from caseforge.ingest import ALL_TYPES, IngestError, extract_text, is_image
 from caseforge.llm import LLMError, get_llm
 from caseforge.models import FIELD_KEYS, SECTION_TITLES, ImageRef, ProjectInput, ProjectRecord
+from caseforge.notion import import_page as notion_import
 from caseforge.pipeline import generate
 from caseforge.render import ExportBlocked
 from caseforge.render.html import render_portfolio_page
+from caseforge.render.verified import GONE, qr_svg, verified_page
 from caseforge.render.pdf import export_name, render_case_study, render_one_pager
 
 STATIC = Path(__file__).parent / "static"
@@ -80,6 +83,7 @@ def llm():
 @app.exception_handler(AuthError)
 @app.exception_handler(IngestError)
 @app.exception_handler(ExportBlocked)
+@app.exception_handler(vf.VerifyError)
 async def _bad_request(request: Request, exc: Exception):
     return JSONResponse({"detail": str(exc)}, status_code=400)
 
@@ -315,6 +319,17 @@ async def extract(files: list[UploadFile] = File(...), user: dict = Depends(curr
             except IngestError as e:
                 out.append({"name": f.filename, "error": str(e)})
     return out
+
+
+class NotionBody(BaseModel):
+    token: str = ""
+    url: str = ""
+
+
+@app.post("/api/notion")
+def notion(body: NotionBody, user: dict = Depends(current_user)):
+    """A shared Notion page → text for the notes box. The token is used once and never saved or logged."""
+    return notion_import(body.token[:200], body.url[:2000])
 
 
 # ------------------------------------------------------------------ projects
@@ -632,6 +647,94 @@ def _resolve_brand(user: dict, brand_id: str, rec: ProjectRecord) -> BrandKit:
     return kit
 
 
+# ------------------------------------------------------------------ verified links
+class PublishBody(BaseModel):
+    evidence: str = "full"     # full · masked · labels
+    show_client: bool = True
+
+
+def _public_url(request: Request, token: str) -> str:
+    base = os.getenv("PUBLIC_URL", "").rstrip("/") or str(request.base_url).rstrip("/")
+    return f"{base}/v/{token}"
+
+
+def _links(request: Request, rec: ProjectRecord, user: dict) -> list[dict]:
+    out = db().published_for(user["workspace_id"], rec.id)
+    for x in out:
+        x["url"] = _public_url(request, x["token"])
+        x["current"] = x["hash"] == rec.approved_hash and review.can_export(rec)
+        del x["hash"]
+    return out
+
+
+@app.get("/api/projects/{project_id}/published")
+def list_published(request: Request, rec: ProjectRecord = Depends(get_project), user: dict = Depends(current_user)):
+    return _links(request, rec, user)
+
+
+@app.post("/api/projects/{project_id}/publish")
+def publish(body: PublishBody, request: Request, rec: ProjectRecord = Depends(get_project),
+            user: dict = Depends(current_user)):
+    copy = vf.snapshot(rec, body.evidence, body.show_client)
+    token = vf.new_token()
+    db().publish(user["workspace_id"], rec.id, token, copy)
+    rec.log("verified link published", f"{token} · evidence {body.evidence}"
+            + ("" if body.show_client else " · client hidden"), user["name"])
+    db().save(rec)
+    return _links(request, rec, user)
+
+
+@app.post("/api/projects/{project_id}/published/{token}/revoke")
+def revoke(token: str, request: Request, rec: ProjectRecord = Depends(get_project), user: dict = Depends(current_user)):
+    if not db().revoke(user["workspace_id"], token):
+        raise HTTPException(404, "Link not found.")
+    rec.log("verified link revoked", token, user["name"])
+    db().save(rec)
+    return _links(request, rec, user)
+
+
+def _live(token: str):
+    found = db().published_copy(token) if len(token) <= 20 else None
+    if not found:
+        return None
+    copy, ws, pid = found
+    rec = db().load(ws, pid)
+    return copy, (rec.content_hash() if rec else None)
+
+
+def _current_link(request: Request, rec: ProjectRecord) -> str:
+    """The newest live Verified link for exactly the approved version, for the QR in the PDF."""
+    if not review.can_export(rec):
+        return ""
+    for x in db().published_for(rec.workspace_id, rec.id):
+        if not x["revoked"] and x["hash"] == rec.approved_hash:
+            return _public_url(request, x["token"])
+    return ""
+
+
+@app.get("/v/{token}", include_in_schema=False)
+def verified(token: str):
+    found = _live(token)
+    if not found:
+        return Response(GONE, status_code=404, media_type="text/html")
+    db().count_view(token)
+    html = verified_page(vf.public_view(*found))
+    return Response(html, media_type="text/html", headers={"Cache-Control": "no-store", "X-Robots-Tag": "noindex"})
+
+
+@app.post("/v/{token}/check", include_in_schema=False)
+def verified_check(token: str):
+    db().count_view(token, "checks")
+    return Response(status_code=204)
+
+
+@app.get("/v/{token}/qr.svg", include_in_schema=False)
+def verified_qr(token: str, request: Request):
+    if not db().published_copy(token):
+        raise HTTPException(404)
+    return Response(qr_svg(_public_url(request, token), standalone=True), media_type="image/svg+xml")
+
+
 # ------------------------------------------------------------------ designed report
 class DesignBody(BaseModel):
     brand_id: str = "auto"
@@ -704,13 +807,13 @@ def approve_report(rec: ProjectRecord = Depends(get_project), user: dict = Depen
 
 
 @app.get("/api/projects/{project_id}/report/preview")
-def report_preview(rec: ProjectRecord = Depends(get_project)):
+def report_preview(request: Request, rec: ProjectRecord = Depends(get_project)):
     from caseforge.render.report_pdf import report_html
     if rec.report is None:
         raise HTTPException(404, "Design the report first.")
     with tempfile.TemporaryDirectory() as tmp:
         imgs = db().write_images(rec.id, Path(tmp))
-        html = report_html(rec, rec.report, imgs, draft=not rpt.report_ready(rec))
+        html = report_html(rec, rec.report, imgs, draft=not rpt.report_ready(rec), verify_url=_current_link(request, rec))
     # on screen: grey desk, pages scaled to the frame width (print/PDF untouched)
     fit = ("<style>@media screen{html{background:#e9e9e6}body{margin:0}.page{margin:0 auto 18px;"
            "box-shadow:0 6px 24px rgba(0,0,0,.18)}}</style><script>(function(){function z(){"
@@ -721,12 +824,13 @@ def report_preview(rec: ProjectRecord = Depends(get_project)):
 
 
 @app.get("/api/projects/{project_id}/report/pdf")
-def report_pdf(draft: bool = False, rec: ProjectRecord = Depends(get_project), user: dict = Depends(current_user)):
+def report_pdf(request: Request, draft: bool = False, rec: ProjectRecord = Depends(get_project),
+               user: dict = Depends(current_user)):
     from caseforge.render.report_pdf import render_report
     with tempfile.TemporaryDirectory() as tmp:
         imgs = db().write_images(rec.id, Path(tmp) / "img")
         name = f"{rec.id}_report{'_DRAFT' if draft else ''}.pdf"
-        data = render_report(rec, Path(tmp) / name, imgs, draft=draft).read_bytes()
+        data = render_report(rec, Path(tmp) / name, imgs, draft=draft, verify_url=_current_link(request, rec)).read_bytes()
     if not draft:
         rec.log("report exported", name, user["name"])
         db().save(rec)

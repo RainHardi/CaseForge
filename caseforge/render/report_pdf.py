@@ -170,6 +170,9 @@ h2 em{font-style:normal;color:var(--pri-ink)}
 .closing .cta{align-self:flex-start;background:var(--pri);color:var(--on-pri);font-weight:700;font-size:12px;border-radius:8px;padding:9px 14px}
 .verify{display:grid;grid-template-columns:30px 1fr;gap:12px;font-size:calc(10px*var(--s));line-height:1.5;color:var(--muted);border:1px solid color-mix(in srgb,var(--ink) 14%,transparent);border-radius:12px;padding:14px 16px;margin-top:auto}
 .verify b{color:var(--ink)}
+.verify:has(.vqr){grid-template-columns:30px 1fr 74px;align-items:center}
+.verify .vqr svg{width:74px;height:74px;display:block}
+.verify .vurl{color:var(--ink);word-break:break-all}
 /* ------------ content-driven variants */
 .sec{display:flex;flex-direction:column;gap:calc(18px*var(--s)*var(--g))}
 .sec>*{flex-shrink:0}
@@ -473,7 +476,7 @@ ol.run{padding-left:1.2em} ol.run li::marker{font-family:var(--hf);font-weight:8
     {% if arch.aside %}<div class="aside">{% for la in arch.aside %}<div class="ly"><div class="kicker">{{ la.name }}</div><div class="chips">{% for t in la.items %}<span>{{ t }}</span>{% endfor %}</div></div>{% endfor %}</div>{% endif %}</div>
 {% elif k == 'facts' %}{% set ab = bk.field.split(':') %}{% if ab[0] == '0' %}<p class="factnote">Every statement below is from the approved case study and checked against the notes.</p>{% endif %}<table class="facts">{% for it in p.facts[ab[0]|int:ab[1]|int] %}<tr><td class="fk">{% if loop.first or it.title != p.facts[ab[0]|int + loop.index0 - 1].title %}{{ it.title }}{% endif %}</td><td>{{ it.text }}</td></tr>{% endfor %}</table>
 {% elif k == 'verify' %}<div class="verify"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l7 3v6c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V6z"/><path d="M8.5 12l2.5 2.5 4.5-5"/></svg>
-      <div><b>How this report was checked.</b> CaseForge matched every statement in this report — {{ n_checked }} in total — against the original project notes{% if n_sources %} ({{ n_sources }} source{{ 's' if n_sources != 1 }}){% endif %}. Numbers marked ESTIMATED are estimates in the source. {% if approved_by %}Approved for publication by {{ approved_by }} on {{ approved_on }}.{% else %}Not yet approved for publication.{% endif %}</div></div>
+      <div><b>How this report was checked.</b> CaseForge matched every statement in this report — {{ n_checked }} in total — against the original project notes{% if n_sources %} ({{ n_sources }} source{{ 's' if n_sources != 1 }}){% endif %}. Numbers marked ESTIMATED are estimates in the source. {% if approved_by %}Approved for publication by {{ approved_by }} on {{ approved_on }}.{% else %}Not yet approved for publication.{% endif %}{% if verify_url %}<br><b>Check any sentence yourself:</b> scan the code or open <span class="vurl">{{ verify_url }}</span>{% endif %}</div>{% if verify_qr %}<div class="vqr">{{ verify_qr|safe }}</div>{% endif %}</div>
 {% endif %}{% endmacro %}
 
 <section class="page cover cover-{{ L.cover }}">
@@ -722,7 +725,8 @@ def _logo(b: BrandKit, logo_dir: Path | None) -> str:
 
 
 # ------------------------------------------------------------------ build
-def report_html(record: ProjectRecord, design: ReportDesign, logo_dir: Path | None = None, draft: bool = True) -> str:
+def report_html(record: ProjectRecord, design: ReportDesign, logo_dir: Path | None = None, draft: bool = True,
+                verify_url: str = "") -> str:
     b, p, c = design.brand, design.plan, design.brand.colors
     faces, google = _font_faces(b)
     pri_ink = c.primary if contrast(c.primary, c.paper) >= 3 else c.ink   # pale brand colours never become text
@@ -747,17 +751,24 @@ def report_html(record: ProjectRecord, design: ReportDesign, logo_dir: Path | No
         motif_small=_motif(b).replace('class="motif"', 'class="motif-small"'), arrow=ARROW, qmark=QMARK,
         hl_keys=list(type(p.headlines).model_fields), gantt=_gantt(p), team=_team(p), money=_money_bars(p), arch=_arch(p),
         footer_note="Fact-checked case study" if not draft else "Draft for review",
+        verify_url=verify_url if not draft else "", verify_qr=_qr(verify_url, c.ink) if verify_url and not draft else "",
     )
 
 
-def render_report(record: ProjectRecord, out: Path, logo_dir: Path | None = None, draft: bool = False) -> Path:
+def _qr(url: str, ink: str) -> str:
+    from .verified import qr_svg
+    return qr_svg(url, ink)
+
+
+def render_report(record: ProjectRecord, out: Path, logo_dir: Path | None = None, draft: bool = False,
+                  verify_url: str = "") -> Path:
     design = record.report
     if design is None:
         raise ExportBlocked("Design the report first.")
     if not draft and not report_ready(record):
         raise ExportBlocked("Export blocked: the designed report isn't approved, or something changed since. "
                             "Review it and approve it first.")
-    html = report_html(record, design, logo_dir, draft=draft)
+    html = report_html(record, design, logo_dir, draft=draft, verify_url=verify_url)
     out.parent.mkdir(parents=True, exist_ok=True)
     if out.suffix == ".html":
         out.write_text(html, encoding="utf-8")

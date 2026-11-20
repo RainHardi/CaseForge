@@ -70,6 +70,17 @@ brand_kits = Table(
     Column("logo_data", LargeBinary, nullable=True),
     Column("updated_at", DateTime(timezone=True), nullable=False),
 )
+published = Table(
+    "published", meta,
+    Column("token", String(20), primary_key=True),
+    Column("project_id", String(80), nullable=False, index=True),
+    Column("workspace_id", String(40), ForeignKey("workspaces.id"), nullable=False, index=True),
+    Column("copy", Text, nullable=False),  # the frozen approved case study (caseforge.verify.snapshot)
+    Column("created_at", DateTime(timezone=True), nullable=False),
+    Column("revoked", Integer, nullable=False, default=0),
+    Column("views", Integer, nullable=False, default=0),
+    Column("checks", Integer, nullable=False, default=0),  # sentences readers opened the evidence for
+)
 usage = Table(
     "ai_usage", meta,
     Column("user_id", String(40), primary_key=True),
@@ -255,6 +266,7 @@ class DB:
                     c.execute(delete(images).where(images.c.project_id.in_(ids)))
                     c.execute(delete(projects).where(projects.c.id.in_(ids)))
                 c.execute(delete(brand_kits).where(brand_kits.c.workspace_id == ws))
+                c.execute(delete(published).where(published.c.workspace_id == ws))
                 c.execute(delete(workspaces).where(workspaces.c.id == ws))
 
     # -------------------------------------------------------------- usage limit
@@ -313,6 +325,7 @@ class DB:
             if c.execute(select(projects.c.id).where(projects.c.id == project_id,
                                                      projects.c.workspace_id == workspace_id)).first():
                 c.execute(delete(images).where(images.c.project_id == project_id))
+                c.execute(delete(published).where(published.c.project_id == project_id))
                 c.execute(delete(projects).where(projects.c.id == project_id))
 
     # -------------------------------------------------------------- images
@@ -374,6 +387,42 @@ class DB:
     def delete_brand(self, workspace_id: str, brand_id: str) -> None:
         with self.engine.begin() as c:
             c.execute(delete(brand_kits).where(brand_kits.c.id == brand_id, brand_kits.c.workspace_id == workspace_id))
+
+    # -------------------------------------------------------------- verified links
+    def publish(self, workspace_id: str, project_id: str, token: str, copy: dict) -> None:
+        with self.engine.begin() as c:
+            c.execute(insert(published).values(token=token, project_id=project_id, workspace_id=workspace_id,
+                                               copy=json.dumps(copy), created_at=_now(), revoked=0, views=0, checks=0))
+
+    def published_for(self, workspace_id: str, project_id: str) -> list[dict]:
+        with self.engine.connect() as c:
+            rows = c.execute(select(published).where(published.c.workspace_id == workspace_id,
+                                                     published.c.project_id == project_id)
+                             .order_by(published.c.created_at.desc())).all()
+        out = []
+        for r in rows:
+            cp = json.loads(r.copy)
+            out.append({"token": r.token, "created_at": r.created_at.isoformat(), "revoked": bool(r.revoked),
+                        "views": r.views, "checks": r.checks, "evidence": cp.get("evidence", "full"),
+                        "show_client": bool(cp.get("client")), "hash": cp.get("hash", "")})
+        return out
+
+    def published_copy(self, token: str) -> tuple[dict, str, str] | None:
+        """(copy, workspace_id, project_id) for a live link, else None."""
+        with self.engine.connect() as c:
+            r = c.execute(select(published).where(published.c.token == token, published.c.revoked == 0)).first()
+        return (json.loads(r.copy), r.workspace_id, r.project_id) if r else None
+
+    def count_view(self, token: str, field: str = "views") -> None:
+        col = published.c.checks if field == "checks" else published.c.views
+        with self.engine.begin() as c:
+            c.execute(update(published).where(published.c.token == token, published.c.revoked == 0).values({col: col + 1}))
+
+    def revoke(self, workspace_id: str, token: str) -> bool:
+        with self.engine.begin() as c:
+            res = c.execute(update(published).where(published.c.token == token, published.c.workspace_id == workspace_id)
+                            .values(revoked=1))
+        return res.rowcount > 0
 
     def stats(self) -> dict:
         with self.engine.connect() as c:

@@ -147,7 +147,7 @@ function viewNew() {
   S.pendingImages = [];
   view.innerHTML = `
     <h1 class="page">New case study</h1>
-    <p class="sub">Upload files or paste notes. Messy is fine: CaseForge only uses what's here and tells you what's missing.</p>
+    <p class="sub">Upload files, import a Notion page or paste notes. Messy is fine: CaseForge only uses what's here and tells you what's missing.</p>
     <div class="samples"><span class="hint">No notes handy? Try an example:</span><span id="samples"></span>
       <button class="btn sm ghost" id="clear" type="button">Clear all</button></div>
     <div class="sheet">
@@ -162,6 +162,21 @@ function viewNew() {
       </div>
       <input id="files" type="file" multiple hidden accept="${(S.config?.file_types || []).map(t => "." + t).join(",")}">
       <ul class="files" id="filelist"></ul>
+      <details class="fold" id="notionbox"><summary>Import from Notion</summary>
+        <div class="notion">
+          <ol class="hint">
+            <li>Go to <b>notion.so/profile/integrations</b> → <b>New integration</b> (Internal), tick <b>Read content</b>, copy the secret.</li>
+            <li>Open your project page in Notion → <b>•••</b> → <b>Connections</b> → add that integration.</li>
+            <li>Paste the secret and the page link here. Sub-pages and tables inside it are read too.</li>
+          </ol>
+          <div class="two">
+            <div class="field"><label for="ntoken">Integration secret</label><input id="ntoken" type="password" autocomplete="off" placeholder="ntn_…"></div>
+            <div class="field"><label for="nurl">Page link</label><input id="nurl" type="text" inputmode="url" autocomplete="off" placeholder="https://www.notion.so/…"></div>
+          </div>
+          <button class="btn" id="nimport" type="button">Import page</button>
+          <span class="hint">The secret is used once and never saved.</span>
+        </div>
+      </details>
     </div>
     <div class="field"><label for="logo">Company logo (optional)</label>
       <div class="pick"><label class="btn" for="logo" style="margin:0">Choose logo</label><input id="logo" type="file" class="sr" accept="image/png,image/jpeg">
@@ -193,7 +208,24 @@ function viewNew() {
   drop.ondragleave = () => drop.classList.remove("over");
   drop.ondrop = e => { e.preventDefault(); drop.classList.remove("over"); addFiles(e.dataTransfer.files); };
   input.onchange = () => { addFiles(input.files); input.value = ""; };
+  $("#nimport").onclick = importNotion;
   $("#go").onclick = createProject;
+}
+async function importNotion() {
+  const token = $("#ntoken").value.trim(), url = $("#nurl").value.trim();
+  if (!token || !url) { toast("Paste the integration secret and the page link.", true); return; }
+  const btn = $("#nimport"); btn.disabled = true; btn.textContent = "Reading Notion…";
+  const r = await act(() => api("POST", "/api/notion", { token, url }));
+  btn.disabled = false; btn.textContent = "Import page";
+  if (!r) return;
+  const notes = $("#notes");
+  notes.value = (notes.value.trim() + `\n\n--- from Notion: ${r.title} ---\n` + r.text).trim();
+  if (!$("#title").value.trim()) $("#title").value = r.title;
+  const words = r.text.split(/\s+/).length, pages = r.pages === 1 ? "1 page" : `${r.pages} pages and rows`;
+  $("#filelist").insertAdjacentHTML("beforeend", `<li><b>Notion: ${esc(r.title)}</b> — ${words} words from ${pages} added to the notes${r.truncated ? " (cut: too long)" : ""}</li>`);
+  $("#ntoken").value = "";
+  $("#notionbox").open = false;
+  toast("Notion page added to the notes. Check it before writing.");
 }
 async function addFiles(fileList) {
   const files = [...fileList]; if (!files.length) return;
@@ -367,7 +399,20 @@ function tabOutputs() {
         <p class="hint">${rr ? `Fact-checked against your notes and approved by ${esc(r.report.approved_by)}.` : "The case study files below are already approved and ready."}</p></div>
       ${rr ? dl(`${P()}/report/pdf`, "Report PDF", `${esc(r.report.brand.name)} · ${(r.report.layout?.pages?.length || 4) + 1} pages`, true) : `<a class="btn primary" href="#p/${esc(r.id)}/report">Go to report</a>`}
     </div>
-    <div class="dls">${docs.map(([k, t, d]) => dl(`${P()}/export/${k}`, t, d)).join("")}</div>`}
+    <div class="dls">${docs.map(([k, t, d]) => dl(`${P()}/export/${k}`, t, d)).join("")}</div>
+    <div class="panel verified" id="verified">
+      <div class="head"><div><h3>Verified link</h3>
+        <span class="hint">A public page where anyone can click a sentence and see the quote from your notes behind it. The report PDF gets its QR code.</span></div></div>
+      <div class="vset">
+        <div class="field"><label for="vev">Show readers</label>
+          <select id="vev"><option value="full">Quotes from the notes, with file and line</option>
+            <option value="masked">Quotes, with details the sentence doesn't mention hidden</option>
+            <option value="labels">Check results only, no quotes</option></select></div>
+        <label class="chk"><input type="checkbox" id="vclient" ${r.input.client_name ? "checked" : "disabled"}> Show the client's name</label>
+        <button class="btn primary" data-publish="1">Publish verified link</button>
+      </div>
+      <div id="vlinks"><p class="hint">Loading links…</p></div>
+    </div>`}
     <h2 style="margin:34px 0 4px;font-size:1.15rem">Short versions</h2>
     <p class="sub">Written from the approved case study only — and every sentence is checked against your notes again.</p>
     ${Object.entries(r.formats).map(([k, f]) => {
@@ -378,10 +423,23 @@ function tabOutputs() {
         ${out ? `${f.stale ? `<p class="hint" style="color:var(--bad)">The case study changed since this was written — write it again.</p>` : ""}
           <div class="doc" style="margin-top:12px">${out.sentences.filter(s => !s.deleted).map(s => fmtRow(k, s)).join("")}</div>` : ""}</div>`;
     }).join("")}`;
+  if (ok) loadLinks();
   el.onclick = async e => {
     const t = e.target.closest("button"); if (!t) return;
     const d = t.dataset;
-    if (d.write) {
+    if (d.publish) {
+      const body = { evidence: $("#vev").value, show_client: $("#vclient").checked };
+      t.disabled = true;
+      const links = await act(() => api("POST", `${P()}/publish`, body), "Published. Copy the link or download the PDF with its QR code.");
+      t.disabled = false;
+      if (links) showLinks(links);
+    } else if (d.revoke) {
+      if (!confirm("Unpublish this link? Anyone who opens it will see that it's no longer available.")) return;
+      const links = await act(() => api("POST", `${P()}/published/${d.revoke}/revoke`), "Link unpublished.");
+      if (links) showLinks(links);
+    } else if (d.vcopy) {
+      await navigator.clipboard.writeText(d.vcopy).then(() => toast("Link copied."), () => toast("Couldn't copy — select the link instead.", true));
+    } else if (d.write) {
       const done = busy(["Writing from the approved case study", "Checking every sentence against your notes"]);
       try { await update(api("POST", `${P()}/formats/${d.write}`)); } finally { done(); }
     } else if (d.copy) {
@@ -392,6 +450,25 @@ function tabOutputs() {
     else if (d.fsave) { const v = $(`textarea[data-fed="${d.k}${d.fsave}"]`).value; S.editing = null; update(api("POST", `${P()}/formats/${d.k}/${d.fsave}`, { text: v }), "Saved and re-checked."); }
     else if (d.cancel) { S.editing = null; tabOutputs(); }
   };
+}
+async function loadLinks() {
+  const links = await act(() => api("GET", `${P()}/published`));
+  if (links) showLinks(links);
+}
+function showLinks(links) {
+  const box = $("#vlinks"); if (!box) return;
+  const live = links.filter(l => !l.revoked);
+  const ev = { full: "quotes", masked: "masked quotes", labels: "check results only" };
+  box.innerHTML = !live.length ? `<p class="hint">Nothing published yet.</p>` : `<ul class="vlist">${live.map(l => `
+    <li class="${l.current ? "" : "old"}">
+      <img src="/v/${esc(l.token)}/qr.svg" alt="QR code for the link" width="56" height="56">
+      <div class="vmeta"><a href="${esc(l.url)}" target="_blank" rel="noopener">${esc(l.url.replace(/^https?:\/\//, ""))}</a>
+        <small>${esc(new Date(l.created_at).toLocaleDateString())} · ${ev[l.evidence] || l.evidence}${l.show_client ? "" : " · client hidden"}
+          · ${l.views} view${l.views === 1 ? "" : "s"} · ${l.checks} sentence${l.checks === 1 ? "" : "s"} checked
+          ${l.current ? "" : `<b class="tag">older version</b>`}</small></div>
+      <div class="vbtn"><button class="btn sm" data-vcopy="${esc(l.url)}">Copy</button>
+        <button class="btn sm ghost" data-revoke="${esc(l.token)}">Unpublish</button></div>
+    </li>`).join("")}</ul>${live.some(l => !l.current) ? `<p class="hint">An older version keeps showing what was approved then, with a note that the case study has changed. Publish again to share the new version.</p>` : ""}`;
 }
 function fmtRow(k, s) {
   const blocking = !s.label || s.label === "unsupported" || s.label === "contradicted";
