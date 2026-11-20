@@ -103,7 +103,7 @@ For every test input, we also need a way to check the output. Our plan is to wri
 
 - **What it's for:** The language model behind fact extraction, case study writing, and the faithfulness check.
 - **Access:** API key from Google AI Studio. We plan to use the free tier so the project doesn't need a budget.
-- **Model version:** TBD. The exact model name and version will be recorded here once fixed, so that results can be reproduced.
+- **Model version:** `gemini-3.5-flash-lite`, pinned on 31 Oct 2026 (Q-015) so that results can be reproduced. It is set through the `GEMINI_MODEL` environment variable.
 - **What we send:** Project text and images supplied by the user, plus our prompts. Only safe, cleared or team-constructed information is sent. No personal data and no client-confidential material.
 - **Limitations:**
   - The free tier has rate limits. Exact limits for our use: **TBD**, to be tested by Abdulaziz.
@@ -113,7 +113,7 @@ For every test input, we also need a way to check the output. Our plan is to wri
 
 ### PDF Generation Libraries
 
-We plan to use either **ReportLab** or **WeasyPrint** (Python) to create the final PDF. These are software tools, not data sources, but we'll record the chosen library's version and license in the README once decided. Choice: **TBD**.
+We use **ReportLab** (Python) to create the PDF case study and one-page summary (decided 31 Oct 2026, Q-012), and headless Chromium via Playwright for the designed report. These are software tools, not data sources; their versions are in `requirements.txt`.
 
 ---
 

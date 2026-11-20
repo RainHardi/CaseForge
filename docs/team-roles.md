@@ -100,7 +100,7 @@
 - **BT-5** — build the human review and approval step.
 - **BT-6** — build PDF and one-page summary generation.
 - Confirm the Google Gemini free-tier rate limits and the starter template choice.
-- Decide between ReportLab and WeasyPrint for PDF generation.
+- Decide between ReportLab and WeasyPrint for PDF generation. **Done 31 Oct 2026: ReportLab (Q-012).**
 
 ### Important Technical Focus
 

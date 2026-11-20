@@ -99,7 +99,7 @@ The one-page summary is exactly one page for both extremes, and every approved s
 | **Run by** | Abdulaziz |
 | **Command** | `python -m pytest` |
 | **Suite** | 114 collected tests: `test_ingest` 8, `test_pipeline` 15, `test_rules` 8, `test_review_export` 10, `test_report` 39, `test_web` 10, `test_notion` 5, `test_verify` 5, `test_signoff` 4, `test_anonymize` 6, `test_library` 4 |
-| **Result as reported** | **114 passed** as reported by the author. **Commit hash TBD:** `1e494c1`, quoted in an earlier version of this log, is not in the repository history; Abdulaziz to confirm the commit this run used. Per-file counts above not yet reconciled with `def test_` counts in `tests/` (111 found by search; parametrized tests may account for the difference) |
+| **Result as reported** | **114 passed** as reported by the author. **Commit hash TBD:** `1e494c1`, quoted in an earlier version of this log, is not in the repository history; Abdulaziz to confirm the commit this run used. Per-file counts above are not yet reconciled with the `def test_` counts in `tests/` (111 found by search; parametrized tests may account for the difference) |
 | **Deployment** | Pushes on 19–20 November did not trigger Render; deployed manually from the dashboard. Checked `/healthz`, the new screens in `app.js`, and that `/v/…`, `/s/…` and `/api/library` respond. Not clicked through on the live site |
 
 New coverage: Notion import, Verified link, client sign-off, anonymized version and proof library. These were also checked by hand in a local browser; five bugs found that way were fixed.
