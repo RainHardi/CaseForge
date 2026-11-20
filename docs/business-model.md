@@ -1,0 +1,99 @@
+# Business Model and Cost Estimate
+
+**Status:** draft estimate, 21 Nov 2026. Everything below is a planning estimate built from stated assumptions, not measured data. The assumptions are listed in section 6 and each needs a named person to confirm it.
+
+## 1. Price
+
+| Item | Value |
+|---|---|
+| Price | ₩70,000 per user per month (₩840,000 per user per year) |
+| Students | Free tier |
+| Who pays | Companies subscribe, with one paying user each (our simplifying assumption) |
+
+## 2. Who is involved in a sale
+
+| Role | Who | What they care about |
+|---|---|---|
+| User | The developer who writes the case study | Saving the 3–4 unpaid hours |
+| Buyer | The manager who approves payment | Cost, and whether the tool is worth it |
+| Client | The customer the project was done for | Confidentiality: what may be published about their project (this is why CaseForge has anonymising and human approval) |
+
+## 3. Market size
+
+| Step | Number | How |
+|---|---|---|
+| Software companies in Korea | 66,403 | Source to be added by whoever did the market research |
+| Fit our first market (serviceable market) | ≈ 6,000 | 66,403 × 60% × 30% × 50% = 5,976. **TBD: what each percentage stands for** |
+| Total addressable market (TAM) | ≈ ₩5.0 B per year | 6,000 × ₩70,000 × 12 = ₩5.04 B, with one paying user per company |
+
+TAM is the ceiling if every one of those companies paid. It is not a forecast.
+
+## 4. Growth plan (team assumption)
+
+Paying companies at the end of each year: **30 → 100 → 250.** That is about 4% of the ≈ 6,000 companies in our first market. Customers join gradually, so revenue in a year is based on the average number of paying companies during it: (start + end) ÷ 2.
+
+| | Start | End | Average | Revenue (average × ₩840,000) |
+|---|---|---|---|---|
+| Year 1 | 0 | 30 | 15 | ₩12.6 M |
+| Year 2 | 30 | 100 | 65 | ₩54.6 M |
+| Year 3 | 100 | 250 | 175 | ₩147.0 M |
+| **Total** | | | | **₩214.2 M** |
+
+Run-rate at the end of each year (companies × ₩840,000): ₩25 M, ₩84 M, ₩210 M.
+
+## 5. Costs and gross profit
+
+Gross profit here means revenue minus the direct cost of running the service: AI, hosting and payment fees. It is **before** team pay, marketing, support and taxes, so it is not net profit.
+
+| | Year 1 | Year 2 | Year 3 |
+|---|---|---|---|
+| Revenue | ₩12.6 M | ₩54.6 M | ₩147.0 M |
+| AI (paid Claude), ₩72,000 per average company per year | ₩1.1 M | ₩4.7 M | ₩12.6 M |
+| Hosting (paid plans, **our guess**) | ₩0.6 M | ₩1.8 M | ₩3.6 M |
+| Payment fees (3%, **our guess**) | ₩0.4 M | ₩1.6 M | ₩4.4 M |
+| **Total costs** | **₩2.1 M** | **₩8.1 M** | **₩20.6 M** |
+| **Gross profit** | **₩10.5 M** | **₩46.5 M** | **₩126.4 M** |
+
+The poster rounds these to ₩13 M / 2 / 11, ₩55 M / 8 / 47 and ₩147 M / 21 / 126. The 70–85% margin on the poster is the more cautious figure that leaves room for support, tools and other costs not listed here.
+
+## 6. AI cost per case study
+
+Today the AI is the Gemini free tier (₩0). After the course we plan to switch to Claude and pay per token (see Q-025 in the question log).
+
+**Token estimate for one full project** (about 1,500 words of notes, the case study, and two derived formats, each checked). The code does not log tokens yet, so this is an estimate from the calls in the pipeline:
+
+| | Light | Typical | Heavy |
+|---|---|---|---|
+| Input tokens | 20,000 | 50,000 | 100,000 |
+| Output tokens | 5,000 | 12,000 | 25,000 |
+
+**Claude API prices** (per million tokens, from [Anthropic's pricing page](https://platform.claude.com/docs/en/about-claude/pricing), checked 21 Nov 2026; check again before relying on them):
+
+| Model | Input | Output | Typical project | In won (₩1,400 per $) |
+|---|---|---|---|---|
+| Haiku 5.5 | $0.10 | $0.50 | ≈ $0.01 | ≈ ₩15 |
+| Sonnet 5.5 | $2 | $10 | ≈ $0.22 | ≈ ₩300 |
+| Opus 5.5 | $4 | $20 | ≈ $0.44 | ≈ ₩600 |
+
+The Batch API is 50% cheaper. Prompt caching also lowers the cost of repeated text. Neither is included in the estimate.
+
+**Per user per month** (Sonnet 5.5, 10–30 case studies a month, plus about 30% for retries and failed calls): about ₩3,000–9,000, which is 4–13% of the ₩70,000 price. The poster uses ₩6,000 per user per month (about 8.6% of the price) for the 3-year table.
+
+## 7. Assumptions to confirm
+
+| # | Assumption | Who confirms |
+|---|---|---|
+| 1 | What each of the 60%, 30% and 50% filters means, and the source for 66,403 | Whoever did the market research |
+| 2 | One paying user per company | Team |
+| 3 | Growth of 30 → 100 → 250 paying companies | Team |
+| 4 | Hosting costs after the free tiers (Render and Neon paid plans) | Abdulaziz |
+| 5 | Payment fees of 3% | Team |
+| 6 | ₩1,400 per dollar | Team |
+| 7 | Token use per project: measure it by logging input and output tokens for one real run | Abdulaziz |
+
+## 8. Limits of this estimate
+
+- No customer has been asked whether they would pay ₩70,000. The price is an assumption until someone tests it.
+- The faithfulness results (20 of 20 planted claims caught, 0 of 109 true sentences wrongly flagged) were measured on Gemini, not Claude. They must be re-run after any model change.
+- Moving to Claude needs `caseforge/llm.py`, which is written for Gemini, to be extended or replaced.
+- Sending real client material to any external AI service is still governed by Q-002; Anthropic's terms for the API need to be checked before then.

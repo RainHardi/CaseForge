@@ -301,7 +301,7 @@ If time allows after the Target is complete:
 To keep the Baseline on track, the following are out of scope for now:
 
 - **Automatic publishing.** Content is never published without human approval. This is a permanent design decision, not a temporary limitation.
-- **Paid APIs or services.** We will use free tiers and ask the instructors before paying for anything.
+- **Paid APIs or services.** We will use free tiers and ask the instructors before paying for anything. After the course we plan to move to paid Claude (Q-025); costs are estimated in [Business Model](business-model.md).
 - **Client confidential or internal company data.**
 - **Training or fine-tuning our own model.** We use a hosted model through an API.
 - **Stretch features** until every Baseline and Target item works.
@@ -322,7 +322,7 @@ We will not use client confidential material, internal company data, or protecte
 
 | Area | Tool | Notes |
 |---|---|---|
-| **AI Model** | Google Gemini (via Google AI Studio) | Free tier, so no project budget is needed. Rate limits to be tested. |
+| **AI Model** | Google Gemini (via Google AI Studio) | Free tier, so no project budget is needed. Rate limits to be tested. After the course: paid Claude is planned (Q-025). |
 | **Programming** | Python | Main workflow and supporting components |
 | **PDF Generation** | ReportLab; Chromium for the designed report | Decided 31 Oct (Q-012) |
 | **Web and hosting** | FastAPI on Render + Neon | Free tiers |

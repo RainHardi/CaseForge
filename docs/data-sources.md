@@ -108,7 +108,8 @@ For every test input, we also need a way to check the output. Our plan is to wri
 - **Limitations:**
   - The free tier has rate limits. Exact limits for our use: **TBD**, to be tested by Abdulaziz.
   - Google's terms for the free tier may allow Google to use submitted content to improve its products. This is one more reason we only send safe, non-confidential information. We will confirm the current terms before sending any real project data.
-- **Fallback if the free tier is unavailable or rate-limited:** TBD. We'll ask the instructors before paying for any service.
+- **Fallback if the free tier is unavailable or rate-limited:** not decided (Q-016). We'll ask the instructors before paying for any service.
+- **Planned after the course:** paid Claude, billed per token (Q-025). Our estimate is about ₩300 per case study with Sonnet 5.5; see [Business Model](business-model.md). `caseforge/llm.py` is written for Gemini, so it needs changing, and the faithfulness tests must be re-run. Anthropic's terms for sending project material need to be checked, as for Google (Q-002).
 - **Security:** The API key is stored in a `.env` file that's excluded from Git. The repo includes a `.env.example` with blank values.
 
 ### PDF Generation Libraries
