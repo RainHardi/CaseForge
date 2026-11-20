@@ -22,8 +22,8 @@
 
 | Step | Number | How |
 |---|---|---|
-| Software companies in Korea | 66,403 | Source to be added by Odina and Dilshodjon |
-| Fit our first market (serviceable market) | ≈ 6,000 | 66,403 × 60% × 30% × 50% = 5,976. **TBD: what each percentage stands for** |
+| Software companies in Korea | 66,403 | SPRi SW Statistics Portal, 2023 (determined by Odina and Dilshodjon) |
+| Fit our first market (serviceable market) | ≈ 6,000 | 66,403 × 60% in Seoul–Gyeonggi × 30% with 10–199 staff × 50% doing client project work = 5,976. The three percentages are stated assumptions, not measured figures |
 | Total addressable market (TAM) | ≈ ₩5.0 B per year | 6,000 × ₩70,000 × 12 = ₩5.04 B, with one paying user per company |
 
 TAM is the ceiling if every one of those companies paid. It is not a forecast.
@@ -83,7 +83,7 @@ The Batch API is 50% cheaper. Prompt caching also lowers the cost of repeated te
 
 | # | Assumption | Who confirms |
 |---|---|---|
-| 1 | What each of the 60%, 30% and 50% filters means, and the source for 66,403 | Odina and Dilshodjon |
+| 1 | The 60% / 30% / 50% filters (Seoul–Gyeonggi, 10–199 staff, client project work) are assumptions, not measured; source for 66,403 is SPRi SW Statistics Portal, 2023 | Odina and Dilshodjon (determined) |
 | 2 | One paying user per company | Mukhammadkodir |
 | 3 | Growth of 30 → 100 → 250 paying companies | Anvarbek |
 | 4 | Hosting costs after the free tiers (Render and Neon paid plans) | Abdulaziz |
