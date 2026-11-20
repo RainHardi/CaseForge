@@ -5,7 +5,7 @@
 | **Project** | S1 - Case Study & Portfolio Generator (CaseForge) |
 | **Team** | Team 5 |
 | **Started** | 31 October 2026 |
-| **Last Updated** | 18 November 2026 |
+| **Last Updated** | 20 November 2026 |
 
 This is the record referred to by the [Definition of Done](../docs/definition-of-done.md) and the [Test Plan](../docs/test-plan.md). **A test is counted as passed only if it appears here.** A test source file is not evidence that a test passed — only a dated run with its result is.
 
@@ -26,7 +26,7 @@ Failures stay in this log after they are fixed.
 | T-06 | — | — | **Not run** |
 | T-10 | End to end on three **real** project inputs | — | **Not run** — no real inputs yet (BT-2) |
 | T-11 to T-19 | Target and Stretch | — | **Not run** — the features exist, the measurements do not |
-| Automated suite | 86 tests across ingest, pipeline, rules, review/export, designed report, web API | 14 Nov 2026 | Reported passing by the author; independent clean-clone run still outstanding |
+| Automated suite | 114 tests across ingest, pipeline, rules, review/export, designed report, web API, Notion, Verified link, sign-off, anonymized version, proof library | 20 Nov 2026 | Reported passing by the author; independent clean-clone run still outstanding |
 
 ---
 
@@ -91,6 +91,21 @@ Checks performed: export is refused before approval; any edit made after approva
 | **Result** | **Pass** |
 
 The one-page summary is exactly one page for both extremes, and every approved sentence appears in the PDF.
+
+### 2026-11-20 · Automated suite and deployment
+
+| | |
+|---|---|
+| **Run by** | Abdulaziz |
+| **Command** | `python -m pytest` |
+| **Suite** | 114 collected tests: `test_ingest` 8, `test_pipeline` 15, `test_rules` 8, `test_review_export` 10, `test_report` 39, `test_web` 10, `test_notion` 5, `test_verify` 5, `test_signoff` 4, `test_anonymize` 6, `test_library` 4 |
+| **Result as reported** | **114 passed** (commit `1e494c1`) |
+| **Deployment** | Pushes on 19–20 November did not trigger Render; deployed manually from the dashboard. Checked `/healthz`, the new screens in `app.js`, and that `/v/…`, `/s/…` and `/api/library` respond. Not clicked through on the live site |
+
+New coverage: Notion import, Verified link, client sign-off, anonymized version and proof library. These were also checked by hand in a local browser; five bugs found that way were fixed.
+
+> [!IMPORTANT]
+> Same limits as the 14 November entry: author's run, team-constructed inputs, no clean-clone run by a second person, and **no user outside the team has tried the new features**.
 
 ### 2026-11-14 · Automated suite, after the web app and designed report
 

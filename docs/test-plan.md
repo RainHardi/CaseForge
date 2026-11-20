@@ -6,13 +6,13 @@
 | **Repository** | CaseForge |
 | **Team** | Team 5 |
 | **Reviewer** | Abdulaziz (AI / Engineering) |
-| **Status** | 86 automated tests plus T-05, T-07, T-08, T-09 run on team-constructed inputs; T-02, T-04, T-06 and T-10 not run |
-| **Last Updated** | 18 November 2026 |
+| **Status** | 114 automated tests plus T-05, T-07, T-08, T-09 run on team-constructed inputs; T-02, T-04, T-06 and T-10 not run |
+| **Last Updated** | 20 November 2026 |
 
 This document explains what we plan to test, how we'll test it, and what counts as success. It follows our project's [Definition of Done](definition-of-done.md) (Baseline, Target, Stretch). Details we haven't decided yet are marked **TBD**.
 
 > [!IMPORTANT]
-> **Test status: the product is built, deployed and covered by 86 automated tests.** T-05 (planted claims), T-07 (approval lock) and T-08/T-09 (output layout) have been run on team-constructed inputs and are recorded in [`tests/results.md`](../tests/results.md). T-02, T-04, T-06 and T-10 have **not** been run, and nothing has been tested on a real client project. Current status and the next tests are in [Section 12](#12-test-status-and-next-steps).
+> **Test status: the product is built, deployed and covered by 114 automated tests.** T-05 (planted claims), T-07 (approval lock) and T-08/T-09 (output layout) have been run on team-constructed inputs and are recorded in [`tests/results.md`](../tests/results.md). T-02, T-04, T-06 and T-10 have **not** been run, and nothing has been tested on a real client project. Current status and the next tests are in [Section 12](#12-test-status-and-next-steps).
 
 ---
 
@@ -238,16 +238,21 @@ We'll update this plan as these are answered and as testing shows us what we mis
 
 Every run is recorded in [`tests/results.md`](../tests/results.md).
 
-**Automated suite — 86 tests, no API key required** (the model is stubbed, so the suite runs offline):
+**Automated suite — 114 tests, no API key required** (the model is stubbed, so the suite runs offline):
 
 | File | Tests | What it covers |
 |---|---|---|
 | `tests/test_ingest.py` | 8 | Reading PDF, Word, Excel, PowerPoint, text and images; corrupt and password-protected files |
-| `tests/test_pipeline.py` | 13 | Extraction, generation and the checker end to end on the sample inputs |
+| `tests/test_pipeline.py` | 15 | Extraction, generation and the checker end to end on the sample inputs |
 | `tests/test_rules.py` | 8 | The deterministic rule layer: numbers, names, estimate wording |
-| `tests/test_review_export.py` | 9 | The approval gate and output layout (T-07, T-08, T-09) |
-| `tests/test_report.py` | 38 | The designed report: layout choice, length budgets, re-checking, brand kits, approval hash |
+| `tests/test_review_export.py` | 10 | The approval gate and output layout (T-07, T-08, T-09) |
+| `tests/test_report.py` | 39 | The designed report: layout choice, length budgets, re-checking, brand kits, approval hash |
 | `tests/test_web.py` | 10 | The web API: signup, login, projects, approval, export |
+| `tests/test_notion.py` | 5 | Notion import against a fake Notion API |
+| `tests/test_verify.py` | 5 | Verified link: frozen copy, fingerprint, tampering, masking, revoke, QR |
+| `tests/test_signoff.py` | 4 | Client sign-off: questions, answers, approval kept on confirm, new approval after a fix |
+| `tests/test_anonymize.py` | 6 | Anonymized version: number-changing swaps refused, numbers unchanged |
+| `tests/test_library.py` | 4 | Proof library: ranking, word-for-word quoting, anonymity, workspace isolation |
 
 **Measured runs:**
 
@@ -272,7 +277,7 @@ Every run is recorded in [`tests/results.md`](../tests/results.md).
 
 Everything measured so far used inputs the team wrote itself, and planted claims that are short and obvious — an invented number, an invented tool name. The unsupported claims that matter in practice are the subtle inferences ChatGPT produced in our 24 October measurement, such as naming a backend framework the notes never mentioned. A 100% catch rate on obvious plants is **not** evidence that those would be caught. The same person wrote the checker and the planted-claim set, which is a second reason to treat the figure as provisional.
 
-The 86 automated tests are written by the same person who wrote the code they test, so they confirm the system behaves as its author intended, not that the design is right. The suite has not been re-run from a clean clone by a second person, and the code has not been reviewed by a second member.
+The 114 automated tests are written by the same person who wrote the code they test, so they confirm the system behaves as its author intended, not that the design is right. The suite has not been re-run from a clean clone by a second person, and the code has not been reviewed by a second member.
 
 ### Issues still to resolve
 
@@ -291,6 +296,7 @@ The 86 automated tests are written by the same person who wrote the code they te
 3. **T-04 — two-person claim check** on a generated draft.
 4. **Repeat the 24 October baseline measurement on Gemini** (Q-018), so the comparison does not rest on one tool.
 5. **T-10 — end to end on three real inputs**, once BT-2 lands.
+6. **T-14 with the new features** — two classmates use the Verified link and client sign-off on their phones without help, and we record what broke.
 
 ### What we expect to find
 

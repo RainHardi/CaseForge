@@ -6,8 +6,8 @@
 | **Repository** | CaseForge |
 | **Team** | Team 5 |
 | **Reviewer** | Abdulaziz (AI / Engineering) |
-| **Status** | Four team-constructed inputs committed; no real project data yet. The live website now also collects user account data — see DS-05 |
-| **Last Updated** | 18 November 2026 |
+| **Status** | Four team-constructed inputs committed; no real project data yet. The live website collects user account data (DS-05), publishes Verified copies (DS-07) and stores client sign-off answers (DS-08) |
+| **Last Updated** | 20 November 2026 |
 
 This document lists the data, APIs, and other sources CaseForge plans to use, the conditions for using each one, when each was collected, and what we still need to confirm. Anything we haven't settled yet is marked **TBD**.
 
@@ -39,6 +39,9 @@ For every test input, we also need a way to check the output. Our plan is to wri
 | DS-04 | Classmates' project material | Project information | Student-facing test cases, user testing, demo | Permission needed from each team | Not yet collected | Possibly names — removed before use | Only with that team's agreement |
 | DS-05 | **User accounts on the live website** | Personal data | Signing in, scoping projects to a workspace | Collected from 14 Nov 2026, as soon as anyone signs up | Live, ongoing | **Yes** — name, email address, password (stored as a scrypt hash), workspace membership | **No** — never in the repository; held only in the hosted database |
 | DS-06 | Brand kits (colours, fonts, logo, banned words) | Configuration | Styling the designed report | Available — two example kits | From Nov 2026 | Logos may identify a company | Only the two example kits (HumbleBeeAI and the fictional Northwind) |
+| DS-07 | Published Verified copies | Frozen approved case study | The public Verified link | Created when a user publishes | From 20 Nov 2026 | Possibly — approver's name; client name unless hidden; quotes from the notes unless masked | No — hosted database only; **public to anyone with the link** |
+| DS-08 | Client sign-off answers | Personal data + answers | Marking sentences as confirmed by the client | Created when a client answers | From 20 Nov 2026 | **Yes** — the name the client contact types | No — hosted database only |
+| API-03 | Notion API | External service | Importing a shared project page as notes | User's own integration, read only | From 20 Nov 2026 | Email, phone and file fields are skipped; page text may contain names | Not applicable — the secret is never stored |
 | API-01 | Google Gemini API (Google AI Studio) | External AI service | Fact extraction, case study writing, claim checking | Free tier, in use | Pinned to `gemini-3.5-flash-lite` (Q-015 decided 31 Oct 2026) | No account data is sent — only project notes | Not applicable — no key in repo |
 | API-02 | Render (web hosting) + Neon (Postgres) | Infrastructure | Running the site and storing accounts and projects | Free tier, in use since 14 Nov 2026 | Live | Stores DS-05 and all uploaded project material | Not applicable — credentials in environment variables |
 
@@ -125,6 +128,8 @@ Added in November 2026, when CaseForge became a hosted website with accounts. Th
 | Password | Logging in | **scrypt hash only** (`caseforge.db.hash_password`) — the password itself is never stored and cannot be recovered | Nobody |
 | Workspace membership | Scoping projects to a team | `workspaces` table | Members of that workspace |
 | Uploaded project material and images | The product's whole purpose | `projects` and `images` tables | The owner's workspace only |
+| Published Verified copy | The public Verified link | `published` table | **Anyone with the link** — approved sentences, the approver's name and date, and by default the quotes from the notes |
+| Client sign-off answers | Confirmed-by-client marks | `signoffs` table | The owner's workspace; the signer's name appears on the Verified link |
 
 **Rules we hold ourselves to:**
 
@@ -132,6 +137,8 @@ Added in November 2026, when CaseForge became a hosted website with accounts. Th
 - Account data is **not** sent to the Gemini API. Only the project notes a user submits are sent.
 - Every project request is scoped to the signed-in user's workspace, so one team cannot read another's material.
 - A user can change their password, leave a workspace or delete their account from the app (`/api/me/password`, `/api/me/leave`, `/api/me/delete`).
+- A Verified link shows quotes from the notes by default. The owner can choose masked quotes or check results only, hide the client, use the anonymized version, or unpublish. Links are not indexed by search engines. If the client chose to stay anonymous, their name cannot be published (**Q-022**).
+- The Notion integration secret is used for one import and never stored or logged; the imported text is reviewed in the notes box like an uploaded file.
 - **Open point:** this is a student project on free hosting. We should not invite anyone outside the course and HumbleBeeAI to put real client material into it until we can say clearly how long data is kept and who can reach it. This is recorded as **Q-021**.
 
 ---

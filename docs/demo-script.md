@@ -6,7 +6,7 @@
 | **Repository** | CaseForge |
 | **Team** | Team 5 |
 | **Status** | Demonstrable live — https://caseforge-rcdu.onrender.com (14 Nov 2026) |
-| **Last Updated** | 18 November 2026 |
+| **Last Updated** | 20 November 2026 |
 
 > [!IMPORTANT]
 > **The product runs live at https://caseforge-rcdu.onrender.com** — sign in, upload notes, get a checked draft, resolve what is flagged, approve, download the designed report. This document is the scenario the demo follows. The step that matters is the review screen refusing to export while a claim is flagged — the demo is built around showing that, not the finished document. **Fallback:** a recording, plus the local `streamlit run app.py`, in case the free-tier host is asleep or slow to wake.
@@ -71,6 +71,7 @@ The same six steps, with more room to pause:
 4. **Show the review step catching something and being corrected.** Say plainly that the approval stage is a feature, not a limitation — a buyer who is publishing this under their own company name wants it there.
 5. **Run a classmate's project through it** and show the student-facing output.
 6. **Show the measured time comparison.**
+7. **Publish the Verified link and show the QR code.** Someone in the room scans it and taps a sentence with a number in it to see the quote behind it.
 
 ### Optional: the comparison
 
@@ -99,6 +100,7 @@ Section 8.3 asks what we would do if the demo failed. Our plan:
 | Generation produces badly formatted or unparseable output | Show it. Explain that consistent structured output is one of our four known hard parts, and show the handling we have built for it. |
 | The automated checker misses a planted claim | Show that too, and show the manual claim check catching it. This is exactly why human approval is mandatory and not optional — a miss supports our design rather than undermining it. |
 | Nothing runs at all | Walk through the recorded demo and the test results log, and explain honestly where the build stopped. |
+| The free host is asleep or a push did not deploy | Open the site 5 minutes early; deploy manually the day before (Q-024) |
 
 We do not present a pre-recorded run as a live one, and we do not demonstrate on an input we have quietly cleaned up beforehand.
 
@@ -122,6 +124,7 @@ After the demo:
 - [ ] The time comparison figure is measured, with the method written down
 - [ ] Known limitations are written down so we can state them before anyone asks
 - [ ] API key is in `.env` and is not visible on screen, in slides, or in the recording
+- [ ] The demo project's Verified link is published from a team-constructed project only (it is public)
 
 ---
 

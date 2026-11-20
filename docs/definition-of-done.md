@@ -7,7 +7,7 @@
 | **Team** | Team 5 |
 | **Source** | [HBAI Capstone Project Pool](HBAI_Capstone_project_pools.pdf) — S1 |
 | **Status** | Baseline and most Target work built, deployed and tested on team-constructed inputs; B4 real-input runs outstanding |
-| **Last Updated** | 18 November 2026 |
+| **Last Updated** | 20 November 2026 |
 
 This document holds the official Baseline, Target and Stretch requirements for S1 as written in the project pool, together with how each one will be verified and where it currently stands.
 
@@ -53,7 +53,9 @@ Started only once every Baseline item is complete.
 
 ### Proposed additions, not yet assigned to a tier
 
-At the progress review on 8 October 2026 the course TA suggested a **Telegram bot** for chat-based input and **integration with tools such as Notion**. Both are input channels rather than new capabilities, and neither appears in the official project pool requirements. They are Target-level work at the earliest and will not begin before the Baseline is complete. Which tier they belong to, if any: **TBD**.
+At the progress review on 8 October 2026 the course TA suggested a **Telegram bot** for chat-based input and **integration with tools such as Notion**. Both are input channels rather than new capabilities, and neither appears in the official project pool requirements. A **Notion page import** was built on 20 November 2026; the Telegram bot will not be built.
+
+Also built on 20 November 2026, outside the official requirements: a **Verified link** with QR code, **client sign-off**, an **anonymized version** and a **proof library**. They are covered by automated tests only, and they do not make any Baseline, Target or Stretch item complete. They were built while B4 waits on permission (Q-001, Q-005), not instead of it.
 
 ---
 

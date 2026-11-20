@@ -10,7 +10,7 @@
 | **Team** | Team 5 |
 | **Development Period** | Fall 2026 Semester |
 | **Status** | Built and deployed — live at https://caseforge-rcdu.onrender.com; real-input runs (B4) outstanding |
-| **Last Updated** | 18 November 2026 |
+| **Last Updated** | 20 November 2026 |
 
 ---
 
@@ -144,6 +144,7 @@ A general chat tool such as ChatGPT, Claude or Gemini is built to produce text t
 | **Consistency** | A different story each time you ask | PDF, one-page summary and portfolio page all built from the same record |
 | **Measurable accuracy** | Cannot be stated | Specified and tested: no unsupported claims across every test case (see [Test Plan](test-plan.md)) |
 | **Fits the workflow** | The user must know how to prompt | Structured intake, fixed template, company's own house style |
+| **Proof for the reader** | The reader has to trust the document | A Verified link: click any sentence and see the quote behind it and who approved it |
 
 > [!NOTE]
 > To be precise about the claim: a careful user with a good prompt can often get a general tool to avoid inventing facts. The difference is that in CaseForge this is **guaranteed by the system, enforced before export, measured on every test case, and repeatable by a user who knows nothing about prompting**. We are not competing with the model. We are competing with the absence of verification around it.
@@ -218,6 +219,26 @@ A human must review, edit, and approve the generated content before it is finali
 
 The approved content will be exported as a downloadable PDF case study and a one-page summary.
 
+### Feature 7 - Verified Link
+
+Each approved case study can be published as a public page with a QR code. A reader clicks any sentence and sees the quote from the notes behind it, who approved it and when, and whether it has changed since.
+
+### Feature 8 - Client Sign-off
+
+The client confirms, fixes or removes each number and quote through one link, without an account, and says whether the company may be named.
+
+### Feature 9 - Anonymized Version
+
+For clients who will not be named, the team chooses which names to swap. A swap can never change a number, so every fact stays as approved.
+
+### Feature 10 - Proof Library
+
+Sales can search every approved case study for a prospect and build a one-page proof sheet in which every line is quoted from an approved case study.
+
+### Feature 11 - Notion Import
+
+A shared Notion page, its sub-pages and tables can be imported as project notes, for review before anything reaches the AI.
+
 ## 10. Development Plan
 
 We will get the full Baseline working before moving on to Target, and leave Stretch items until every Baseline item is complete.
@@ -262,7 +283,7 @@ After the Baseline is complete, we will work on the official Target items:
 
 At the progress review on 8 October 2026, the course TA suggested two additions: a **Telegram bot** so users can send project notes and receive a draft inside a chat, and **integration with tools such as Notion** so project information can be pulled from where teams already keep it.
 
-Both are input channels rather than new capabilities, and neither appears in the official Definition of Done. We consider them Target-level work at the earliest, and they will not be started before the Baseline is complete. Which tier they belong to: **TBD**.
+Both are input channels rather than new capabilities, and neither appears in the official Definition of Done. The Notion page import was built on 20 November 2026 (Feature 11). The Telegram bot will not be built.
 
 ## 13. Stretch
 
@@ -303,8 +324,9 @@ We will not use client confidential material, internal company data, or protecte
 |---|---|---|
 | **AI Model** | Google Gemini (via Google AI Studio) | Free tier, so no project budget is needed. Rate limits to be tested. |
 | **Programming** | Python | Main workflow and supporting components |
-| **PDF Generation** | ReportLab or WeasyPrint | Final choice TBD |
-| **Development Environment** | Local machine or Google Colab | |
+| **PDF Generation** | ReportLab; Chromium for the designed report | Decided 31 Oct (Q-012) |
+| **Web and hosting** | FastAPI on Render + Neon | Free tiers |
+| **Development Environment** | Local machine | |
 | **Hardware** | Standard laptop | The model runs through an API, so no GPU is needed |
 
 > [!NOTE]
@@ -334,7 +356,7 @@ We will test with both clean and messy project inputs. The main evaluation areas
 
 The full plan, including test cases and success criteria, is in [Test Plan](test-plan.md).
 
-**Tests run so far:** T-05 (planted claims), T-07 (approval lock) and T-08/T-09 (output layout), all on team-constructed inputs, plus an automated suite of 86 tests covering ingest, pipeline, rules, review and export, the designed report and the web API. Recorded in [`tests/results.md`](../tests/results.md). T-02, T-04, T-06 and T-10 have not been run. See [Section 21](#21-current-status-and-next-steps).
+**Tests run so far:** T-05 (planted claims), T-07 (approval lock) and T-08/T-09 (output layout), all on team-constructed inputs, plus an automated suite of 114 tests covering ingest, pipeline, rules, review and export, the designed report, the web API, the Notion import, Verified links, client sign-off, the anonymized version and the proof library. Recorded in [`tests/results.md`](../tests/results.md). T-02, T-04, T-06 and T-10 have not been run. See [Section 21](#21-current-status-and-next-steps).
 
 ## 19. Expected Final Result
 
@@ -391,7 +413,8 @@ The Baseline implementation landed on 31 October 2026 (pull request #15, with fo
 | **Designed report** — a 4–5 page branded report with key figures, a process diagram and a before/after chart, rendered by Chromium, re-checked element by element and locked by its own content hash | `caseforge/report.py`, `caseforge/layout.py`, `caseforge/render/report_pdf.py` |
 | **Brand kits** — colours, fonts, logo, motif and banned words, importable from a guidelines document; a contrast rule keeps pale colours off text | `caseforge/brandkit.py`, `brands/` |
 | **Extra short formats** — LinkedIn post, proposal paragraph, elevator pitch, all generated from the approved record | `caseforge/formats.py` |
-| **Storage** — Postgres (Neon) in production, SQLite locally: workspaces, users, projects, images and brand kits | `caseforge/db.py` |
+| **Storage** — Postgres (Neon) in production, SQLite locally: workspaces, users, projects, images, brand kits, published copies and sign-offs | `caseforge/db.py` |
+| **Verified link, client sign-off, anonymized version, proof library, Notion import** (20 Nov 2026) | `caseforge/verify.py`, `signoff.py`, `anonymize.py`, `library.py`, `notion.py` |
 
 > [!IMPORTANT]
 > **Built is not the same as done.** Every result so far comes from three inputs the team wrote itself. The Baseline requires three *real* project inputs (B4) and a two-person claim check (B5), and neither has happened. Nothing has been tested on a real client project.
@@ -400,14 +423,13 @@ The Baseline implementation landed on 31 October 2026 (pull request #15, with fo
 
 | ID | Task | Owner | Done when | Date |
 |---|---|---|---|---|
-| ID | Task | Owner | Done when | Date |
-|---|---|---|---|---|
 | BT-1 | Code structure, `requirements.txt`, working Gemini call | Abdulaziz | **Done** 31 Oct 2026 | — |
 | BT-3 | Fact extraction step | Abdulaziz | **Done** 31 Oct 2026; T-02 against the fact lists still to run | — |
 | BT-4 | Automated faithfulness check | Abdulaziz | **Done** 31 Oct 2026; measured on team-constructed inputs only | — |
 | BT-5 | Human review and approval step | Abdulaziz | **Done** 31 Oct 2026 | — |
 | BT-6 | PDF case study and one-page summary | Abdulaziz | **Done** 31 Oct 2026 | — |
 | — | Web application, accounts, designed report, brand kits | Abdulaziz | **Done** 14 Nov 2026; deployed to Render + Neon | — |
+| — | Verified link, client sign-off, anonymized version, proof library, Notion import | Abdulaziz | **Done** 20 Nov 2026; deployed; not yet reviewed by a second member | — |
 | T-05b | Harder planted claims: inference-style, not just invented numbers | Abdulaziz | Catch and false-flag rate recorded over 3 repeats | 16 Nov |
 | BT-2 | Three **real** project inputs with hand-written fact lists | Odina | Three inputs and their fact lists committed, reviewed by a second person | 9 Nov |
 | — | Code review of the Baseline by a second member | Muhammadkodir | Reviewer named in the pull request | 9 Nov |

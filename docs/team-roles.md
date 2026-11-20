@@ -9,7 +9,7 @@
 | **Members** | 5 |
 | **Status** | Built and deployed — live at https://caseforge-rcdu.onrender.com; real-input runs (B4) outstanding |
 | **Development Period** | Fall 2026 Semester |
-| **Last Updated** | 18 November 2026 |
+| **Last Updated** | 20 November 2026 |
 
 ---
 
@@ -283,6 +283,7 @@ Every member is expected to have read them.
 | Midterm Business Plan | Team | Mukhammadkodir | In progress — due 24 Oct |
 | Baseline implementation (BT-1, BT-3 to BT-6) | Abdulaziz | Muhammadkodir | **Built 31 Oct 2026** |
 | Web application, accounts, designed report, brand kits, deployment | Abdulaziz | Team | **Built and deployed 14 Nov 2026** — not yet reviewed by a second member |
+| Verified link, client sign-off, anonymized version, proof library, Notion import | Abdulaziz | Team | **Built and deployed 20 Nov 2026** — not yet reviewed by a second member |
 | Baseline implementation (BT-2, BT-7, BT-8) | Odina, Abdulaziz, Dilshod | Team | **Not started** — needs three real project inputs |
 
 ### Baseline implementation ownership
