@@ -30,7 +30,7 @@ flowchart TB
     Notion[["<b>Notion API</b><br/>(outside the system boundary)"]]
 
     User -- "Signs up, logs in, submits notes,<br/>images and brand kit" --> Web
-    Web -- "Reads a shared page<br/>with the user's secret" --> Notion
+    Web -- "OAuth sign-in; lists and reads<br/>the pages the user shared" --> Notion
     Web -- "Authenticates and scopes<br/>every request to a workspace" --> Store
     Web -- "Hands the project to the pipeline" --> Pipeline
     Web -- "Serves the review screen" --> UI
@@ -71,7 +71,7 @@ flowchart TB
 | **Public Pages** | Python — FastAPI, server-rendered HTML, no log-in | The Verified link (`/v/…`): click a sentence to see its evidence, fingerprint re-checked on every view. The client sign-off page (`/s/…`). Both read only a frozen copy saved at approval time, never the live project | — | — | Built (20 Nov 2026) |
 | **Extraction & Generation Pipeline** | Python + Gemini | Pulls out only the facts stated in the input, then writes the case study from those facts rather than from the raw notes | B5 | BT-3 | Built |
 | **Faithfulness Checker** | Python + Gemini | Compares every claim in the draft against the source and the extracted facts; labels each one; flags information that is missing rather than supplying it | B5 | BT-4 | Built |
-| **Project Store** | Postgres (Neon) in production, SQLite locally; eight tables — workspaces, users, projects, images, brand kits, AI usage, published copies, sign-offs | Holds the source input, extracted facts, drafts, claim labels, edits and approval status, so that a document can always be traced back to what was provided. Also holds user accounts; passwords are stored as scrypt hashes, never in plain text | B3, B5 | BT-1 | Built |
+| **Project Store** | Postgres (Neon) in production, SQLite locally; nine tables — workspaces, users, projects, images, brand kits, AI usage, published copies, sign-offs, Notion connections | Holds the source input, extracted facts, drafts, claim labels, edits and approval status, so that a document can always be traced back to what was provided. Also holds user accounts; passwords are stored as scrypt hashes, never in plain text; Connect Notion tokens are stored encrypted, one connection per workspace | B3, B5 | BT-1 | Built |
 | **Document Renderer** | Python — ReportLab (Q-012 decided) plus Chromium for the designed report; `segno` for QR codes | Renders approved content into the PDF case study, the one-page summary, the portfolio page and the designed branded report, each also as an anonymized version; the proof sheet; the QR code to the Verified link | B2, T1, T2 | BT-6 | Built |
 
 > [!NOTE]

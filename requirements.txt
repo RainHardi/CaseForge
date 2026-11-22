@@ -20,6 +20,8 @@ python-multipart==0.0.32
 psycopg[binary]==3.3.8
 # Notion import (also used by the API tests)
 httpx==0.28.1
+# encrypts stored Connect Notion tokens
+cryptography==50.0.2
 # designed report → PDF (Chromium). After pip install, run once: playwright install --with-deps chromium
 playwright==1.63.0
 # QR code for Verified links (pure Python)

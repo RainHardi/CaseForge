@@ -89,6 +89,16 @@ signoffs = Table(
     Column("data", Text, nullable=False),  # the request and the client's answers (caseforge.signoff)
     Column("created_at", DateTime(timezone=True), nullable=False),
 )
+notion_links = Table(
+    "notion_connections", meta,
+    Column("workspace_id", String(40), ForeignKey("workspaces.id"), primary_key=True),
+    Column("user_id", String(40), nullable=False),          # who connected it
+    Column("notion_workspace", String(200), nullable=False, default=""),
+    Column("bot_id", String(80), nullable=False, default=""),
+    Column("access_token", Text, nullable=False),           # encrypted (caseforge.notion.seal)
+    Column("refresh_token", Text, nullable=False, default=""),  # encrypted
+    Column("updated_at", DateTime(timezone=True), nullable=False),
+)
 usage = Table(
     "ai_usage", meta,
     Column("user_id", String(40), primary_key=True),
@@ -276,6 +286,7 @@ class DB:
                 c.execute(delete(brand_kits).where(brand_kits.c.workspace_id == ws))
                 c.execute(delete(published).where(published.c.workspace_id == ws))
                 c.execute(delete(signoffs).where(signoffs.c.workspace_id == ws))
+                c.execute(delete(notion_links).where(notion_links.c.workspace_id == ws))
                 c.execute(delete(workspaces).where(workspaces.c.id == ws))
 
     # -------------------------------------------------------------- usage limit
@@ -462,6 +473,25 @@ class DB:
         with self.engine.begin() as c:
             return c.execute(delete(signoffs).where(signoffs.c.token == token,
                                                     signoffs.c.workspace_id == workspace_id)).rowcount > 0
+
+    # -------------------------------------------------------------- Connect Notion (tokens arrive encrypted)
+    def set_notion(self, workspace_id: str, user_id: str, notion_workspace: str, bot_id: str,
+                   access_token: str, refresh_token: str) -> None:
+        with self.engine.begin() as c:
+            c.execute(delete(notion_links).where(notion_links.c.workspace_id == workspace_id))
+            c.execute(insert(notion_links).values(workspace_id=workspace_id, user_id=user_id,
+                                                  notion_workspace=notion_workspace[:200], bot_id=bot_id[:80],
+                                                  access_token=access_token, refresh_token=refresh_token,
+                                                  updated_at=_now()))
+
+    def notion(self, workspace_id: str) -> dict | None:
+        with self.engine.connect() as c:
+            r = c.execute(select(notion_links).where(notion_links.c.workspace_id == workspace_id)).first()
+        return dict(r._mapping) if r else None
+
+    def drop_notion(self, workspace_id: str) -> None:
+        with self.engine.begin() as c:
+            c.execute(delete(notion_links).where(notion_links.c.workspace_id == workspace_id))
 
     def stats(self) -> dict:
         with self.engine.connect() as c:

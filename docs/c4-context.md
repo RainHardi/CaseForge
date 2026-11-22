@@ -58,7 +58,7 @@ The **buyer** (the business development lead or manager who pays for the tool) i
 | System | Why we depend on it | Risk |
 |---|---|---|
 | **Google Gemini API** (free tier, via Google AI Studio) | Generates the draft and performs the claim-by-claim comparison | Rate limits measured only at test volume (**Q-004**); whether its terms permit sending real client information is still open (**Q-002**); no fallback has been chosen (**Q-016**) |
-| **Notion API** | Imports a shared project page as notes | The secret is used once and never stored; the imported text is reviewed in the notes box before it reaches Gemini |
+| **Notion API** | Imports a project page as notes, through Connect Notion (OAuth) or a pasted integration secret | Connect Notion stores encrypted tokens per workspace until Disconnect; a pasted secret is used once and never stored. Either way the imported text is reviewed in the notes box before it reaches Gemini |
 | **Render + Neon** (free tiers) | Run the website and store accounts and projects | Free instances sleep after inactivity; auto-deploy from GitHub stopped after 17 Nov (**Q-024**) |
 
 ## Not external systems

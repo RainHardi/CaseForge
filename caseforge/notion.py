@@ -1,9 +1,14 @@
 """Read a Notion page (or database) into plain text notes.
 
-The user makes a Notion integration, shares the project page with it and pastes the token and
-the page link. CaseForge reads the page, its sub-pages and database rows, and puts the text in the
-notes box — like an uploaded file — so the user sees and edits it before anything goes to the AI.
-The token is used for this one import and never stored.
+Two ways in:
+- **Connect Notion** (OAuth, public integration): the user clicks Connect once, picks pages in Notion's
+  own page picker, and then chooses a project from a list. The tokens are stored encrypted, per
+  workspace, and can be removed with Disconnect.
+- **Integration secret**: the user pastes their own internal integration secret and a page link.
+  That secret is used for one import and never stored.
+
+Either way CaseForge reads the page, its sub-pages and database rows, and puts the text in the notes
+box — like an uploaded file — so the user sees and edits it before anything goes to the AI.
 """
 
 from __future__ import annotations
@@ -24,6 +29,10 @@ SKIP_PROPS = {"email", "phone_number", "files", "relation", "rollup", "created_b
 
 class NotionError(IngestError):
     pass
+
+
+class TokenRejected(NotionError):
+    """Notion answered 401: the secret is wrong, or an OAuth access token expired (refresh and retry)."""
 
 
 def page_id(ref: str) -> str:
@@ -59,7 +68,7 @@ class Reader:
         except httpx.HTTPError as e:
             raise NotionError(f"Couldn't reach Notion: {e.__class__.__name__}. Try again.") from e
         if r.status_code == 401:
-            raise NotionError("Notion rejected the token. Copy the Internal Integration Secret again.")
+            raise TokenRejected("Notion rejected the token. Copy the Internal Integration Secret again.")
         if r.status_code == 429:
             raise NotionError("Notion is rate limiting us. Wait a minute and try again.")
         if r.status_code >= 400:
@@ -294,3 +303,107 @@ def import_page(token: str, ref: str, client: httpx.Client | None = None) -> dic
     reader = Reader(token, client)
     title, text = reader.read(ref)
     return {"title": title, "text": text, "pages": reader.pages, "truncated": reader.truncated or reader.cut}
+
+
+# ====================================================================== Connect Notion (OAuth)
+AUTHORIZE_URL = "https://api.notion.com/v1/oauth/authorize"
+TOKEN_URL = API + "/oauth/token"
+
+
+def oauth_settings() -> dict | None:
+    """Client id/secret from the environment, or None when Connect Notion isn't set up on this server."""
+    import os
+
+    cid, secret = os.getenv("NOTION_CLIENT_ID", "").strip(), os.getenv("NOTION_CLIENT_SECRET", "").strip()
+    if not cid or not secret:
+        return None
+    return {"client_id": cid, "client_secret": secret, "redirect_uri": os.getenv("NOTION_REDIRECT_URI", "").strip()}
+
+
+def authorize_url(client_id: str, redirect_uri: str, state: str) -> str:
+    from urllib.parse import urlencode
+
+    return AUTHORIZE_URL + "?" + urlencode({"client_id": client_id, "redirect_uri": redirect_uri,
+                                            "response_type": "code", "owner": "user", "state": state})
+
+
+def _token_call(body: dict, settings: dict, client: httpx.Client | None) -> dict:
+    http = client or httpx.Client(timeout=20)
+    try:
+        r = http.post(TOKEN_URL, json=body, auth=(settings["client_id"], settings["client_secret"]),
+                      headers={"Notion-Version": VERSION})
+    except httpx.HTTPError as e:
+        raise NotionError(f"Couldn't reach Notion: {e.__class__.__name__}. Try again.") from e
+    try:
+        data = r.json()
+    except ValueError:
+        data = {}
+    if r.status_code >= 400 or "access_token" not in data:
+        msg = data.get("error_description") or data.get("message") or data.get("error") or f"HTTP {r.status_code}"
+        raise NotionError(f"Notion didn't accept the connection: {msg}")
+    return data
+
+
+def exchange_code(code: str, redirect_uri: str, settings: dict, client: httpx.Client | None = None) -> dict:
+    """The authorization code → {access_token, refresh_token, workspace_name, workspace_icon, bot_id, …}."""
+    return _token_call({"grant_type": "authorization_code", "code": code, "redirect_uri": redirect_uri},
+                       settings, client)
+
+
+def refresh(refresh_token: str, settings: dict, client: httpx.Client | None = None) -> dict:
+    if not refresh_token:
+        raise TokenRejected("The Notion connection expired. Connect Notion again.")
+    return _token_call({"grant_type": "refresh_token", "refresh_token": refresh_token}, settings, client)
+
+
+def shared_pages(token: str, query: str = "", client: httpx.Client | None = None, limit: int = 30) -> list[dict]:
+    """Pages and databases the user shared with CaseForge in Notion's page picker, newest first."""
+    reader = Reader(token, client)
+    body = {"page_size": min(limit, 100), "sort": {"direction": "descending", "timestamp": "last_edited_time"}}
+    if query.strip():
+        body["query"] = query.strip()[:200]
+    try:
+        data = reader._call("POST", "/search", json=body)
+    except _Status as e:
+        raise e.friendly() from None
+    out = []
+    for item in data.get("results", []):
+        kind = item.get("object")
+        if kind == "database":
+            title = _plain(item.get("title")) or "Untitled table"
+        elif kind == "page":
+            if (item.get("parent") or {}).get("type") == "database_id":
+                continue  # rows of a table: import the table (or open the row's own page) instead
+            title = Reader._title(item) or "Untitled"
+        else:
+            continue
+        out.append({"id": item["id"].replace("-", ""), "type": kind, "title": title, "url": item.get("url", ""),
+                    "edited": (item.get("last_edited_time") or "")[:10]})
+    return out
+
+
+# ---------------------------------------------------------------- token sealing
+def _fernet(secret: str):
+    import base64
+    import hashlib
+
+    from cryptography.fernet import Fernet
+
+    return Fernet(base64.urlsafe_b64encode(hashlib.sha256(("notion-tokens:" + secret).encode()).digest()))
+
+
+def seal(value: str, secret: str) -> str:
+    """Encrypt a token for the database (key derived from the server's SECRET_KEY)."""
+    return _fernet(secret).encrypt(value.encode()).decode() if value else ""
+
+
+def unseal(value: str, secret: str) -> str:
+    """Decrypt a stored token; "" when it can't be read (e.g. SECRET_KEY changed) — the user reconnects."""
+    if not value:
+        return ""
+    from cryptography.fernet import InvalidToken
+
+    try:
+        return _fernet(secret).decrypt(value.encode()).decode()
+    except (InvalidToken, ValueError):
+        return ""

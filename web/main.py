@@ -16,7 +16,7 @@ from collections import defaultdict
 from pathlib import Path
 
 from fastapi import Depends, FastAPI, File, Form, HTTPException, Request, Response, UploadFile
-from fastapi.responses import FileResponse, JSONResponse, PlainTextResponse
+from fastapi.responses import FileResponse, JSONResponse, PlainTextResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from itsdangerous import BadSignature, SignatureExpired, URLSafeTimedSerializer
 from pydantic import BaseModel
@@ -34,6 +34,7 @@ from caseforge.db import DB, AuthError
 from caseforge.ingest import ALL_TYPES, IngestError, extract_text, is_image
 from caseforge.llm import LLMError, get_llm
 from caseforge.models import FIELD_KEYS, SECTION_TITLES, ImageRef, ProjectInput, ProjectRecord
+from caseforge import notion as nt
 from caseforge.notion import import_page as notion_import
 from caseforge.pipeline import generate
 from caseforge.render import ExportBlocked
@@ -168,7 +169,7 @@ def health():
 def config():
     s = get_settings()
     return {"ai": bool(llm()), "model": s.gemini_model if llm() else "offline", "daily_limit": DAILY_LIMIT,
-            "file_types": ALL_TYPES, "max_file_mb": MAX_FILE_MB}
+            "file_types": ALL_TYPES, "max_file_mb": MAX_FILE_MB, "notion_connect": bool(nt.oauth_settings())}
 
 
 # ------------------------------------------------------------------ auth
@@ -336,6 +337,106 @@ class NotionBody(BaseModel):
 def notion(body: NotionBody, user: dict = Depends(current_user)):
     """A shared Notion page → text for the notes box. The token is used once and never saved or logged."""
     return notion_import(body.token[:200], body.url[:2000])
+
+
+# ---- Connect Notion (OAuth public integration). Off unless NOTION_CLIENT_ID / NOTION_CLIENT_SECRET are set.
+NOTION_STATE_MAX_AGE = 600  # seconds the user has to finish Notion's consent screen
+
+
+def _notion_settings(request: Request) -> dict:
+    s = nt.oauth_settings()
+    if not s:
+        raise HTTPException(404, "Connect Notion isn't set up on this server. Use an integration secret instead.")
+    if not s["redirect_uri"]:
+        base = os.getenv("PUBLIC_URL", "").rstrip("/") or str(request.base_url).rstrip("/")
+        s["redirect_uri"] = f"{base}/api/notion/callback"
+    return s
+
+
+def _notion_tokens(user: dict) -> tuple[str, str]:
+    row = db().notion(user["workspace_id"])
+    if not row:
+        raise review.ReviewError("Notion isn't connected for this workspace. Click Connect Notion first.")
+    access = nt.unseal(row["access_token"], SECRET)
+    if not access:  # SECRET_KEY changed since it was stored: the token can't be read any more
+        db().drop_notion(user["workspace_id"])
+        raise review.ReviewError("The Notion connection needs to be made again. Click Connect Notion.")
+    return access, nt.unseal(row["refresh_token"], SECRET)
+
+
+def _with_notion(request: Request, user: dict, fn):
+    """Runs fn(access_token); on an expired token refreshes once, stores the new tokens and retries."""
+    access, refresh_token = _notion_tokens(user)
+    try:
+        return fn(access)
+    except nt.TokenRejected:
+        try:
+            fresh = nt.refresh(refresh_token, _notion_settings(request))
+        except nt.NotionError:
+            db().drop_notion(user["workspace_id"])
+            raise review.ReviewError("The Notion connection expired. Click Connect Notion again.")
+        row = db().notion(user["workspace_id"]) or {}
+        db().set_notion(user["workspace_id"], row.get("user_id", user["id"]), row.get("notion_workspace", ""),
+                        row.get("bot_id", ""), nt.seal(fresh["access_token"], SECRET),
+                        nt.seal(fresh.get("refresh_token") or refresh_token, SECRET))
+        return fn(fresh["access_token"])
+
+
+@app.get("/api/notion/connect", include_in_schema=False)
+def notion_connect(request: Request, user: dict = Depends(current_user)):
+    s = _notion_settings(request)
+    state = URLSafeTimedSerializer(SECRET, salt="notion-oauth").dumps(
+        {"u": user["id"], "w": user["workspace_id"], "n": secrets.token_hex(8)})
+    return RedirectResponse(nt.authorize_url(s["client_id"], s["redirect_uri"], state), status_code=302)
+
+
+@app.get("/api/notion/callback", include_in_schema=False)
+def notion_callback(request: Request, code: str = "", state: str = "", error: str = ""):
+    back = "/app?notion={}#new"
+    if error:
+        return RedirectResponse(back.format("cancelled"), status_code=302)
+    try:
+        data = URLSafeTimedSerializer(SECRET, salt="notion-oauth").loads(state, max_age=NOTION_STATE_MAX_AGE)
+        user = current_user(request)
+    except (BadSignature, SignatureExpired, HTTPException):
+        return RedirectResponse(back.format("expired"), status_code=302)
+    if data.get("u") != user["id"] or data.get("w") != user["workspace_id"] or not code:
+        return RedirectResponse(back.format("expired"), status_code=302)
+    try:
+        tok = nt.exchange_code(code, _notion_settings(request)["redirect_uri"], _notion_settings(request))
+    except nt.NotionError:
+        return RedirectResponse(back.format("failed"), status_code=302)
+    db().set_notion(user["workspace_id"], user["id"], tok.get("workspace_name") or "Notion", tok.get("bot_id", ""),
+                    nt.seal(tok["access_token"], SECRET), nt.seal(tok.get("refresh_token", ""), SECRET))
+    return RedirectResponse(back.format("connected"), status_code=302)
+
+
+@app.get("/api/notion/status")
+def notion_status(user: dict = Depends(current_user)):
+    row = db().notion(user["workspace_id"])
+    return {"available": bool(nt.oauth_settings()), "connected": bool(row),
+            "workspace": row["notion_workspace"] if row else "",
+            "since": row["updated_at"].isoformat() if row else ""}
+
+
+@app.get("/api/notion/pages")
+def notion_pages(request: Request, q: str = "", user: dict = Depends(current_user)):
+    return _with_notion(request, user, lambda token: nt.shared_pages(token, q))
+
+
+class NotionPick(BaseModel):
+    id: str
+
+
+@app.post("/api/notion/import")
+def notion_import_connected(body: NotionPick, request: Request, user: dict = Depends(current_user)):
+    return _with_notion(request, user, lambda token: notion_import(token, body.id[:100]))
+
+
+@app.post("/api/notion/disconnect")
+def notion_disconnect(user: dict = Depends(current_user)):
+    db().drop_notion(user["workspace_id"])
+    return {"connected": False}
 
 
 # ------------------------------------------------------------------ projects

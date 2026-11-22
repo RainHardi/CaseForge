@@ -164,7 +164,9 @@ function viewNew() {
       <input id="files" type="file" multiple hidden accept="${(S.config?.file_types || []).map(t => "." + t).join(",")}">
       <ul class="files" id="filelist"></ul>
       <details class="fold" id="notionbox"><summary>Import from Notion</summary>
-        <div class="notion">
+        <div class="notion" id="nconnect" hidden></div>
+        <div class="notion" id="nsecret">
+          <p class="hint" id="nsecret-lead" hidden>Or use your own integration secret:</p>
           <ol class="hint">
             <li>Go to <b>notion.so/profile/integrations</b> → <b>New integration</b> (Internal), tick <b>Read content</b>, copy the secret.</li>
             <li>Open your project page in Notion → <b>•••</b> → <b>Connections</b> → add that integration.</li>
@@ -210,6 +212,7 @@ function viewNew() {
   drop.ondrop = e => { e.preventDefault(); drop.classList.remove("over"); addFiles(e.dataTransfer.files); };
   input.onchange = () => { addFiles(input.files); input.value = ""; };
   $("#nimport").onclick = importNotion;
+  loadNotion();
   $("#go").onclick = createProject;
 }
 async function importNotion() {
@@ -219,14 +222,68 @@ async function importNotion() {
   const r = await act(() => api("POST", "/api/notion", { token, url }));
   btn.disabled = false; btn.textContent = "Import page";
   if (!r) return;
+  $("#ntoken").value = "";
+  addNotionText(r);
+}
+function addNotionText(r) {
   const notes = $("#notes");
   notes.value = (notes.value.trim() + `\n\n--- from Notion: ${r.title} ---\n` + r.text).trim();
   if (!$("#title").value.trim()) $("#title").value = r.title;
   const words = r.text.split(/\s+/).length, pages = r.pages === 1 ? "1 page" : `${r.pages} pages and rows`;
   $("#filelist").insertAdjacentHTML("beforeend", `<li><b>Notion: ${esc(r.title)}</b> — ${words} words from ${pages} added to the notes${r.truncated ? " (cut: too long)" : ""}</li>`);
-  $("#ntoken").value = "";
   $("#notionbox").open = false;
   toast("Notion page added to the notes. Check it before writing.");
+}
+const NOTION_BACK = {
+  connected: ["Notion connected. Pick a page below.", false],
+  cancelled: ["Notion wasn't connected: the consent screen was closed.", true],
+  expired: ["That Notion sign-in took too long or came from another session. Try again.", true],
+  failed: ["Notion didn't accept the connection. Try again.", true],
+};
+async function loadNotion() {
+  const box = $("#nconnect"); if (!box) return;
+  const back = new URLSearchParams(location.search).get("notion");
+  if (back) { history.replaceState(null, "", location.pathname + location.hash); const m = NOTION_BACK[back]; if (m) toast(m[0], m[1]); $("#notionbox").open = true; }
+  const st = await api("GET", "/api/notion/status").catch(() => null);
+  if (!st || !st.available) return;           // not set up on this server: only the secret form shows
+  box.hidden = false;
+  $("#nsecret-lead").hidden = false;
+  if (!st.connected) {
+    box.innerHTML = `
+      <p><b>Connect Notion once</b>, choose your project pages in Notion, then import any of them with one click.</p>
+      <a class="btn primary" href="/api/notion/connect">Connect Notion</a>
+      <p class="hint" style="margin-top:8px">Notion asks which pages CaseForge may read. It can't see anything else, and you can disconnect any time.</p>`;
+    return;
+  }
+  box.innerHTML = `
+    <div class="nhead"><span>Connected to <b>${esc(st.workspace)}</b></span>
+      <span><a class="btn sm ghost" href="/api/notion/connect" title="Opens Notion's page picker">Add or change pages</a>
+      <button class="btn sm ghost" type="button" id="ndisconnect">Disconnect</button></span></div>
+    <input id="nsearch" type="text" placeholder="Search your shared pages" aria-label="Search shared Notion pages">
+    <ul class="npages" id="npages"><li class="hint">Loading pages…</li></ul>`;
+  let timer;
+  $("#nsearch").oninput = e => { clearTimeout(timer); timer = setTimeout(() => notionPages(e.target.value), 300); };
+  $("#ndisconnect").onclick = async () => {
+    if (!confirm("Disconnect Notion for your whole workspace? You can connect again any time.")) return;
+    if (await act(() => api("POST", "/api/notion/disconnect"), "Notion disconnected.")) loadNotion();
+  };
+  $("#npages").onclick = async e => {
+    const b = e.target.closest("button[data-nid]"); if (!b) return;
+    b.disabled = true; b.textContent = "Reading…";
+    const r = await act(() => api("POST", "/api/notion/import", { id: b.dataset.nid }));
+    b.disabled = false; b.textContent = "Import";
+    if (r) addNotionText(r);
+  };
+  notionPages("");
+}
+async function notionPages(q) {
+  const list = $("#npages"); if (!list) return;
+  const pages = await act(() => api("GET", "/api/notion/pages?q=" + encodeURIComponent(q)));
+  if (!pages) { list.innerHTML = `<li class="hint">Couldn't load your pages.</li>`; return; }
+  list.innerHTML = pages.length ? pages.map(p => `<li>
+      <span class="nt"><b>${esc(p.title)}</b><small>${p.type === "database" ? "Table" : "Page"}${p.edited ? " · edited " + esc(p.edited) : ""}</small></span>
+      <button class="btn sm" type="button" data-nid="${esc(p.id)}">Import</button></li>`).join("")
+    : `<li class="hint">${q ? "No shared page matches." : "No pages shared yet. Use “Add or change pages” to pick some in Notion."}</li>`;
 }
 async function addFiles(fileList) {
   const files = [...fileList]; if (!files.length) return;

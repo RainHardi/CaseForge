@@ -92,6 +92,10 @@ Free plan limits:
 | `DATABASE_URL` | Postgres connection string (Neon). Empty = local SQLite file | `data/caseforge.db` |
 | `SECRET_KEY` | Signs login cookies. Must stay the same between restarts | random each start |
 | `DAILY_AI_LIMIT` | Drafts, formats, report designs and guideline imports each user can run per day | `30` |
+| `NOTION_CLIENT_ID`, `NOTION_CLIENT_SECRET` | Turn on **Connect Notion**. From a public integration at notion.so/profile/integrations (OAuth, "Any workspace", Read content). Empty = only the paste-a-secret import | — |
+| `NOTION_REDIRECT_URI` | Must match the redirect URI in the Notion integration exactly | `<site>/api/notion/callback` |
+
+Connect Notion tokens are encrypted with a key derived from `SECRET_KEY`. If `SECRET_KEY` changes, existing connections can't be read and users simply connect again.
 
 ## Before you share the link
 

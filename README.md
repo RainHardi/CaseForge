@@ -69,7 +69,7 @@ Target and Stretch items are listed separately in the [Definition of Done](./doc
 
 ## Planned Features
 
-- Structured input intake (client problem, work done, approach, tools, challenges, results, images), uploaded files, pasted notes or a shared Notion page
+- Structured input intake (client problem, work done, approach, tools, challenges, results, images), uploaded files, pasted notes, or a Notion page — Connect Notion once and pick it from a list, or paste an integration secret
 - Extraction step that pulls only stated facts, flagging anything missing
 - Writing step that formats verified facts into a fixed case study template
 - Automated faithfulness check comparing every generated claim back to the source input
@@ -91,7 +91,7 @@ Full details, usage conditions and open questions in [Data Sources](./docs/data-
 | Team's own project material | Team 5 | Used with all members' agreement; private details excluded | From September 2026 | Team member names only, by agreement | Same as above |
 | Classmates' project material | Other course teams | Only with that team's permission; not published without agreement | Not yet obtained — **TBD** | Names removed or replaced unless the team asks otherwise | Same as above |
 
-**Public pages:** a Verified link shows the approved sentences and, by default, the quotes behind them to anyone with the link; the owner can mask the quotes, show check results only, hide or anonymize the client, or unpublish. Client sign-off stores the name the client types. A Notion import uses the user's integration secret once and never stores it. Details in [Data Sources](./docs/data-sources.md).
+**Public pages:** a Verified link shows the approved sentences and, by default, the quotes behind them to anyone with the link; the owner can mask the quotes, show check results only, hide or anonymize the client, or unpublish. Client sign-off stores the name the client types. Notion: with **Connect Notion** the user picks pages in Notion's own picker and the tokens are stored encrypted for the workspace until someone clicks Disconnect; with an integration secret, the secret is used once and never stored. Details in [Data Sources](./docs/data-sources.md).
 
 **External service transfer:** project text is sent to the Google Gemini API for processing. Only safe, cleared or team-constructed information is sent. Whether Google's free-tier terms permit sending real client project information is still open (**Q-002** in the [Question Log](./docs/question-log.md)).
 
@@ -102,7 +102,7 @@ Full details, usage conditions and open questions in [Data Sources](./docs/data-
 - **LLM:** Google Gemini (free tier via Google AI Studio) — no cost, no HBAI budget required. Pinned to `gemini-3.5-flash-lite` (**Q-015**). After the course we plan to move to paid Claude (**Q-025**); see [docs/business-model.md](docs/business-model.md) for the price, market and cost estimate.
 - **PDF generation:** ReportLab for the PDF case study and one-pager (**Q-012**); headless Chromium for the designed report and proof sheet; `segno` for QR codes
 - **Interface:** FastAPI website; Streamlit and a command-line tool still work (**Q-013**)
-- **Integrations:** Notion API, read only, with the user's own integration secret
+- **Integrations:** Notion API, read only — Connect Notion (OAuth, tokens encrypted with `cryptography`) or the user's own integration secret
 - **Hosting:** Render + Neon, free tiers
 - **Environment:** Local machine
 - **Hardware:** A standard laptop. The model runs through an API, so no GPU is required.
@@ -168,7 +168,7 @@ API keys are never committed. Keys live in `.env`, which is excluded by `.gitign
 
 **Measured:** the planted-claim test has been run with Gemini as well as offline. On 31 October 2026, `gemini-3.5-flash-lite`, 3 team-constructed inputs × 3 repeats: **all 20 planted errors caught in every repeat (60 of 60 observations), and no false flags on 109 genuine sentences.** Full log: [`tests/results.md`](./tests/results.md); raw output in `eval/results/`.
 
-**Automated suite:** 114 tests pass offline (20 November 2026, author's run).
+**Automated suite:** 119 tests pass offline (22 November 2026, author's run).
 
 **Live:** the website runs at **https://caseforge-rcdu.onrender.com** (Render + Neon Postgres). Setup in [docs/DEPLOY.md](./docs/DEPLOY.md). Auto-deploy from GitHub stopped working after 17 November, so deploys are manual for now (**Q-024**).
 

@@ -17,3 +17,9 @@ services:
         value: gemini-3.5-flash-lite
       - key: DAILY_AI_LIMIT
         value: "30"
+      - key: NOTION_CLIENT_ID          # Connect Notion (optional): from your public Notion integration
+        sync: false
+      - key: NOTION_CLIENT_SECRET
+        sync: false
+      - key: NOTION_REDIRECT_URI       # https://caseforge-rcdu.onrender.com/api/notion/callback
+        sync: false
