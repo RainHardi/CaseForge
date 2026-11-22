@@ -6,7 +6,7 @@
 
 | Item | Value |
 |---|---|
-| Price | ₩70,000 per user per month (₩840,000 per user per year) |
+| Price | Annual plan ₩840,000 per firm per year (≈ ₩70,000 a month). Alternative: ₩40,000 per case study (proposed, to be confirmed by the team). The plan assumes about 10 case studies a month per firm |
 | Students | Free tier |
 | Who pays | Companies subscribe, with one paying user each (our simplifying assumption) |
 
@@ -22,11 +22,12 @@
 
 | Step | Number | How |
 |---|---|---|
-| Software companies in Korea | 66,403 | SPRi SW Statistics Portal, 2023 (determined by Odina and Dilshodjon) |
-| Fit our first market (serviceable market) | ≈ 6,000 | 66,403 × 60% in Seoul–Gyeonggi × 30% with 10–199 staff × 50% doing client project work = 5,976. The three percentages are stated assumptions, not measured figures |
-| Total addressable market (TAM) | ≈ ₩5.0 B per year | 6,000 × ₩70,000 × 12 = ₩5.04 B, with one paying user per company |
+| Software companies in Korea | 67,222 | SPRi SW Statistics Portal, 2024 (2023: 66,403). Newest confirmed figure |
+| Fit our first market (serviceable market) | ≈ 6,000 | 67,222 × 60% in Seoul–Gyeonggi × 30% with 10–199 staff × 50% doing client project work = 6,050. The three percentages are stated assumptions, not measured figures |
+| First market (SAM, beachhead) | ≈ ₩5.0 B per year | 6,000 × ₩840,000 = ₩5.04 B, with one paying user per company |
+| Total addressable market (TAM) | ≈ ₩56.5 B per year | 67,222 × ₩840,000 = ₩56.5 B |
 
-TAM is the ceiling if every one of those companies paid. It is not a forecast.
+TAM is the ceiling if every software company in Korea paid; SAM is the ceiling for our first market. It is not a forecast.
 
 ## 4. Growth plan (team assumption)
 
@@ -77,13 +78,13 @@ Today the AI is the Gemini free tier (₩0). After the course we plan to switch 
 
 The Batch API is 50% cheaper. Prompt caching also lowers the cost of repeated text. Neither is included in the estimate.
 
-**Per user per month** (Sonnet 5.5, 10–30 case studies a month, plus about 30% for retries and failed calls): about ₩3,000–9,000, which is 4–13% of the ₩70,000 price. The poster uses ₩6,000 per user per month (about 8.6% of the price) for the 3-year table.
+**Per user per month** (Sonnet 5.5, 10–30 case studies a month, plus about 30% for retries and failed calls): about ₩3,000–9,000, which is 4–13% of the ₩70,000 a month implied by the annual plan. The poster uses ₩6,000 per user per month (about 8.6% of the price) for the 3-year table.
 
 ## 7. Assumptions to confirm
 
 | # | Assumption | Who confirms |
 |---|---|---|
-| 1 | The 60% / 30% / 50% filters (Seoul–Gyeonggi, 10–199 staff, client project work) are assumptions, not measured; source for 66,403 is SPRi SW Statistics Portal, 2023 | Odina and Dilshodjon (determined) |
+| 1 | The 60% / 30% / 50% filters (Seoul–Gyeonggi, 10–199 staff, client project work) are assumptions, not measured; source for 67,222 is SPRi SW Statistics Portal, 2024 | Odina and Dilshodjon (determined) |
 | 2 | One paying user per company | Mukhammadkodir |
 | 3 | Growth of 30 → 100 → 250 paying companies | Anvarbek |
 | 4 | Hosting costs after the free tiers (Render and Neon paid plans) | Abdulaziz |
@@ -93,7 +94,7 @@ The Batch API is 50% cheaper. Prompt caching also lowers the cost of repeated te
 
 ## 8. Limits of this estimate
 
-- No customer has been asked whether they would pay ₩70,000. The price is an assumption until someone tests it.
+- No customer has been asked whether they would pay ₩840,000 a year or ₩40,000 per case study. The price is an assumption until someone tests it.
 - The faithfulness results (20 of 20 planted claims caught, 0 of 109 true sentences wrongly flagged) were measured on Gemini, not Claude. They must be re-run after any model change.
 - Moving to Claude needs `caseforge/llm.py`, which is written for Gemini, to be extended or replaced.
 - Sending real client material to any external AI service is still governed by Q-002; Anthropic's terms for the API need to be checked before then.
