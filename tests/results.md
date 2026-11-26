@@ -5,7 +5,7 @@
 | **Project** | S1 - Case Study & Portfolio Generator (CaseForge) |
 | **Team** | Team 5 |
 | **Started** | 31 October 2026 |
-| **Last Updated** | 22 November 2026 |
+| **Last Updated** | 20 November 2026 |
 
 This is the record referred to by the [Definition of Done](../docs/definition-of-done.md) and the [Test Plan](../docs/test-plan.md). **A test is counted as passed only if it appears here.** A test source file is not evidence that a test passed — only a dated run with its result is.
 
@@ -26,7 +26,7 @@ Failures stay in this log after they are fixed.
 | T-06 | — | — | **Not run** |
 | T-10 | End to end on three **real** project inputs | — | **Not run** — no real inputs yet (BT-2) |
 | T-11 to T-19 | Target and Stretch | — | **Not run** — the features exist, the measurements do not |
-| Automated suite | 119 tests across ingest, pipeline, rules, review/export, designed report, web API, Notion, Verified link, sign-off, anonymized version, proof library | 22 Nov 2026 | Reported passing by the author; independent clean-clone run still outstanding |
+| Automated suite | 114 tests across ingest, pipeline, rules, review/export, designed report, web API, Notion, Verified link, sign-off, anonymized version, proof library | 20 Nov 2026 | Reported passing by the author; independent clean-clone run still outstanding |
 
 ---
 
@@ -92,15 +92,6 @@ Checks performed: export is refused before approval; any edit made after approva
 
 The one-page summary is exactly one page for both extremes, and every approved sentence appears in the PDF.
 
-### 2026-11-22 · Connect Notion
-
-| | |
-|---|---|
-| **Run by** | Abdulaziz |
-| **Command** | `python -m pytest` |
-| **Result as reported** | **119 passed** (adds `test_notion_connect` 5) |
-| **Hand check** | Local browser with placeholder Notion credentials: the Connect Notion button, the fallback secret form, the return messages, and the redirect to `api.notion.com/v1/oauth/authorize` with the right parameters. **Not tested against a real Notion integration yet** — that needs a public integration and its client id and secret |
-
 ### 2026-11-20 · Automated suite and deployment
 
 | | |
@@ -108,7 +99,7 @@ The one-page summary is exactly one page for both extremes, and every approved s
 | **Run by** | Abdulaziz |
 | **Command** | `python -m pytest` |
 | **Suite** | 114 collected tests: `test_ingest` 8, `test_pipeline` 15, `test_rules` 8, `test_review_export` 10, `test_report` 39, `test_web` 10, `test_notion` 5, `test_verify` 5, `test_signoff` 4, `test_anonymize` 6, `test_library` 4 |
-| **Result as reported** | **114 passed** (commit `1e494c1`, which is on `main` — check with `git show 1e494c1`). Count confirmed by Anvarbek and Abdulaziz, 21 Nov 2026. The per-file counts are collected tests: 111 `def test_` functions plus 3 parametrized cases (`test_pipeline` 13→15, `test_review_export` 9→10) = 114 |
+| **Result as reported** | **114 passed.** Count confirmed by Anvarbek and Abdulaziz, 21 Nov 2026. **Commit hash TBD:** `1e494c1`, quoted in an earlier version of this log, is not in the repository history; Abdulaziz to confirm the commit this run used. Per-file counts above are not yet reconciled with the `def test_` counts in `tests/` (111 found by search; parametrized tests may account for the difference) |
 | **Deployment** | Pushes on 19–20 November did not trigger Render; deployed manually from the dashboard. Checked `/healthz`, the new screens in `app.js`, and that `/v/…`, `/s/…` and `/api/library` respond. Not clicked through on the live site |
 
 New coverage: Notion import, Verified link, client sign-off, anonymized version and proof library. These were also checked by hand in a local browser; five bugs found that way were fixed.
