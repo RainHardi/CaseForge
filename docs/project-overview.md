@@ -10,7 +10,7 @@
 | **Team** | Team 5 |
 | **Development Period** | Fall 2026 Semester |
 | **Status** | Built and deployed — live at https://caseforge-rcdu.onrender.com; real-input runs (B4) outstanding |
-| **Last Updated** | 20 November 2026 |
+| **Last Updated** | 26 November 2026 |
 
 ---
 
@@ -356,7 +356,7 @@ We will test with both clean and messy project inputs. The main evaluation areas
 
 The full plan, including test cases and success criteria, is in [Test Plan](test-plan.md).
 
-**Tests run so far:** T-05 (planted claims), T-07 (approval lock) and T-08/T-09 (output layout), all on team-constructed inputs, plus an automated suite of 114 tests covering ingest, pipeline, rules, review and export, the designed report, the web API, the Notion import, Verified links, client sign-off, the anonymized version and the proof library. Recorded in [`tests/results.md`](../tests/results.md). T-02, T-04, T-06 and T-10 have not been run. See [Section 21](#21-current-status-and-next-steps).
+**Tests run so far:** T-05 (planted claims), T-07 (approval lock) and T-08/T-09 (output layout), all on team-constructed inputs, plus an automated suite of 119 tests covering ingest, pipeline, rules, review and export, the designed report, the web API, the Notion import, Verified links, client sign-off, the anonymized version and the proof library. Recorded in [`tests/results.md`](../tests/results.md). T-02, T-04, T-06 and T-10 have not been run. See [Section 21](#21-current-status-and-next-steps).
 
 ## 19. Expected Final Result
 
@@ -435,7 +435,7 @@ The Baseline implementation landed on 31 October 2026 (pull request #15, with fo
 | — | Code review of the Baseline by a second member | Muhammadkodir | Reviewer named in the pull request | 9 Nov |
 | — | Re-run T-07 to T-09 from a clean clone | Anvarbek | Same results on a fresh clone, recorded in `tests/results.md` | 16 Nov |
 | BT-7 | End-to-end run on three real inputs | Abdulaziz | All three produce an approved PDF | 23 Nov |
-| BT-8 | Two-person manual claim check | Odina, Dilshod | Zero unsupported claims in every approved PDF, recorded in the log | 30 Nov |
+| BT-8 | Two-person manual claim check | Odina, Dilshodjon | Zero unsupported claims in every approved PDF, recorded in the log | 30 Nov |
 
 Dates are the team's proposal until confirmed at the next meeting (**Q-011**). Responsibilities are in [Team Roles](team-roles.md).
 

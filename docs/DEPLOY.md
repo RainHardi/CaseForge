@@ -4,7 +4,7 @@
 |---|---|
 | **Website code** | `web/main.py` (FastAPI server), `web/static/` (landing page + app) |
 | **Cost** | ₩0 — Render free web service + Neon free Postgres + Gemini free tier |
-| **Last updated** | 9 November 2026 |
+| **Last updated** | 26 November 2026 |
 
 There are three ways to run it. Start with **A**, use **B** for a quick demo link from your laptop, and **C** for a link that works even when your laptop is off.
 

@@ -7,7 +7,7 @@
 | **Team** | Team 5 |
 | **Reviewer** | Abdulaziz (AI / Engineering) |
 | **Status** | 119 automated tests plus T-05, T-07, T-08, T-09 run on team-constructed inputs; T-02, T-04, T-06 and T-10 not run |
-| **Last Updated** | 20 November 2026 |
+| **Last Updated** | 26 November 2026 |
 
 This document explains what we plan to test, how we'll test it, and what counts as success. It follows our project's [Definition of Done](definition-of-done.md) (Baseline, Target, Stretch). Details we haven't decided yet are marked **TBD**.
 

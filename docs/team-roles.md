@@ -9,14 +9,14 @@
 | **Members** | 5 |
 | **Status** | Built and deployed — live at https://caseforge-rcdu.onrender.com; real-input runs (B4) outstanding |
 | **Development Period** | Fall 2026 Semester |
-| **Last Updated** | 20 November 2026 |
+| **Last Updated** | 26 November 2026 |
 
 ---
 
 ## Table of Contents
 
 1. [Team Members and Roles](#1-team-members-and-roles)
-2. [Mukhammadkodir - Project Manager](#2-mukhammadkodir---project-manager)
+2. [Muhammadkodir - Project Manager](#2-mukhammadkodir---project-manager)
 3. [Abdulaziz - AI / Engineering](#3-abdulaziz---ai--engineering)
 4. [Dilshodjon - Problem & Business](#4-dilshodjon---problem--business)
 5. [Odina - Data & Research](#5-odina---data--research)
@@ -34,13 +34,13 @@
 
 | Team Member | Assigned Role | Main Responsibility |
 |---|---|---|
-| Mukhammadkodir | Project Manager | Project planning, schedule, milestones, tasks, submissions, and team coordination |
+| Muhammadkodir | Project Manager | Project planning, schedule, milestones, tasks, submissions, and team coordination |
 | Abdulaziz | AI / Engineering | AI workflow, application development, technical implementation, claim verification, and C4 diagrams |
 | Dilshodjon | Problem & Business | Problem definition, target users, business value, and user feedback |
 | Odina | Data & Research | Data sources, testing, verification, research, error analysis, and limitations |
 | Anvarbek | Demo & Presentation | README, documentation, demo video, presentation, and final demonstration |
 
-## 2. Mukhammadkodir - Project Manager
+## 2. Muhammadkodir - Project Manager
 
 ### Main Responsibilities
 
@@ -269,22 +269,22 @@ Every member is expected to have read them.
 | Task | Owner | Reviewer / Support | Status |
 |---|---|---|---|
 | GitHub repository | Abdulaziz | Team | Created |
-| Team R&R (this document) | Mukhammadkodir | Team | Complete, updated 23 Oct |
-| Project Overview | Dilshodjon | Mukhammadkodir / Team | Complete, updated 23 Oct |
-| README | Anvarbek | Mukhammadkodir / Team | Complete, updated 23 Oct |
-| Team Ground Rules | Team | Mukhammadkodir | Complete, updated 23 Oct |
+| Team R&R (this document) | Muhammadkodir | Team | Complete, updated 23 Oct |
+| Project Overview | Dilshodjon | Muhammadkodir / Team | Complete, updated 23 Oct |
+| README | Anvarbek | Muhammadkodir / Team | Complete, updated 23 Oct |
+| Team Ground Rules | Team | Muhammadkodir | Complete, updated 23 Oct |
 | Data Sources | Odina | Abdulaziz | Complete, updated 23 Oct |
 | Test Plan | Odina | Abdulaziz | Complete |
 | C4 Level 1 | Abdulaziz | Team | Complete — revision needed |
 | C4 Level 2 | Abdulaziz | Team | Complete — revision needed |
 | Definition of Done | Anvarbek | Team | Complete, 23 Oct |
 | Demo Script | Anvarbek | Team | Complete, 23 Oct |
-| Question Log | Mukhammadkodir / Team | Team | Complete, 23 Oct — 17 questions open |
-| Midterm Business Plan | Team | Mukhammadkodir | In progress — due 24 Oct |
+| Question Log | Muhammadkodir / Team | Team | Complete, 23 Oct — 17 questions open |
+| Midterm Business Plan | Team | Muhammadkodir | In progress — due 24 Oct |
 | Baseline implementation (BT-1, BT-3 to BT-6) | Abdulaziz | Muhammadkodir | **Built 31 Oct 2026** |
 | Web application, accounts, designed report, brand kits, deployment | Abdulaziz | Team | **Built and deployed 14 Nov 2026** — not yet reviewed by a second member |
 | Verified link, client sign-off, anonymized version, proof library, Notion import | Abdulaziz | Team | **Built and deployed 20 Nov 2026** — not yet reviewed by a second member |
-| Baseline implementation (BT-2, BT-7, BT-8) | Odina, Abdulaziz, Dilshod | Team | **Not started** — needs three real project inputs |
+| Baseline implementation (BT-2, BT-7, BT-8) | Odina, Abdulaziz, Dilshodjon | Team | **Not started** — needs three real project inputs |
 
 ### Baseline implementation ownership
 
@@ -294,9 +294,9 @@ BT-1 and BT-3 to BT-6 were built by Abdulaziz and merged on 31 October 2026 (pul
 |---|---|---|
 | Abdulaziz | T-05b harder planted claims; BT-7 end-to-end on three real inputs | 16 Nov, 23 Nov |
 | Odina | BT-2 three **real** inputs with fact lists; BT-8 two-person claim check | 9 Nov, 30 Nov |
-| Mukhammadkodir | Code review of the Baseline, named in the pull request; confirming the schedule (Q-011) | 9 Nov |
+| Muhammadkodir | Code review of the Baseline, named in the pull request; confirming the schedule (Q-011) | 9 Nov |
 | Anvarbek | Re-run T-07 to T-09 from a clean clone and record the result | 16 Nov |
-| Dilshod | BT-8 second labeller; T4 outside-user test and T5 time comparison (Target) | 30 Nov |
+| Dilshodjon | BT-8 second labeller; T4 outside-user test and T5 time comparison (Target) | 30 Nov |
 
 Dates are the team's proposal until confirmed at the next meeting (**Q-011**).
 
@@ -357,7 +357,7 @@ The team will:
 
 | Member | Role | Main Focus |
 |---|---|---|
-| Mukhammadkodir | Project Manager | Planning, schedule, tasks, submissions, coordination |
+| Muhammadkodir | Project Manager | Planning, schedule, tasks, submissions, coordination |
 | Abdulaziz | AI / Engineering | AI workflow, application, claim verification, technical development |
 | Dilshodjon | Problem & Business | Problem, users, buyer, business value, feedback |
 | Odina | Data & Research | Data, testing, verification, research, errors |

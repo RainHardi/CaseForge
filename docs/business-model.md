@@ -85,11 +85,11 @@ The Batch API is 50% cheaper. Prompt caching also lowers the cost of repeated te
 | # | Assumption | Who confirms |
 |---|---|---|
 | 1 | The 60% / 30% / 50% filters (Seoul–Gyeonggi, 10–199 staff, client project work) are assumptions, not measured; source for 67,222 is SPRi SW Statistics Portal, 2024 | Odina and Dilshodjon (determined) |
-| 2 | One paying user per company | Mukhammadkodir |
+| 2 | One paying user per company | Muhammadkodir |
 | 3 | Growth of 30 → 100 → 250 paying companies | Anvarbek |
 | 4 | Hosting costs after the free tiers (Render and Neon paid plans) | Abdulaziz |
 | 5 | Payment fees of 3% | Anvarbek |
-| 6 | ₩1,400 per dollar | Mukhammadkodir |
+| 6 | ₩1,400 per dollar | Muhammadkodir |
 | 7 | Token use per project: measure it by logging input and output tokens for one real run | Abdulaziz |
 
 ## 8. Limits of this estimate
