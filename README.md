@@ -10,7 +10,7 @@
 
 ## Team
 
-Team 5 — Mukhammadkodir (PM), Abdulaziz (AI/Engineering), Dilshodjon (Problem & Business), Odina (Data & Research), Anvarbek (Demo & Presentation). Full role assignments in [Team Roles](./docs/team-roles.md).
+Team 5 — Muhammadkodir (PM), Abdulaziz (AI/Engineering), Dilshodjon (Problem & Business), Odina (Data & Research), Anvarbek (Demo & Presentation). Full role assignments in [Team Roles](./docs/team-roles.md).
 
 ## The Problem
 
@@ -191,6 +191,8 @@ API keys are never committed. Keys live in `.env`, which is excluded by `.gitign
 | [Data Sources](./docs/data-sources.md) | Every data source, its conditions, collection dates and permissions |
 | [Test Plan](./docs/test-plan.md) | What we test, how, what counts as success, and current test status |
 | [Demo Script](./docs/demo-script.md) | The scenario we are building towards, and what we do if it fails |
+| [Business Model](./docs/business-model.md) | Price, market (TAM, SAM), cost and three-year estimate, with sources |
+| [Deployment Plan](./docs/deployment-plan.md) | Parts, hosting, risks, backup and owners for Demo Day |
 | [Question Log](./docs/question-log.md) | Everything still undecided, and who can decide it |
 
 ---
