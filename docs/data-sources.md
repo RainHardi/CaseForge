@@ -7,9 +7,9 @@
 | **Team** | Team 5 |
 | **Reviewer** | Abdulaziz (AI / Engineering) |
 | **Status** | Four team-constructed inputs committed; no real project data yet. The live website collects user account data (DS-05), publishes Verified copies (DS-07) and stores client sign-off answers (DS-08) |
-| **Last Updated** | 20 November 2026 |
+| **Last Updated** | 28 November 2026 |
 
-This document lists the data, APIs, and other sources CaseForge plans to use, the conditions for using each one, when each was collected, and what we still need to confirm. Anything we haven't settled yet is marked **TBD**.
+This document lists the data, APIs, and other sources CaseForge plans to use, the conditions for using each one, when each was collected, and what we still need to confirm. Sources we did not end up using are marked **Not used**, with the reason.
 
 > [!IMPORTANT]
 > **Team-constructed inputs exist; real project data does not.** Three fictional inputs with hand-written fact lists were written by the team and committed on 31 October 2026 (`samples/`). They contain no real client and no confidential material, so they are safe to send to the Gemini API. The **real** project inputs required by Baseline item B4 are still task **BT-2** and have not been obtained — that is blocked on permission (Q-001, Q-005).
@@ -33,10 +33,10 @@ For every test input, we also need a way to check the output. Our plan is to wri
 
 | ID | Source | Type | Used For | Access Status | Collected / Version | Personal Info? | Public Repo? |
 |---|---|---|---|---|---|---|---|
-| DS-01 | HumbleBeeAI projects cleared for external sharing | Project information | Main test cases (real business projects) | Not yet requested | Not yet collected | To be checked before use | TBD — depends on HumbleBeeAI |
+| DS-01 | HumbleBeeAI projects cleared for external sharing | Project information | Main test cases (real business projects) | **Not used** — not obtained before the 30 Nov demo | Not collected | Not applicable | Not applicable |
 | DS-02 | Project information constructed by our team | Written test inputs | Clean and messy test cases, edge cases | Available — we create it | Writing begins Oct 2026, ongoing | No — invented names | Yes |
 | DS-03 | Our own project material | Project information | Test case and demo example | Available | From Sept 2026, ongoing | Team names only, by agreement | Yes, after removing private details |
-| DS-04 | Classmates' project material | Project information | Student-facing test cases, user testing, demo | Permission needed from each team | Not yet collected | Possibly names — removed before use | Only with that team's agreement |
+| DS-04 | Classmates' project material | Project information | Student-facing test cases, user testing, demo | **Not used so far** — no team asked yet | Not collected | Not applicable | Only with that team's agreement |
 | DS-05 | **User accounts on the live website** | Personal data | Signing in, scoping projects to a workspace | Collected from 14 Nov 2026, as soon as anyone signs up | Live, ongoing | **Yes** — name, email address, password (stored as a scrypt hash), workspace membership | **No** — never in the repository; held only in the hosted database |
 | DS-06 | Brand kits (colours, fonts, logo, banned words) | Configuration | Styling the designed report | Available — two example kits | From Nov 2026 | Logos may identify a company | Only the two example kits (HumbleBeeAI and the fictional Northwind) |
 | DS-07 | Published Verified copies | Frozen approved case study | The public Verified link | Created when a user publishes | From 20 Nov 2026 | Possibly — approver's name; client name unless hidden; quotes from the notes unless masked | No — hosted database only; **public to anyone with the link** |
@@ -53,12 +53,13 @@ For every test input, we also need a way to check the output. Our plan is to wri
 
 - **What it is:** Information about completed HumbleBeeAI projects in areas like AI development, R&D, cybersecurity, data science, and software engineering.
 - **Why we need it:** These are the real business cases CaseForge is designed for. They show what a services company's project information actually looks like.
-- **Source link:** TBD
+- **Status: not used.** We did not obtain cleared HumbleBeeAI projects before the demo on 30 November, so every test used DS-02 and DS-03. Getting them stays the first step after the course.
+- **Source link:** None — nothing was received.
 - **Usage conditions:** Only projects that HumbleBeeAI has cleared for external sharing. No client confidential material and no internal company data.
 - **Access:** Not yet requested. We need to ask which projects are cleared and in what form we'll receive the information (**Q-D01**).
 - **Collection date / version:** Not yet collected. The date and the version received will be recorded here once we have them.
-- **Personal information:** TBD. Client and employee names will be removed or replaced before processing if present.
-- **Can it go in the public repo?** TBD. Depends on what HumbleBeeAI allows. If not allowed, we'll keep it out of the repo and describe how to obtain it instead.
+- **Personal information:** Not applicable — no HumbleBeeAI data was received or processed. If it is used later, client and employee names will be removed or replaced before processing.
+- **Can it go in the public repo?** Not applicable — not used. If it is used later, it stays out of the repo unless HumbleBeeAI agrees (Q-D03).
 
 ### DS-02: Team-Constructed Project Information
 
@@ -69,7 +70,7 @@ For every test input, we also need a way to check the output. Our plan is to wri
   - A pasted chat conversation between team members
   - A project with **no measurable results** (to check that CaseForge doesn't invent a number)
   - A very short description (two sentences) and a very long one (several pages), to test layout
-- **Source link:** Stored in this repository (folder TBD, e.g. `data/constructed/`).
+- **Source link:** Stored in this repository: `samples/` (`01_clean_form`, `02_rough_notes`, `03_pasted_chat`, each with a `facts.md`, and `04_northwind`), plus `tests/fixtures/northwind_plan.json`. Planted-claim runs are in `eval/`.
 - **Usage conditions:** Created by our team, so no restrictions.
 - **Collection date / version:** Written by the team from October 2026 onwards. Each file records the date it was written.
 - **Personal information:** None. We'll use made-up company and people names.
@@ -89,7 +90,8 @@ For every test input, we also need a way to check the output. Our plan is to wri
 
 - **What it is:** Project information from other teams in the course.
 - **Why we need it:** Students are our secondary users, and classmates are the fastest real feedback we can get. Running a classmate's project through CaseForge is also a key part of our final demo.
-- **Source link:** TBD, provided by each team that agrees to take part.
+- **Status: not used so far.** No team has been asked yet, so no classmate material has been collected. If a classmate's project is run in the demo, permission is recorded in Section 8 first.
+- **Source link:** None yet — provided by each team that agrees to take part.
 - **Usage conditions:** Only with permission from the team. We won't publish their material without their agreement.
 - **Collection date / version:** Not yet collected. The date each team provides material will be recorded in the permission log.
 - **Personal information:** Possibly names. We'll remove or replace identifiers before processing unless the team asks to keep them.
@@ -106,7 +108,9 @@ For every test input, we also need a way to check the output. Our plan is to wri
 - **Model version:** `gemini-3.5-flash-lite`, pinned on 31 Oct 2026 (Q-015) so that results can be reproduced. It is set through the `GEMINI_MODEL` environment variable.
 - **What we send:** Project text and images supplied by the user, plus our prompts. Only safe, cleared or team-constructed information is sent. No personal data and no client-confidential material.
 - **Limitations:**
-  - The free tier has rate limits. Exact limits for our use: **TBD**, to be tested by Abdulaziz.
+  - The free tier has rate limits, set per project and shown in AI Studio. For `gemini-3.5-flash-lite` on our project (AI Studio, checked 28 Nov 2026): **15 requests per minute, 250,000 tokens per minute, 500 requests per day.**
+  - Our peak use over the 28 days to 28 Nov: **18 requests in one minute** (above the limit, during test runs on about 3 and 12 Nov), 57,240 tokens per minute, and 84 requests in one day. Requests over the per-minute limit are retried by the server, which then falls back to a backup model (`GEMINI_FALLBACK_MODELS`, default `gemini-flash-latest`, which AI Studio shows as Gemini 3.8 Flash: peak 18 of its 20 requests per day) and finally to offline rules mode.
+  - To stay inside the daily limit the site caps each user at **30 AI actions a day** (`DAILY_AI_LIMIT`).
   - Google's terms for the free tier may allow Google to use submitted content to improve its products. This is one more reason we only send safe, non-confidential information. We will confirm the current terms before sending any real project data.
 - **Fallback if the free tier is unavailable or rate-limited:** not decided (Q-016). We'll ask the instructors before paying for any service.
 - **Planned after the course:** paid Claude, billed per token (Q-025). Our estimate is about ₩300 per case study with Sonnet 5.5; see [Business Model](business-model.md). `caseforge/llm.py` is written for Gemini, so it needs changing, and the faithfulness tests must be re-run. Anthropic's terms for sending project material need to be checked, as for Google (Q-002).
@@ -150,7 +154,7 @@ Added in November 2026, when CaseForge became a hosted website with accounts. Th
 |---|---|
 | Team-constructed test inputs and their fact lists | Yes |
 | Our own project material, with private details removed | Yes |
-| HumbleBeeAI project information | **TBD** — only if HumbleBeeAI agrees (**Q-D03**). If not, we describe it rather than publish it. |
+| HumbleBeeAI project information | Not applicable — not used. If used later: only if HumbleBeeAI agrees (**Q-D03**). |
 | Classmates' project material | Only with that team's written agreement |
 | Generated case studies from any of the above | Only if the underlying source may be published |
 | API keys | Never. Keys live in `.env`, excluded by `.gitignore`. |
@@ -178,7 +182,7 @@ Before a project input is used for testing, we will:
 4. **Label it.** Tag each input as *clean* or *messy*, and note what's missing (for example, "no measurable results").
 5. **Write the fact list.** Record the facts the input actually states, which we use to check the generated case study for invented claims.
 
-For the Baseline, we need at least **three real project inputs** that work end to end. Target number of total test inputs: **TBD**.
+For the Baseline, we need at least **three real project inputs** that work end to end. We have **four team-constructed inputs and no real ones**, so B4 is not met.
 
 > [!NOTE]
 > **Status: partly done.** Three *team-constructed* inputs and their hand-written fact lists are in `samples/` (01 clean form, 02 rough notes, 03 pasted chat), committed 31 October 2026. Each `facts.md` was written before the input was run through CaseForge, as Section 2 requires. **Three *real* project inputs are still missing** — that is the remainder of **BT-2**, owned by Odina, and it is what Baseline item B4 needs.
@@ -189,9 +193,9 @@ For the Baseline, we need at least **three real project inputs** that work end t
 
 | Source | Project / Item | Permission From | Date Requested | Date Given | Allowed in Public Repo? | Notes |
 |---|---|---|---|---|---|---|
-| DS-01 | TBD | HumbleBeeAI | Not yet requested | — | TBD | Blocked on Q-D01 and Q-D03 |
+| DS-01 | — | HumbleBeeAI | Not requested | — | Not applicable | Not used in this project |
 | DS-03 | Our own project material | Team 5 members | 23 Oct 2026 | Agreed verbally; to be confirmed in a meeting record | Yes, private details removed | |
-| DS-04 | TBD | Individual course teams | Not yet requested | — | TBD | To request once we have a working draft to show |
+| DS-04 | — | Individual course teams | Not requested | — | Not applicable | Not used so far |
 
 ---
 
@@ -199,10 +203,10 @@ For the Baseline, we need at least **three real project inputs** that work end t
 
 | ID | Question | Who to Ask | Status |
 |---|---|---|---|
-| Q-D01 | Which HumbleBeeAI projects are cleared for external sharing, and in what format will we get them? | HumbleBeeAI / instructors | Not checked |
-| Q-D02 | Are we allowed to send HumbleBeeAI project information to an external AI service like Gemini? | HumbleBeeAI / instructors | Not checked |
-| Q-D03 | Can HumbleBeeAI project information be stored in our public repo, or only described? | HumbleBeeAI | Not checked |
-| Q-D04 | Are the Gemini free tier rate limits enough for our testing? | Team (Abdulaziz to test) | Not checked |
-| Q-D05 | How many classmate teams are willing to share their projects? | Classmates | Not checked |
+| Q-D01 | Which HumbleBeeAI projects are cleared for external sharing, and in what format will we get them? | HumbleBeeAI / instructors | Not asked — DS-01 not used |
+| Q-D02 | Are we allowed to send HumbleBeeAI project information to an external AI service like Gemini? | HumbleBeeAI / instructors | Not asked — DS-01 not used |
+| Q-D03 | Can HumbleBeeAI project information be stored in our public repo, or only described? | HumbleBeeAI | Not asked — DS-01 not used |
+| Q-D04 | Are the Gemini free tier rate limits enough for our testing? | Team (Abdulaziz to test) | **Yes for testing, tight for a crowd.** Limits 15/min, 250K tokens/min, 500/day; peak use 18/min (retried), 84/day. One case study uses several requests, so a room of people trying it at once would hit the per-minute limit |
+| Q-D05 | How many classmate teams are willing to share their projects? | Classmates | Not asked |
 
 We'll update this document as these questions get answered.

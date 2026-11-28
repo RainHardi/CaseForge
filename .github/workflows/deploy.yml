@@ -1,0 +1,40 @@
+# Deploys the live site on Render after every push to main that changes the app.
+# Render's own auto-deploy stopped firing after 17 Nov (Q-024), so this calls
+# Render's Deploy Hook instead. The hook URL is a secret: it lives only in
+# GitHub → Settings → Secrets and variables → Actions → RENDER_DEPLOY_HOOK.
+name: Deploy to Render
+
+on:
+  push:
+    branches: [main]
+    paths-ignore:            # documents only: nothing to redeploy
+      - "docs/**"
+      - "**/*.md"
+  workflow_dispatch:         # "Run workflow" button for a manual deploy
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - run: pip install -r requirements.txt
+      - run: python -m pytest -q          # offline: the model is stubbed, no key needed
+
+  deploy:
+    needs: test                           # a failing test blocks the deploy
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger Render deploy
+        env:
+          HOOK: ${{ secrets.RENDER_DEPLOY_HOOK }}
+        run: |
+          if [ -z "$HOOK" ]; then
+            echo "::notice::RENDER_DEPLOY_HOOK not set: tests passed, deploy left to Render's own Auto-Deploy"
+            exit 0
+          fi
+          curl -fsS -X POST "$HOOK" > /dev/null
+          echo "Deploy started on Render. Check https://caseforge-rcdu.onrender.com/healthz in about 5–10 minutes."

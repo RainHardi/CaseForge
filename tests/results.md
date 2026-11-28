@@ -5,7 +5,7 @@
 | **Project** | S1 - Case Study & Portfolio Generator (CaseForge) |
 | **Team** | Team 5 |
 | **Started** | 31 October 2026 |
-| **Last Updated** | 22 November 2026 |
+| **Last Updated** | 28 November 2026 |
 
 This is the record referred to by the [Definition of Done](../docs/definition-of-done.md) and the [Test Plan](../docs/test-plan.md). **A test is counted as passed only if it appears here.** A test source file is not evidence that a test passed — only a dated run with its result is.
 
@@ -24,9 +24,9 @@ Failures stay in this log after they are fixed.
 | T-02 | Extraction against the hand-written fact lists | — | **Not run** |
 | T-04 | Two-person manual claim check | — | **Not run** |
 | T-06 | — | — | **Not run** |
-| T-10 | End to end on three **real** project inputs | — | **Not run** — no real inputs yet (BT-2) |
+| T-10 | End to end on three **real** project inputs | — | **Not run** — no real inputs yet (BT-2). One end-to-end run on the **live site** with team-written notes, 23–24 Nov (below) |
 | T-11 to T-19 | Target and Stretch | — | **Not run** — the features exist, the measurements do not |
-| Automated suite | 119 tests across ingest, pipeline, rules, review/export, designed report, web API, Notion, Verified link, sign-off, anonymized version, proof library | 22 Nov 2026 | Reported passing by the author; independent clean-clone run still outstanding |
+| Automated suite | 119 tests across ingest, pipeline, rules, review/export, designed report, web API, Notion, Verified link, sign-off, anonymized version, proof library | 28 Nov 2026 | **119 passed** (commit `5f3598e`); independent clean-clone run still outstanding |
 
 ---
 
@@ -92,6 +92,33 @@ Checks performed: export is refused before approval; any edit made after approva
 
 The one-page summary is exactly one page for both extremes, and every approved sentence appears in the PDF.
 
+### 2026-11-28 · Automated suite
+
+| | |
+|---|---|
+| **Run by** | Abdulaziz |
+| **Command** | `python -m pytest -q` |
+| **Commit** | `5f3598e` (`main`) |
+| **Environment** | Windows 11, Python 3.14 |
+| **Result** | **119 passed in 20.7 s** |
+
+Same suite as 22 November; the commits since then changed documents only. Still the author's own run — a clean-clone run by a second person is outstanding.
+
+### 2026-11-23/24 · Live end-to-end run (demo recording)
+
+| | |
+|---|---|
+| **Run by** | Abdulaziz |
+| **Where** | Live site, https://caseforge-rcdu.onrender.com, Render + Neon, `gemini-3.5-flash-lite` |
+| **Input** | A Notion page written by the team (fictional bakery project, "Sorrel orders"), imported with **Connect Notion** using the real public Notion integration |
+| **Steps** | Connect Notion → import the page → write the case study → review → approve → designed report → restyle → approve report → Download tab (anonymized version, client sign-off link, Verified link with QR, LinkedIn short version) → proof library → report PDF |
+| **Result** | Worked end to end. The draft had 33 facts and 32 sentences, all 32 backed by the notes, none flagged. The report PDF carried the Verified-link QR code |
+| **Timings (from the screen recording)** | Writing and checking the draft: 12–24 s. Designing the report: about 28 s. A restyle: 10–20 s |
+| **Evidence** | Screen recordings of 23 and 24 Nov, cut into the demo video |
+
+> [!IMPORTANT]
+> One run, by the author, on notes the team wrote. It shows the live deployment and the real Notion connection work; it is **not** T-10 (real project inputs) and no flagged claim occurred in this run. The client's side of sign-off (the phone page) and the public Verified page were not opened during the recording.
+
 ### 2026-11-22 · Connect Notion
 
 | | |
@@ -99,7 +126,7 @@ The one-page summary is exactly one page for both extremes, and every approved s
 | **Run by** | Abdulaziz |
 | **Command** | `python -m pytest` |
 | **Result as reported** | **119 passed** (adds `test_notion_connect` 5) |
-| **Hand check** | Local browser with placeholder Notion credentials: the Connect Notion button, the fallback secret form, the return messages, and the redirect to `api.notion.com/v1/oauth/authorize` with the right parameters. **Not tested against a real Notion integration yet** — that needs a public integration and its client id and secret |
+| **Hand check** | Local browser with placeholder Notion credentials: the Connect Notion button, the fallback secret form, the return messages, and the redirect to `api.notion.com/v1/oauth/authorize` with the right parameters. **Not tested against a real Notion integration yet** — that needs a public integration and its client id and secret. *(Later: tested live with the real integration on 23 Nov — see the entry above.)* |
 
 ### 2026-11-20 · Automated suite and deployment
 

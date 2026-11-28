@@ -76,6 +76,19 @@ Free plan limits:
 
 **Already set up the old (Python) service?** Change it to Docker: Render dashboard → the service → **Settings** → *Runtime* can't be switched, so delete the service and create the Blueprint again (the Neon data stays).
 
+### 2b. Deploy automatically on every push
+
+Render's own auto-deploy stopped firing after 17 November (**Q-024**), so the repository deploys through a **Deploy Hook** instead. `.github/workflows/deploy.yml` runs the tests on every push to `main` that changes the app, and if they pass it calls the hook. Pushes that change only documents don't redeploy.
+
+Without the hook secret the workflow still runs the tests and leaves deploying to Render's own **Auto-Deploy** setting. One-time setup (repository owner), only if Render's own trigger keeps failing:
+1. Render dashboard → the `caseforge` service → **Settings** → **Deploy Hook** → copy the URL. Treat it like a password: anyone with it can start a deploy.
+2. GitHub → the repository → **Settings** → **Secrets and variables** → **Actions** → **New repository secret**. Name `RENDER_DEPLOY_HOOK`, value: the URL.
+3. Optional, to avoid double deploys if Render's own trigger starts working again: Render → **Settings** → **Auto-Deploy** → *Off*.
+
+To deploy by hand without the Render dashboard: GitHub → **Actions** → *Deploy to Render* → **Run workflow**. A red ✗ on a commit means a test failed and nothing was deployed.
+
+To fix Render's own trigger instead: GitHub → your profile → **Settings** → **Applications** → **Render** → **Configure** → make sure the `CaseForge` repository is selected under *Repository access*.
+
 ### 3. Check it
 - `https://<your-app>.onrender.com/healthz` → `{"ok": true}`
 - Create an account, run the **Messy notes** example, approve, download the PDF.
